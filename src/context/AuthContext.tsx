@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 
 export type UserRole = "athlete" | "scout" | null;
 
-interface User {
+export interface User {
   id: string;
   name: string;
   email: string;
