@@ -1,12 +1,45 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useState, useEffect } from "react";
+import { Navigate } from "react-router-dom";
+import { useAuth } from "@/context/AuthContext";
+import RoleSelection from "@/components/RoleSelection";
+import Login from "@/components/Login";
+import BottomNavigation from "@/components/BottomNavigation";
 
 const Index = () => {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
+  const { user, isAuthenticated, isLoading } = useAuth();
+  const [step, setStep] = useState<"role" | "auth" | "complete">("role");
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      setStep("complete");
+    } else if (user?.role) {
+      setStep("auth");
+    } else {
+      setStep("role");
+    }
+  }, [user, isAuthenticated]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse">Loading...</div>
       </div>
+    );
+  }
+
+  if (step === "complete") {
+    return <Navigate to="/for-you" />;
+  }
+
+  return (
+    <div className={`min-h-screen flex flex-col ${user?.role === "athlete" ? "athlete-theme" : user?.role === "scout" ? "scout-theme" : ""}`}>
+      <main className="flex-1 flex items-center justify-center">
+        {step === "role" && <RoleSelection />}
+        {step === "auth" && <Login initialRole={user?.role} />}
+      </main>
+      
+      {isAuthenticated && <BottomNavigation />}
     </div>
   );
 };

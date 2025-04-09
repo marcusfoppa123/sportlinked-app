@@ -1,0 +1,108 @@
+
+import React from "react";
+import { motion } from "framer-motion";
+import { useAuth, UserRole } from "@/context/AuthContext";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+const RoleSelection = () => {
+  const { setRole } = useAuth();
+
+  const handleRoleSelect = (role: UserRole) => {
+    setRole(role);
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center w-full h-full p-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="text-center mb-8"
+      >
+        <h1 className="text-3xl font-bold mb-2">Welcome to SportLinked</h1>
+        <p className="text-muted-foreground">Select your role to get started</p>
+      </motion.div>
+
+      <div className="w-full max-w-md grid gap-6">
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+        >
+          <Card 
+            className="border-2 hover:border-athlete cursor-pointer overflow-hidden" 
+            onClick={() => handleRoleSelect("athlete")}
+          >
+            <CardHeader className="bg-athlete-light pb-2">
+              <CardTitle>Athlete</CardTitle>
+              <CardDescription>For players and athletes of all levels</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center">
+                  <span className="h-2 w-2 rounded-full bg-athlete mr-2"></span>
+                  Share your highlights and stats
+                </li>
+                <li className="flex items-center">
+                  <span className="h-2 w-2 rounded-full bg-athlete mr-2"></span>
+                  Connect with scouts and coaches
+                </li>
+                <li className="flex items-center">
+                  <span className="h-2 w-2 rounded-full bg-athlete mr-2"></span>
+                  Discover opportunities in your sport
+                </li>
+              </ul>
+              <Button 
+                className="w-full mt-4 bg-athlete hover:bg-athlete/90" 
+                onClick={() => handleRoleSelect("athlete")}
+              >
+                Continue as Athlete
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.3, duration: 0.5 }}
+        >
+          <Card 
+            className="border-2 hover:border-scout cursor-pointer overflow-hidden" 
+            onClick={() => handleRoleSelect("scout")}
+          >
+            <CardHeader className="bg-scout-light pb-2">
+              <CardTitle>Scout</CardTitle>
+              <CardDescription>For coaches, recruiters and sports organizations</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center">
+                  <span className="h-2 w-2 rounded-full bg-scout mr-2"></span>
+                  Discover talented athletes
+                </li>
+                <li className="flex items-center">
+                  <span className="h-2 w-2 rounded-full bg-scout mr-2"></span>
+                  Filter by sport, position, and stats
+                </li>
+                <li className="flex items-center">
+                  <span className="h-2 w-2 rounded-full bg-scout mr-2"></span>
+                  Contact and recruit prospects directly
+                </li>
+              </ul>
+              <Button 
+                className="w-full mt-4 bg-scout hover:bg-scout/90" 
+                onClick={() => handleRoleSelect("scout")}
+              >
+                Continue as Scout
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
+export default RoleSelection;
