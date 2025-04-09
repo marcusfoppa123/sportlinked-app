@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -8,8 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Filter, Star } from "lucide-react";
 import ProfileCard from "./ProfileCard";
+import { UserRole } from "@/context/AuthContext";
 
-// Mock data for athletes
 const mockAthletes = [
   {
     id: "1",
@@ -91,22 +90,18 @@ const ScoutContent = ({ filterSport }: ScoutContentProps) => {
   };
   
   const filteredAthletes = mockAthletes.filter(athlete => {
-    // Apply search filter
     if (search && !athlete.name.toLowerCase().includes(search.toLowerCase())) {
       return false;
     }
     
-    // Apply sport filter
     if (filters.sport && athlete.sport !== filters.sport) {
       return false;
     }
     
-    // Apply position filter
     if (filters.position && athlete.position !== filters.position) {
       return false;
     }
     
-    // Apply experience filter
     if (filters.experience && athlete.experience !== filters.experience) {
       return false;
     }
@@ -116,7 +111,6 @@ const ScoutContent = ({ filterSport }: ScoutContentProps) => {
 
   return (
     <div className="space-y-4 pb-16">
-      {/* Search and filter */}
       <Card className="scout-card">
         <CardContent className="pt-6">
           <div className="flex gap-2">
@@ -207,7 +201,6 @@ const ScoutContent = ({ filterSport }: ScoutContentProps) => {
         </CardContent>
       </Card>
 
-      {/* Featured athletes */}
       <Card className="scout-card">
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
           <CardTitle className="text-lg">Featured Athletes</CardTitle>
@@ -216,7 +209,7 @@ const ScoutContent = ({ filterSport }: ScoutContentProps) => {
         <CardContent className="pb-2">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <ProfileCard 
-              user={{ name: "Alex Thompson", role: "athlete" }}
+              user={{ name: "Alex Thompson", role: "athlete" as UserRole }}
               sport="Basketball"
               position="Center"
               isFullProfile={true}
@@ -226,7 +219,6 @@ const ScoutContent = ({ filterSport }: ScoutContentProps) => {
         </CardContent>
       </Card>
 
-      {/* Athletes list */}
       <Card className="scout-card">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg">
@@ -238,7 +230,7 @@ const ScoutContent = ({ filterSport }: ScoutContentProps) => {
             {filteredAthletes.map((athlete) => (
               <ProfileCard 
                 key={athlete.id}
-                user={{ name: athlete.name, role: athlete.role }}
+                user={{ name: athlete.name, role: athlete.role as UserRole }}
                 sport={athlete.sport}
                 position={athlete.position}
               />
