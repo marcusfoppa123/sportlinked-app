@@ -29,9 +29,13 @@ const ForYou = () => {
         <div className="container px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Menu className="h-6 w-6" />
-            <h1 className={`text-xl font-bold ${isAthlete ? "text-athlete" : "text-scout"}`}>
-              SportLinked
-            </h1>
+            <div className="flex items-center">
+              <img 
+                src="/sportlinked-logo.png" 
+                alt="SportLinked" 
+                className="h-8 w-auto mr-2"
+              />
+            </div>
           </div>
           
           <div className="flex items-center gap-2">

@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -10,6 +10,7 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Heart, MessageSquare, Share2, MoreHorizontal } from "lucide-react";
 import ProfileCard from "./ProfileCard";
+import ImageModal from "./ImageModal";
 
 // Mock data for the feed
 const mockPosts = [
@@ -69,10 +70,32 @@ interface AthleteContentProps {
 
 const AthleteContent = ({ filterSport }: AthleteContentProps) => {
   const { user } = useAuth();
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
+  const [postsData, setPostsData] = useState(mockPosts);
   
   const filteredPosts = filterSport 
-    ? mockPosts.filter(post => post.sport.toLowerCase() === filterSport.toLowerCase())
-    : mockPosts;
+    ? postsData.filter(post => post.sport.toLowerCase() === filterSport.toLowerCase())
+    : postsData;
+
+  const handleLike = (postId: string) => {
+    // Toggle liked state
+    const newLikedPosts = { ...likedPosts, [postId]: !likedPosts[postId] };
+    setLikedPosts(newLikedPosts);
+    
+    // Update likes count
+    setPostsData(prevPosts => 
+      prevPosts.map(post => {
+        if (post.id === postId) {
+          return {
+            ...post,
+            likes: likedPosts[postId] ? post.likes - 1 : post.likes + 1
+          };
+        }
+        return post;
+      })
+    );
+  };
 
   return (
     <div className="space-y-4 pb-16">
@@ -156,7 +179,10 @@ const AthleteContent = ({ filterSport }: AthleteContentProps) => {
             <CardContent className="pb-3">
               <p className="text-sm mb-3">{post.content}</p>
               {post.media && (
-                <div className="rounded-md overflow-hidden">
+                <div 
+                  className="rounded-md overflow-hidden cursor-pointer transition-transform hover:opacity-95"
+                  onClick={() => setSelectedImage(post.media)}
+                >
                   <img 
                     src={post.media} 
                     alt="Post media" 
@@ -176,9 +202,16 @@ const AthleteContent = ({ filterSport }: AthleteContentProps) => {
               <Separator />
               
               <div className="flex justify-between w-full pt-2">
-                <Button variant="ghost" size="sm" className="flex-1">
-                  <Heart className="mr-1 h-4 w-4" />
-                  Like
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={() => handleLike(post.id)}
+                >
+                  <Heart 
+                    className={`mr-1 h-4 w-4 ${likedPosts[post.id] ? 'fill-red-500 text-red-500' : ''}`} 
+                  />
+                  {likedPosts[post.id] ? 'Liked' : 'Like'}
                 </Button>
                 <Button variant="ghost" size="sm" className="flex-1">
                   <MessageSquare className="mr-1 h-4 w-4" />
@@ -193,6 +226,15 @@ const AthleteContent = ({ filterSport }: AthleteContentProps) => {
           </Card>
         </motion.div>
       ))}
+
+      {/* Image modal for expanded view */}
+      {selectedImage && (
+        <ImageModal 
+          isOpen={!!selectedImage} 
+          onClose={() => setSelectedImage(null)} 
+          imageSrc={selectedImage} 
+        />
+      )}
     </div>
   );
 };
