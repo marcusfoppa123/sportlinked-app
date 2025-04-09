@@ -11,6 +11,63 @@ import { Badge } from "@/components/ui/badge";
 import { Heart, MessageSquare, Share2, MoreHorizontal } from "lucide-react";
 import ProfileCard from "./ProfileCard";
 import ImageModal from "./ImageModal";
+import AthleteProfileModal from "./AthleteProfileModal";
+
+// Mock data for athlete suggestions
+const suggestedAthletes = [
+  {
+    id: "a1",
+    name: "Alex Thompson",
+    role: "athlete",
+    profilePic: "",
+    sport: "Basketball",
+    position: "Center",
+    stats: { "PPG": "18.7", "RPG": "12.3", "BPG": "2.8" },
+    location: "Chicago, IL",
+    experience: "College",
+    about: "Center with strong defensive skills and developing post moves. Looking to improve my shooting range.",
+    achievements: ["All-Conference First Team 2023", "Defensive Player of the Year 2022"]
+  },
+  {
+    id: "a2",
+    name: "Maria Garcia",
+    role: "athlete",
+    profilePic: "",
+    sport: "Volleyball",
+    position: "Outside Hitter",
+    stats: { "Kills": "285", "Blocks": "42", "Aces": "37" },
+    location: "San Diego, CA",
+    experience: "College",
+    about: "Outside hitter with 4 years of college experience. Strong all-around player with excellent serving and defense.",
+    achievements: ["NCAA Tournament Qualifier 2023", "Team Captain"]
+  },
+  {
+    id: "a3",
+    name: "Jamal Wilson",
+    role: "athlete",
+    profilePic: "",
+    sport: "Basketball",
+    position: "Small Forward",
+    stats: { "PPG": "16.5", "RPG": "5.7", "SPG": "1.9" },
+    location: "Atlanta, GA",
+    experience: "College",
+    about: "Athletic wing player with good defensive instincts and improving three-point shot.",
+    achievements: ["Rising Stars Invitational MVP", "Conference All-Defensive Team"]
+  },
+  {
+    id: "a4",
+    name: "Emma Rodriguez",
+    role: "athlete",
+    profilePic: "",
+    sport: "Soccer",
+    position: "Goalkeeper",
+    stats: { "Clean Sheets": "14", "Saves": "87", "Save %": "83%" },
+    location: "Portland, OR",
+    experience: "Professional",
+    about: "Professional goalkeeper with quick reflexes and excellent command of the box.",
+    achievements: ["League Best Goalkeeper 2023", "National Team Call-up"]
+  }
+];
 
 // Mock data for the feed
 const mockPosts = [
@@ -73,6 +130,8 @@ const AthleteContent = ({ filterSport }: AthleteContentProps) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
   const [postsData, setPostsData] = useState(mockPosts);
+  const [displayedAthletes, setDisplayedAthletes] = useState(2);
+  const [selectedAthlete, setSelectedAthlete] = useState<(typeof suggestedAthletes)[0] | null>(null);
   
   const filteredPosts = filterSport 
     ? postsData.filter(post => post.sport.toLowerCase() === filterSport.toLowerCase())
@@ -95,6 +154,14 @@ const AthleteContent = ({ filterSport }: AthleteContentProps) => {
         return post;
       })
     );
+  };
+
+  const handleSeeMore = () => {
+    setDisplayedAthletes(Math.min(displayedAthletes + 2, suggestedAthletes.length));
+  };
+
+  const handleViewProfile = (athlete: (typeof suggestedAthletes)[0]) => {
+    setSelectedAthlete(athlete);
   };
 
   return (
@@ -127,20 +194,35 @@ const AthleteContent = ({ filterSport }: AthleteContentProps) => {
         </CardHeader>
         <CardContent className="pb-2">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <ProfileCard 
-              user={{ name: "Alex Thompson", role: "athlete" }} 
-              sport="Basketball"
-              position="Center"
-            />
-            <ProfileCard 
-              user={{ name: "Maria Garcia", role: "athlete" }} 
-              sport="Volleyball"
-              position="Outside Hitter"
-            />
+            {suggestedAthletes.slice(0, displayedAthletes).map((athlete) => (
+              <ProfileCard 
+                key={athlete.id}
+                user={{ name: athlete.name, role: athlete.role }} 
+                sport={athlete.sport}
+                position={athlete.position}
+                onViewProfile={() => handleViewProfile(athlete)}
+              />
+            ))}
           </div>
         </CardContent>
         <CardFooter className="pt-2">
-          <Button variant="link" className="w-full text-athlete">See More</Button>
+          {displayedAthletes < suggestedAthletes.length ? (
+            <Button 
+              variant="link" 
+              className="w-full text-athlete"
+              onClick={handleSeeMore}
+            >
+              See More
+            </Button>
+          ) : (
+            <Button 
+              variant="link" 
+              className="w-full text-athlete"
+              onClick={() => setDisplayedAthletes(2)}
+            >
+              Show Less
+            </Button>
+          )}
         </CardFooter>
       </Card>
 
@@ -233,6 +315,15 @@ const AthleteContent = ({ filterSport }: AthleteContentProps) => {
           isOpen={!!selectedImage} 
           onClose={() => setSelectedImage(null)} 
           imageSrc={selectedImage} 
+        />
+      )}
+
+      {/* Athlete profile modal */}
+      {selectedAthlete && (
+        <AthleteProfileModal
+          isOpen={!!selectedAthlete}
+          onClose={() => setSelectedAthlete(null)}
+          athlete={selectedAthlete}
         />
       )}
     </div>

@@ -13,6 +13,7 @@ interface ProfileCardProps {
   sport?: string;
   position?: string;
   stats?: Record<string, string | number>;
+  onViewProfile?: () => void;
 }
 
 const ProfileCard = ({ 
@@ -24,7 +25,8 @@ const ProfileCard = ({
     "PPG": "22.5", 
     "APG": "7.2", 
     "RPG": "4.1" 
-  }
+  },
+  onViewProfile
 }: ProfileCardProps) => {
   const isAthlete = user.role === "athlete";
   
@@ -44,7 +46,7 @@ const ProfileCard = ({
         className={`h-24 w-full ${isAthlete ? "bg-athlete" : "bg-scout"}`}
       />
       <CardHeader className="relative pt-0 pb-4">
-        <div className="absolute -top-12 left-1/2 -translate-x-1/2">
+        <div className="absolute -top-12 left-4"> {/* Changed from left-1/2 -translate-x-1/2 to left-4 */}
           <Avatar className="h-24 w-24 border-4 border-white">
             <AvatarImage src={user.profilePic} />
             <AvatarFallback className={`text-xl ${isAthlete ? "bg-blue-100" : "bg-green-100"}`}>
@@ -52,9 +54,9 @@ const ProfileCard = ({
             </AvatarFallback>
           </Avatar>
         </div>
-        <div className="mt-12 text-center">
+        <div className="mt-12 ml-28 text-left"> {/* Changed from text-center to text-left and added ml-28 */}
           <h3 className="text-xl font-semibold">{user.name || "User Name"}</h3>
-          <div className="flex justify-center mt-1 gap-2">
+          <div className="flex mt-1 gap-2"> {/* Removed justify-center */}
             <Badge variant="outline" className={isAthlete ? "athlete-badge" : "scout-badge"}>
               {isAthlete ? "Athlete" : "Scout"}
             </Badge>
@@ -99,6 +101,7 @@ const ProfileCard = ({
             <Button 
               size="sm" 
               className={`flex-1 ${isAthlete ? "bg-athlete hover:bg-athlete/90" : "bg-scout hover:bg-scout/90"}`}
+              onClick={onViewProfile}
             >
               <UserPlus className="mr-1 h-4 w-4" />
               {isFullProfile ? "Connect" : "View Profile"}
