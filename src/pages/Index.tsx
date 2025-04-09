@@ -22,8 +22,13 @@ const Index = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse">Loading...</div>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+        <img 
+          src="/sportlinked-logo.png" 
+          alt="SportLinked Logo" 
+          className="h-32 w-auto mb-8 animate-pulse"
+        />
+        <div className="text-gray-500">Loading...</div>
       </div>
     );
   }

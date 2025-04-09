@@ -267,7 +267,12 @@ const Login = ({ initialRole }: LoginComponentProps) => {
   return (
     <div className="flex items-center justify-center w-full p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className={initialRole === "athlete" ? "bg-athlete-light" : "bg-scout-light"}>
+        <CardHeader className={`${initialRole === "athlete" ? "bg-athlete-light" : "bg-scout-light"} flex flex-col items-center`}>
+          <img 
+            src="/sportlinked-logo.png" 
+            alt="SportLinked Logo" 
+            className="h-16 w-auto mb-4 object-contain"
+          />
           <CardTitle>Welcome to SportLinked</CardTitle>
           <CardDescription>Login or create an account to continue</CardDescription>
         </CardHeader>
