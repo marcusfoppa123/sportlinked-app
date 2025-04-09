@@ -1,7 +1,7 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth, UserRole } from "@/context/AuthContext";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,7 @@ const suggestedAthletes = [
   {
     id: "a1",
     name: "Alex Thompson",
-    role: "athlete",
+    role: "athlete" as UserRole,
     profilePic: "",
     sport: "Basketball",
     position: "Center",
@@ -31,7 +31,7 @@ const suggestedAthletes = [
   {
     id: "a2",
     name: "Maria Garcia",
-    role: "athlete",
+    role: "athlete" as UserRole,
     profilePic: "",
     sport: "Volleyball",
     position: "Outside Hitter",
@@ -44,7 +44,7 @@ const suggestedAthletes = [
   {
     id: "a3",
     name: "Jamal Wilson",
-    role: "athlete",
+    role: "athlete" as UserRole,
     profilePic: "",
     sport: "Basketball",
     position: "Small Forward",
@@ -57,7 +57,7 @@ const suggestedAthletes = [
   {
     id: "a4",
     name: "Emma Rodriguez",
-    role: "athlete",
+    role: "athlete" as UserRole,
     profilePic: "",
     sport: "Soccer",
     position: "Goalkeeper",
