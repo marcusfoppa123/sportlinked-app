@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-export type UserRole = "athlete" | "scout" | null;
+export type UserRole = "athlete" | "scout" | "team" | null;
 
 export interface User {
   id: string;

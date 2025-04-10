@@ -81,6 +81,8 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
     sport: "",
     position: "",
     experience: "",
+    teamSize: "",
+    teamType: "",
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -108,7 +110,14 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.role || !formData.sport || !formData.position) {
+    
+    // Different validation based on role
+    if (formData.role === "team") {
+      if (!formData.role || !formData.sport || !formData.teamType) {
+        toast.error("Please complete all required information");
+        return;
+      }
+    } else if (!formData.role || !formData.sport || !formData.position) {
       toast.error("Please complete all required information");
       return;
     }
@@ -208,6 +217,10 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
                 <RadioGroupItem value="scout" id="scout" />
                 <Label htmlFor="scout" className="cursor-pointer">Scout</Label>
               </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="team" id="team" />
+                <Label htmlFor="team" className="cursor-pointer">Team/Club</Label>
+              </div>
             </RadioGroup>
           </div>
           
@@ -222,28 +235,55 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
             />
           </div>
           
-          <div className="space-y-2">
-            <Label htmlFor="position">
-              {formData.role === "athlete" ? "Position" : "Organization/Team"}
-            </Label>
-            <Input
-              id="position"
-              placeholder={formData.role === "athlete" ? "Point Guard, Forward, etc." : "Lakers, Michigan State, etc."}
-              value={formData.position}
-              onChange={(e) => updateFormData("position", e.target.value)}
-              required
-            />
-          </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="experience">Experience Level</Label>
-            <Input
-              id="experience"
-              placeholder="College, Professional, High School"
-              value={formData.experience}
-              onChange={(e) => updateFormData("experience", e.target.value)}
-            />
-          </div>
+          {formData.role === "team" ? (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="teamType">Team Type</Label>
+                <Input
+                  id="teamType"
+                  placeholder="Professional, College, High School, etc."
+                  value={formData.teamType}
+                  onChange={(e) => updateFormData("teamType", e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="teamSize">Team Size</Label>
+                <Input
+                  id="teamSize"
+                  placeholder="Number of athletes/members"
+                  value={formData.teamSize}
+                  onChange={(e) => updateFormData("teamSize", e.target.value)}
+                />
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="space-y-2">
+                <Label htmlFor="position">
+                  {formData.role === "athlete" ? "Position" : "Organization/Team"}
+                </Label>
+                <Input
+                  id="position"
+                  placeholder={formData.role === "athlete" ? "Point Guard, Forward, etc." : "Lakers, Michigan State, etc."}
+                  value={formData.position}
+                  onChange={(e) => updateFormData("position", e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="experience">Experience Level</Label>
+                <Input
+                  id="experience"
+                  placeholder="College, Professional, High School"
+                  value={formData.experience}
+                  onChange={(e) => updateFormData("experience", e.target.value)}
+                />
+              </div>
+            </>
+          )}
           
           <div className="flex gap-2">
             <Button type="button" variant="outline" className="w-1/2" onClick={handlePrevStep}>
@@ -267,7 +307,14 @@ const Login = ({ initialRole }: LoginComponentProps) => {
   return (
     <div className="flex items-center justify-center w-full p-4">
       <Card className="w-full max-w-md">
-        <CardHeader className={`${initialRole === "athlete" ? "bg-athlete-light" : "bg-scout-light"} flex flex-col items-center`}>
+        <CardHeader className={`${
+            initialRole === "athlete" 
+              ? "bg-athlete-light" 
+              : initialRole === "scout" 
+                ? "bg-scout-light" 
+                : "bg-[#FEF7CD]"
+          } flex flex-col items-center`}
+        >
           <img 
             src="/sportlinked-logo.png" 
             alt="SportLinked Logo" 

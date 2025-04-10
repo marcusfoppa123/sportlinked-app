@@ -100,6 +100,44 @@ const RoleSelection = () => {
             </CardContent>
           </Card>
         </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+        >
+          <Card 
+            className="border-2 hover:border-team cursor-pointer overflow-hidden" 
+            onClick={() => handleRoleSelect("team")}
+          >
+            <CardHeader className="bg-[#FEF7CD] pb-2">
+              <CardTitle>Team/Club</CardTitle>
+              <CardDescription>For sports teams, clubs and organizations</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-4">
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center">
+                  <span className="h-2 w-2 rounded-full bg-team mr-2"></span>
+                  Showcase your team and achievements
+                </li>
+                <li className="flex items-center">
+                  <span className="h-2 w-2 rounded-full bg-team mr-2"></span>
+                  Connect with athletes and scouts
+                </li>
+                <li className="flex items-center">
+                  <span className="h-2 w-2 rounded-full bg-team mr-2"></span>
+                  Recruit and build your roster
+                </li>
+              </ul>
+              <Button 
+                className="w-full mt-4 bg-team hover:bg-team/90 text-white" 
+                onClick={() => handleRoleSelect("team")}
+              >
+                Continue as Team/Club
+              </Button>
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );
