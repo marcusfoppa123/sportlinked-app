@@ -2,7 +2,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { User, Home, MessageSquare, Bell, Settings } from "lucide-react";
+import { User, Home, MessageSquare, Bell, Settings, Users } from "lucide-react";
 
 const BottomNavigation = () => {
   const location = useLocation();
@@ -21,14 +21,14 @@ const BottomNavigation = () => {
       icon: <Home size={24} />
     },
     {
+      name: "Teams",
+      path: "/teams",
+      icon: <Users size={24} />
+    },
+    {
       name: "Messages",
       path: "/messages",
       icon: <MessageSquare size={24} />
-    },
-    {
-      name: "Notifications",
-      path: "/notifications",
-      icon: <Bell size={24} />
     },
     {
       name: "Settings",
@@ -40,7 +40,7 @@ const BottomNavigation = () => {
   return (
     <div 
       className={`fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center border-t px-2 py-1 bg-white shadow-md ${
-        isAthlete ? "border-athlete" : "border-scout"
+        isAthlete ? "border-athlete" : location.pathname === "/teams" ? "border-team" : "border-scout"
       }`}
     >
       {navItems.map((item) => (
@@ -49,7 +49,13 @@ const BottomNavigation = () => {
           to={item.path}
           className={`bottom-nav-item ${
             location.pathname === item.path
-              ? `active ${isAthlete ? "text-athlete" : "text-scout"}`
+              ? `active ${
+                  location.pathname === "/teams"
+                    ? "text-team"
+                    : isAthlete
+                    ? "text-athlete"
+                    : "text-scout"
+                }`
               : "text-gray-500"
           }`}
         >

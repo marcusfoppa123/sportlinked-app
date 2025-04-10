@@ -3,6 +3,7 @@ import React from "react";
 import { useAuth } from "@/context/AuthContext";
 import AthleteContent from "./AthleteContent";
 import ScoutContent from "./ScoutContent";
+import TeamContent from "./TeamContent";
 
 interface ContentFeedProps {
   filterSport?: string;
@@ -19,7 +20,9 @@ const ContentFeed = ({ filterSport }: ContentFeedProps) => {
     return <ScoutContent filterSport={filterSport} />;
   }
   
-  return null;
+  // For team/club view (can be enabled based on a different role or setting)
+  // For now, we'll use it as default for simplicity
+  return <TeamContent filterSport={filterSport} />;
 };
 
 export default ContentFeed;

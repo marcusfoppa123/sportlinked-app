@@ -49,6 +49,13 @@
     --scout-accent: 120 39% 78%;
     --scout-muted: 120 33% 96%;
     --scout-border: 120 43% 90%;
+    
+    /* Team theme colors - light yellow */
+    --team-bg: 48 100% 97%;
+    --team-primary: 43 96% 58%;
+    --team-accent: 48 100% 88%;
+    --team-muted: 48 100% 96%;
+    --team-border: 48 70% 90%;
   }
 
   .athlete-theme {
@@ -65,6 +72,14 @@
     --accent: var(--scout-accent);
     --muted: var(--scout-muted);
     --border: var(--scout-border);
+  }
+  
+  .team-theme {
+    --background: var(--team-bg);
+    --primary: var(--team-primary);
+    --accent: var(--team-accent);
+    --muted: var(--team-muted);
+    --border: var(--team-border);
   }
 }
 
@@ -98,6 +113,10 @@
   .scout-card {
     @apply bg-white rounded-lg overflow-hidden card-shadow border border-scout-border;
   }
+  
+  .team-card {
+    @apply bg-white rounded-lg overflow-hidden card-shadow border border-team-border;
+  }
 
   .stat-badge {
     @apply text-xs rounded-full px-2 py-0.5 font-medium;
@@ -109,5 +128,9 @@
 
   .scout-badge {
     @apply bg-green-100 text-green-800;
+  }
+  
+  .team-badge {
+    @apply bg-yellow-100 text-yellow-800;
   }
 }

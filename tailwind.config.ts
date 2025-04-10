@@ -72,6 +72,11 @@ export default {
 					DEFAULT: 'hsl(122, 39%, 44%)',
 					light: 'hsl(120, 43%, 94%)',
 					border: 'hsl(120, 43%, 90%)',
+				},
+				team: {
+					DEFAULT: 'hsl(43, 96%, 58%)',
+					light: 'hsl(48, 100%, 97%)',
+					border: 'hsl(48, 70%, 90%)',
 				}
 			},
 			borderRadius: {
