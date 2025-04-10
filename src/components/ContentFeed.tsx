@@ -12,17 +12,13 @@ interface ContentFeedProps {
 const ContentFeed = ({ filterSport }: ContentFeedProps) => {
   const { user } = useAuth();
   
+  // Athletes see all content
   if (user?.role === "athlete") {
     return <AthleteContent filterSport={filterSport} />;
   }
   
-  if (user?.role === "scout") {
-    return <ScoutContent filterSport={filterSport} />;
-  }
-  
-  // For team/club view (can be enabled based on a different role or setting)
-  // For now, we'll use it as default for simplicity
-  return <TeamContent filterSport={filterSport} />;
+  // Scouts and teams only see athlete content
+  return <AthleteContent filterSport={filterSport} />;
 };
 
 export default ContentFeed;

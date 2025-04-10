@@ -25,8 +25,8 @@ const BottomNavigation = () => {
       icon: <Home size={24} />
     },
     {
-      name: "Teams",
-      path: "/teams",
+      name: "Athletes",
+      path: "/athletes",
       icon: <Users size={24} />
     },
     {
@@ -54,7 +54,7 @@ const BottomNavigation = () => {
           className={`bottom-nav-item ${
             location.pathname === item.path
               ? `active ${
-                  location.pathname === "/teams" || location.pathname === "/team-profile"
+                  location.pathname === "/athletes" || location.pathname === "/team-profile"
                     ? "text-team"
                     : isAthlete
                     ? "text-athlete"

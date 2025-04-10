@@ -1,28 +1,48 @@
 
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { ChevronRight, Bell, Shield, UserCircle, MessageSquare, LogOut, Sun, Moon, Languages } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const Settings = () => {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
   const isAthlete = user?.role === "athlete";
+  const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
 
   const handleLogout = () => {
+    setShowLogoutConfirm(true);
+  };
+
+  const confirmLogout = () => {
     logout();
     toast.success("Logged out successfully");
+    navigate("/");
   };
 
   return (
     <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"}`}>
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-border shadow-sm">
+      <header className="sticky top-0 z-40 bg-white border-b border-border shadow-sm dark:bg-gray-900">
         <div className="container px-4 h-16 flex items-center justify-between">
           <h1 className="text-xl font-bold">Settings</h1>
         </div>
@@ -32,7 +52,7 @@ const Settings = () => {
       <main className="container px-4 py-4">
         <div className="space-y-4">
           {/* Account settings */}
-          <Card>
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
             <CardHeader className="pb-2">
               <CardTitle>Account</CardTitle>
               <CardDescription>Manage your account settings</CardDescription>
@@ -65,7 +85,7 @@ const Settings = () => {
           </Card>
           
           {/* Preferences */}
-          <Card>
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
             <CardHeader className="pb-2">
               <CardTitle>Preferences</CardTitle>
               <CardDescription>Customize your app experience</CardDescription>
@@ -87,31 +107,26 @@ const Settings = () => {
                 <Switch id="email-notifications" defaultChecked />
               </div>
               
-              <div className="space-y-2">
-                <Label className="flex items-center">
-                  <Sun className="h-5 w-5 mr-3 text-gray-500" />
-                  <span>Appearance</span>
-                </Label>
-                <RadioGroup defaultValue="light" className="ml-8">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="light" id="light" />
-                    <Label htmlFor="light">Light</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="dark" id="dark" />
-                    <Label htmlFor="dark">Dark</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="system" id="system" />
-                    <Label htmlFor="system">System</Label>
-                  </div>
-                </RadioGroup>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  {theme === "dark" ? (
+                    <Moon className="h-5 w-5 mr-3 text-gray-500" />
+                  ) : (
+                    <Sun className="h-5 w-5 mr-3 text-gray-500" />
+                  )}
+                  <span>Dark Appearance</span>
+                </div>
+                <Switch 
+                  id="dark-mode" 
+                  checked={theme === "dark"}
+                  onCheckedChange={toggleTheme}
+                />
               </div>
             </CardContent>
           </Card>
           
           {/* About */}
-          <Card>
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
             <CardHeader className="pb-2">
               <CardTitle>About</CardTitle>
             </CardHeader>
@@ -142,6 +157,22 @@ const Settings = () => {
           </Button>
         </div>
       </main>
+      
+      {/* Logout confirmation dialog */}
+      <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You will be logged out of your account and redirected to the login screen.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>No</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmLogout}>Yes</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       
       {/* Bottom navigation */}
       <BottomNavigation />
