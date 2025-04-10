@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Menu } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -25,7 +24,7 @@ const ForYou = () => {
   return (
     <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"}`}>
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-border shadow-sm">
+      <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-border shadow-sm">
         <div className="container px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Menu className="h-6 w-6" />
@@ -73,7 +72,10 @@ const ForYou = () => {
 
       {/* Main content */}
       <main className="container px-4 py-4">
-        <ContentFeed filterSport={activeTab !== "for-you" ? activeTab : undefined} />
+        <ContentFeed 
+          filterSport={activeTab !== "for-you" ? activeTab : undefined} 
+          contentType="posts"
+        />
       </main>
 
       {/* Upload button for athletes */}

@@ -2,23 +2,17 @@
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
 import AthleteContent from "./AthleteContent";
-import ScoutContent from "./ScoutContent";
-import TeamContent from "./TeamContent";
 
 interface ContentFeedProps {
   filterSport?: string;
+  contentType?: "posts" | "profiles";
 }
 
-const ContentFeed = ({ filterSport }: ContentFeedProps) => {
+const ContentFeed = ({ filterSport, contentType = "posts" }: ContentFeedProps) => {
   const { user } = useAuth();
   
-  // Athletes see all content
-  if (user?.role === "athlete") {
-    return <AthleteContent filterSport={filterSport} />;
-  }
-  
-  // Scouts and teams only see athlete content
-  return <AthleteContent filterSport={filterSport} />;
+  // All users see athlete content
+  return <AthleteContent filterSport={filterSport} contentType={contentType} />;
 };
 
 export default ContentFeed;

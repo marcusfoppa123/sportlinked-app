@@ -123,14 +123,15 @@ const mockPosts = [
 
 interface AthleteContentProps {
   filterSport?: string;
+  contentType?: "posts" | "profiles";
 }
 
-const AthleteContent = ({ filterSport }: AthleteContentProps) => {
+const AthleteContent = ({ filterSport, contentType = "posts" }: AthleteContentProps) => {
   const { user } = useAuth();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
   const [postsData, setPostsData] = useState(mockPosts);
-  const [displayedAthletes, setDisplayedAthletes] = useState(2);
+  const [displayedAthletes, setDisplayedAthletes] = useState(4);
   const [selectedAthlete, setSelectedAthlete] = useState<(typeof suggestedAthletes)[0] | null>(null);
   
   const filteredPosts = filterSport 
@@ -157,74 +158,66 @@ const AthleteContent = ({ filterSport }: AthleteContentProps) => {
   };
 
   const handleSeeMore = () => {
-    setDisplayedAthletes(Math.min(displayedAthletes + 2, suggestedAthletes.length));
+    setDisplayedAthletes(Math.min(displayedAthletes + 4, suggestedAthletes.length));
   };
 
   const handleViewProfile = (athlete: (typeof suggestedAthletes)[0]) => {
     setSelectedAthlete(athlete);
   };
 
+  // Render profiles only (for Athletes page)
+  if (contentType === "profiles") {
+    return (
+      <div className="space-y-4 pb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {suggestedAthletes.map((athlete) => (
+            <ProfileCard 
+              key={athlete.id}
+              user={{ name: athlete.name, role: athlete.role }} 
+              sport={athlete.sport}
+              position={athlete.position}
+              onViewProfile={() => handleViewProfile(athlete)}
+            />
+          ))}
+        </div>
+
+        {/* Athlete profile modal */}
+        {selectedAthlete && (
+          <AthleteProfileModal
+            isOpen={!!selectedAthlete}
+            onClose={() => setSelectedAthlete(null)}
+            athlete={selectedAthlete}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Render posts (for ForYou page)
   return (
     <div className="space-y-4 pb-16">
       {/* New post input */}
-      <Card className="athlete-card">
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-3">
-            <Avatar>
-              <AvatarFallback className="bg-blue-100">
-                {user?.name?.charAt(0) || "U"}
-              </AvatarFallback>
-            </Avatar>
-            <Input 
-              placeholder="Share your latest highlights or stats..." 
-              className="flex-1"
-            />
-          </div>
-          <div className="flex justify-between mt-4">
-            <Button variant="outline" size="sm">Photo/Video</Button>
-            <Button size="sm" className="bg-athlete hover:bg-athlete/90">Post</Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Athlete suggestions */}
-      <Card className="athlete-card">
-        <CardHeader className="pb-2">
-          <h3 className="text-lg font-semibold">Athletes to follow</h3>
-        </CardHeader>
-        <CardContent className="pb-2">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {suggestedAthletes.slice(0, displayedAthletes).map((athlete) => (
-              <ProfileCard 
-                key={athlete.id}
-                user={{ name: athlete.name, role: athlete.role }} 
-                sport={athlete.sport}
-                position={athlete.position}
-                onViewProfile={() => handleViewProfile(athlete)}
+      {user?.role === "athlete" && (
+        <Card className="athlete-card dark:bg-gray-800 dark:border-gray-700">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <Avatar>
+                <AvatarFallback className="bg-blue-100">
+                  {user?.name?.charAt(0) || "U"}
+                </AvatarFallback>
+              </Avatar>
+              <Input 
+                placeholder="Share your latest highlights or stats..." 
+                className="flex-1 dark:bg-gray-700 dark:border-gray-600"
               />
-            ))}
-          </div>
-        </CardContent>
-        <CardFooter className="pt-2">
-          {displayedAthletes < suggestedAthletes.length ? (
-            <Button 
-              variant="link" 
-              className="w-full text-athlete"
-              onClick={handleSeeMore}
-            >
-              See More
-            </Button>
-          ) : (
-            <Button 
-              variant="link" 
-              className="w-full text-athlete"
-              onClick={() => setDisplayedAthletes(2)}
-            >
-              Show Less
-            </Button>
-          )}
-        </CardFooter>
-      </Card>
+            </div>
+            <div className="flex justify-between mt-4">
+              <Button variant="outline" size="sm" className="dark:border-gray-600 dark:text-gray-300">Photo/Video</Button>
+              <Button size="sm" className="bg-athlete hover:bg-athlete/90">Post</Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Posts feed */}
       {filteredPosts.map((post) => (
@@ -234,7 +227,7 @@ const AthleteContent = ({ filterSport }: AthleteContentProps) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <Card className="athlete-card">
+          <Card className="athlete-card dark:bg-gray-800 dark:border-gray-700">
             <CardHeader className="pb-3">
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-3">
@@ -244,8 +237,8 @@ const AthleteContent = ({ filterSport }: AthleteContentProps) => {
                     </AvatarFallback>
                   </Avatar>
                   <div>
-                    <h3 className="font-medium">{post.user.name}</h3>
-                    <div className="flex items-center text-sm text-gray-500">
+                    <h3 className="font-medium dark:text-white">{post.user.name}</h3>
+                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                       <span>{post.sport} • {post.position}</span>
                       <span className="mx-1">•</span>
                       <span>{post.time}</span>
@@ -259,7 +252,7 @@ const AthleteContent = ({ filterSport }: AthleteContentProps) => {
             </CardHeader>
             
             <CardContent className="pb-3">
-              <p className="text-sm mb-3">{post.content}</p>
+              <p className="text-sm mb-3 dark:text-gray-300">{post.content}</p>
               {post.media && (
                 <div 
                   className="rounded-md overflow-hidden cursor-pointer transition-transform hover:opacity-95"
@@ -275,19 +268,19 @@ const AthleteContent = ({ filterSport }: AthleteContentProps) => {
             </CardContent>
             
             <CardFooter className="pt-0 flex-col">
-              <div className="flex items-center w-full text-sm text-gray-500 mb-2">
+              <div className="flex items-center w-full text-sm text-gray-500 dark:text-gray-400 mb-2">
                 <span>{post.likes} likes</span>
                 <span className="mx-2">•</span>
                 <span>{post.comments} comments</span>
               </div>
               
-              <Separator />
+              <Separator className="dark:bg-gray-700" />
               
               <div className="flex justify-between w-full pt-2">
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="flex-1"
+                  className="flex-1 dark:text-gray-300"
                   onClick={() => handleLike(post.id)}
                 >
                   <Heart 
@@ -295,11 +288,11 @@ const AthleteContent = ({ filterSport }: AthleteContentProps) => {
                   />
                   {likedPosts[post.id] ? 'Liked' : 'Like'}
                 </Button>
-                <Button variant="ghost" size="sm" className="flex-1">
+                <Button variant="ghost" size="sm" className="flex-1 dark:text-gray-300">
                   <MessageSquare className="mr-1 h-4 w-4" />
                   Comment
                 </Button>
-                <Button variant="ghost" size="sm" className="flex-1">
+                <Button variant="ghost" size="sm" className="flex-1 dark:text-gray-300">
                   <Share2 className="mr-1 h-4 w-4" />
                   Share
                 </Button>
@@ -315,15 +308,6 @@ const AthleteContent = ({ filterSport }: AthleteContentProps) => {
           isOpen={!!selectedImage} 
           onClose={() => setSelectedImage(null)} 
           imageSrc={selectedImage} 
-        />
-      )}
-
-      {/* Athlete profile modal */}
-      {selectedAthlete && (
-        <AthleteProfileModal
-          isOpen={!!selectedAthlete}
-          onClose={() => setSelectedAthlete(null)}
-          athlete={selectedAthlete}
         />
       )}
     </div>
