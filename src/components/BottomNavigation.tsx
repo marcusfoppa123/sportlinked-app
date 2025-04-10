@@ -8,11 +8,15 @@ const BottomNavigation = () => {
   const location = useLocation();
   const { user } = useAuth();
   const isAthlete = user?.role === "athlete";
+  const isTeam = user?.role === "team";
+  
+  // Determine the profile link based on user role
+  const profileLink = isTeam ? "/team-profile" : "/profile";
 
   const navItems = [
     {
       name: "Profile",
-      path: "/profile",
+      path: profileLink,
       icon: <User size={24} />
     },
     {
@@ -40,7 +44,7 @@ const BottomNavigation = () => {
   return (
     <div 
       className={`fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center border-t px-2 py-1 bg-white shadow-md ${
-        isAthlete ? "border-athlete" : location.pathname === "/teams" ? "border-team" : "border-scout"
+        isAthlete ? "border-athlete" : isTeam ? "border-team" : "border-scout"
       }`}
     >
       {navItems.map((item) => (
@@ -50,7 +54,7 @@ const BottomNavigation = () => {
           className={`bottom-nav-item ${
             location.pathname === item.path
               ? `active ${
-                  location.pathname === "/teams"
+                  location.pathname === "/teams" || location.pathname === "/team-profile"
                     ? "text-team"
                     : isAthlete
                     ? "text-athlete"

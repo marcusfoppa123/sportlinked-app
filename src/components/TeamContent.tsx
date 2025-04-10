@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -8,6 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Filter, Star, UserPlus } from "lucide-react";
 import TeamCard from "./TeamCard";
+import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const mockTeams = [
   {
@@ -71,6 +72,8 @@ interface TeamContentProps {
 }
 
 const TeamContent = ({ filterSport }: TeamContentProps) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({
     type: filterSport || "",
@@ -111,6 +114,15 @@ const TeamContent = ({ filterSport }: TeamContentProps) => {
 
   const handleViewTeam = (id: string) => {
     setViewTeam(id);
+  };
+  
+  const handleCreateTeam = () => {
+    if (user && user.role === "team") {
+      navigate("/team-profile");
+    } else {
+      // Redirect to teams page for login
+      navigate("/teams");
+    }
   };
 
   return (
@@ -235,6 +247,7 @@ const TeamContent = ({ filterSport }: TeamContentProps) => {
             variant="outline" 
             size="sm" 
             className="flex items-center gap-1 text-team"
+            onClick={handleCreateTeam}
           >
             <UserPlus className="h-4 w-4" /> Create Team
           </Button>

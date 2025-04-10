@@ -15,7 +15,7 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string, role?: UserRole) => Promise<void>;
   register: (email: string, password: string, name: string, role: UserRole) => Promise<void>;
   logout: () => void;
   setRole: (role: UserRole) => void;
@@ -36,7 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, role?: UserRole) => {
     // Mock login functionality
     setIsLoading(true);
     
@@ -44,11 +44,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Create mock user based on email
+    const savedRole = user?.role || role || "athlete";
+    
+    // Ensure the user can't switch roles by logging in (they must register a new account)
+    if (user && role && user.role !== role) {
+      throw new Error("You cannot log in as a different role. Please create a new account.");
+    }
+    
     const mockUser: User = {
       id: Math.random().toString(36).substring(2, 9),
       name: email.split('@')[0],
       email,
-      role: user?.role || "athlete"
+      role: savedRole
     };
     
     setUser(mockUser);

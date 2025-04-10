@@ -10,8 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 
-const LoginForm = () => {
-  const { login } = useAuth();
+const LoginForm = ({ initialRole }: { initialRole: UserRole }) => {
+  const { login, user } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -23,9 +23,15 @@ const LoginForm = () => {
       return;
     }
     
+    // Check if user is trying to login as a different role
+    if (user && user.role !== initialRole) {
+      toast.error(`You are already registered as a ${user.role}. Please log out first or use a different account.`);
+      return;
+    }
+    
     setIsLoading(true);
     try {
-      await login(email, password);
+      await login(email, password, initialRole);
       toast.success("Logged in successfully");
     } catch (error) {
       toast.error("Login failed. Please check your credentials.");
@@ -304,6 +310,11 @@ interface LoginComponentProps {
 }
 
 const Login = ({ initialRole }: LoginComponentProps) => {
+  const { user } = useAuth();
+  
+  // Prevent login as a different role if already logged in
+  const showRoleWarning = user && initialRole !== user.role;
+  
   return (
     <div className="flex items-center justify-center w-full p-4">
       <Card className="w-full max-w-md">
@@ -324,18 +335,29 @@ const Login = ({ initialRole }: LoginComponentProps) => {
           <CardDescription>Login or create an account to continue</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Register</TabsTrigger>
-            </TabsList>
-            <TabsContent value="login">
-              <LoginForm />
-            </TabsContent>
-            <TabsContent value="register">
-              <RegisterForm initialRole={initialRole} />
-            </TabsContent>
-          </Tabs>
+          {showRoleWarning ? (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4">
+              <p className="text-sm">
+                You are currently logged in as a {user?.role}. You cannot login as a {initialRole} with the same account.
+              </p>
+              <p className="text-sm mt-2">
+                Please log out first or use a different email address to create a new account.
+              </p>
+            </div>
+          ) : (
+            <Tabs defaultValue="login" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-4">
+                <TabsTrigger value="login">Login</TabsTrigger>
+                <TabsTrigger value="register">Register</TabsTrigger>
+              </TabsList>
+              <TabsContent value="login">
+                <LoginForm initialRole={initialRole} />
+              </TabsContent>
+              <TabsContent value="register">
+                <RegisterForm initialRole={initialRole} />
+              </TabsContent>
+            </Tabs>
+          )}
         </CardContent>
         <CardFooter className="flex-col space-y-2 border-t pt-4">
           <p className="text-xs text-muted-foreground text-center">

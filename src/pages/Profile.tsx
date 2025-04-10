@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -7,11 +6,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Edit, Settings, Share2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
 import UploadButton from "@/components/UploadButton";
 
 const Profile = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const isAthlete = user?.role === "athlete";
   
   // Get initials for avatar fallback
@@ -22,6 +23,10 @@ const Profile = () => {
       .map(n => n[0])
       .join("")
       .toUpperCase();
+  };
+  
+  const handleEditProfile = () => {
+    navigate("/edit-profile");
   };
 
   return (
@@ -53,6 +58,7 @@ const Profile = () => {
               <Button 
                 variant="outline" 
                 className="ml-auto bg-white"
+                onClick={handleEditProfile}
               >
                 <Edit className="h-4 w-4 mr-2" />
                 Edit Profile

@@ -1,5 +1,6 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import TeamContent from "@/components/TeamContent";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -8,7 +9,28 @@ import Login from "@/components/Login";
 
 const Teams = () => {
   const { isAuthenticated, user } = useAuth();
+  const navigate = useNavigate();
   const [showLogin, setShowLogin] = useState(!isAuthenticated);
+  const isTeam = user?.role === "team";
+  
+  // Redirect to team profile if already logged in as team
+  useEffect(() => {
+    if (isAuthenticated && isTeam) {
+      navigate("/team-profile");
+    }
+  }, [isAuthenticated, isTeam, navigate]);
+
+  const handleCreateTeam = () => {
+    if (isAuthenticated) {
+      if (isTeam) {
+        navigate("/team-profile");
+      } else {
+        setShowLogin(true);
+      }
+    } else {
+      setShowLogin(true);
+    }
+  };
 
   return (
     <div className="team-theme min-h-screen pb-16">
@@ -20,6 +42,7 @@ const Teams = () => {
             <Button 
               variant="outline" 
               className="bg-white/20 text-white border-white/40 hover:bg-white/30"
+              onClick={handleCreateTeam}
             >
               Create Team
             </Button>
