@@ -9,6 +9,16 @@ export interface User {
   email: string;
   role: UserRole;
   profilePic?: string;
+  bio?: string;
+  location?: string;
+  sport?: string;
+  position?: string;
+  experience?: string;
+  teamSize?: string;
+  foundedYear?: string;
+  homeVenue?: string;
+  phone?: string;
+  website?: string;
 }
 
 interface AuthContextType {
@@ -19,6 +29,7 @@ interface AuthContextType {
   register: (email: string, password: string, name: string, role: UserRole) => Promise<void>;
   logout: () => void;
   setRole: (role: UserRole) => void;
+  updateUserProfile: (updatedProfile: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -102,6 +113,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const updateUserProfile = (updatedProfile: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...updatedProfile };
+      setUser(updatedUser);
+      localStorage.setItem("sportlinked-user", JSON.stringify(updatedUser));
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -112,6 +131,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         register,
         logout,
         setRole,
+        updateUserProfile,
       }}
     >
       {children}
