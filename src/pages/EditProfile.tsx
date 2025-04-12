@@ -1,6 +1,8 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext"; 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,11 +10,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Upload, Save } from "lucide-react";
+import { ArrowLeft, Save } from "lucide-react";
 import { toast } from "sonner";
+import ProfilePictureUpload from "@/components/ProfilePictureUpload";
 
 const EditProfile = () => {
   const { user, updateUserProfile } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const isAthlete = user?.role === "athlete";
   const isScout = user?.role === "scout";
@@ -30,7 +34,8 @@ const EditProfile = () => {
     homeVenue: user?.homeVenue || "Brooklyn Sports Center",
     email: user?.email || "",
     phone: user?.phone || "(123) 456-7890",
-    website: user?.website || "sportlinked.com/profile"
+    website: user?.website || "sportlinked.com/profile",
+    profilePic: user?.profilePic
   });
   
   const [isLoading, setIsLoading] = useState(false);
@@ -47,6 +52,10 @@ const EditProfile = () => {
   
   const handleChange = (field: string, value: string) => {
     setFormData({ ...formData, [field]: value });
+  };
+  
+  const handleProfilePicChange = (image: string | undefined) => {
+    setFormData({ ...formData, profilePic: image });
   };
   
   const handleSubmit = (e: React.FormEvent) => {
@@ -89,10 +98,10 @@ const EditProfile = () => {
       <header className={`p-4 flex items-center shadow-sm ${
         isAthlete ? "bg-athlete" : isScout ? "bg-scout" : "bg-team"
       } text-white`}>
-        <Button variant="ghost" size="icon" onClick={handleBack}>
+        <Button variant="ghost" size="icon" onClick={handleBack} className="text-white hover:bg-white/20">
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <h1 className="text-xl font-bold ml-4">Edit Profile</h1>
+        <h1 className="text-xl font-bold ml-4">{t("profile.editProfile")}</h1>
       </header>
 
       {/* Main content */}
@@ -100,31 +109,35 @@ const EditProfile = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <Card className="dark:bg-gray-800 dark:border-gray-700">
             <CardHeader>
-              <CardTitle className="dark:text-white">Profile Picture</CardTitle>
+              <CardTitle className="dark:text-white">{t("profile.changePicture")}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col items-center">
-              <Avatar className="h-32 w-32 mb-4">
-                <AvatarImage src={user?.profilePic} />
-                <AvatarFallback className={`text-3xl ${
-                  isAthlete ? "bg-blue-100" : isScout ? "bg-green-100" : "bg-yellow-100"
-                }`}>
-                  {getInitials(user?.name)}
-                </AvatarFallback>
-              </Avatar>
-              <Button type="button" variant="outline" className="dark:border-gray-600 dark:text-gray-200">
-                <Upload className="h-4 w-4 mr-2" />
-                Upload Photo
-              </Button>
+              <ProfilePictureUpload
+                profilePic={formData.profilePic}
+                name={formData.name}
+                role={user?.role}
+                onImageChange={handleProfilePicChange}
+                triggerComponent={
+                  <Avatar className="h-32 w-32 mb-4 cursor-pointer hover:opacity-90 transition-opacity border-4 border-white dark:border-gray-700">
+                    <AvatarImage src={formData.profilePic} />
+                    <AvatarFallback className={`text-3xl ${
+                      isAthlete ? "bg-blue-100" : isScout ? "bg-green-100" : "bg-yellow-100"
+                    }`}>
+                      {getInitials(formData.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                }
+              />
             </CardContent>
           </Card>
           
           <Card className="dark:bg-gray-800 dark:border-gray-700">
             <CardHeader>
-              <CardTitle className="dark:text-white">Basic Information</CardTitle>
+              <CardTitle className="dark:text-white">{t("settings.profileInfo")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="dark:text-gray-200">Name</Label>
+                <Label htmlFor="name" className="dark:text-gray-200">{t("auth.fullName")}</Label>
                 <Input 
                   id="name" 
                   value={formData.name} 
@@ -134,7 +147,7 @@ const EditProfile = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="bio" className="dark:text-gray-200">Bio</Label>
+                <Label htmlFor="bio" className="dark:text-gray-200">{t("profile.about")}</Label>
                 <Textarea 
                   id="bio" 
                   rows={4} 
@@ -145,7 +158,7 @@ const EditProfile = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="location" className="dark:text-gray-200">Location</Label>
+                <Label htmlFor="location" className="dark:text-gray-200">{t("profile.location")}</Label>
                 <Input 
                   id="location" 
                   value={formData.location}
@@ -159,19 +172,19 @@ const EditProfile = () => {
           {isAthlete && (
             <Card className="dark:bg-gray-800 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="dark:text-white">Athletic Information</CardTitle>
+                <CardTitle className="dark:text-white">{t("auth.iAmA")} {t("auth.athlete")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="sport" className="dark:text-gray-200">Sport</Label>
+                  <Label htmlFor="sport" className="dark:text-gray-200">{t("auth.sport")}</Label>
                   <Select 
                     value={formData.sport} 
                     onValueChange={(value) => handleChange("sport", value)}
                   >
-                    <SelectTrigger id="sport">
+                    <SelectTrigger id="sport" className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                       <SelectValue placeholder="Select sport" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
                       <SelectItem value="Basketball">Basketball</SelectItem>
                       <SelectItem value="Football">Football</SelectItem>
                       <SelectItem value="Soccer">Soccer</SelectItem>
@@ -181,7 +194,7 @@ const EditProfile = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="position" className="dark:text-gray-200">Position</Label>
+                  <Label htmlFor="position" className="dark:text-gray-200">{t("auth.position")}</Label>
                   <Input 
                     id="position" 
                     value={formData.position}
@@ -191,15 +204,15 @@ const EditProfile = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="experience" className="dark:text-gray-200">Experience Level</Label>
+                  <Label htmlFor="experience" className="dark:text-gray-200">{t("auth.experience")}</Label>
                   <Select 
                     value={formData.experience} 
                     onValueChange={(value) => handleChange("experience", value)}
                   >
-                    <SelectTrigger id="experience">
+                    <SelectTrigger id="experience" className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                       <SelectValue placeholder="Select experience level" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
                       <SelectItem value="High School">High School</SelectItem>
                       <SelectItem value="College">College</SelectItem>
                       <SelectItem value="Professional">Professional</SelectItem>
@@ -214,19 +227,19 @@ const EditProfile = () => {
           {isTeam && (
             <Card className="dark:bg-gray-800 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="dark:text-white">Team Information</CardTitle>
+                <CardTitle className="dark:text-white">{t("auth.iAmA")} {t("auth.team")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="sport" className="dark:text-gray-200">Sport</Label>
+                  <Label htmlFor="sport" className="dark:text-gray-200">{t("auth.sport")}</Label>
                   <Select 
                     value={formData.sport} 
                     onValueChange={(value) => handleChange("sport", value)}
                   >
-                    <SelectTrigger id="sport">
+                    <SelectTrigger id="sport" className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                       <SelectValue placeholder="Select sport" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
                       <SelectItem value="Basketball">Basketball</SelectItem>
                       <SelectItem value="Football">Football</SelectItem>
                       <SelectItem value="Soccer">Soccer</SelectItem>
@@ -236,7 +249,7 @@ const EditProfile = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="teamSize" className="dark:text-gray-200">Team Size</Label>
+                  <Label htmlFor="teamSize" className="dark:text-gray-200">{t("auth.teamSize")}</Label>
                   <Input 
                     id="teamSize" 
                     type="number" 
@@ -247,7 +260,7 @@ const EditProfile = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="foundedYear" className="dark:text-gray-200">Founded Year</Label>
+                  <Label htmlFor="foundedYear" className="dark:text-gray-200">{t("auth.foundedYear")}</Label>
                   <Input 
                     id="foundedYear" 
                     type="number" 
@@ -258,7 +271,7 @@ const EditProfile = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="homeVenue" className="dark:text-gray-200">Home Venue</Label>
+                  <Label htmlFor="homeVenue" className="dark:text-gray-200">{t("auth.homeVenue")}</Label>
                   <Input 
                     id="homeVenue" 
                     value={formData.homeVenue}
@@ -273,19 +286,19 @@ const EditProfile = () => {
           {isScout && (
             <Card className="dark:bg-gray-800 dark:border-gray-700">
               <CardHeader>
-                <CardTitle className="dark:text-white">Scout Information</CardTitle>
+                <CardTitle className="dark:text-white">{t("auth.iAmA")} {t("auth.scout")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="sport" className="dark:text-gray-200">Sport</Label>
+                  <Label htmlFor="sport" className="dark:text-gray-200">{t("auth.sport")}</Label>
                   <Select 
                     value={formData.sport} 
                     onValueChange={(value) => handleChange("sport", value)}
                   >
-                    <SelectTrigger id="sport">
+                    <SelectTrigger id="sport" className="dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                       <SelectValue placeholder="Select sport" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
                       <SelectItem value="Basketball">Basketball</SelectItem>
                       <SelectItem value="Football">Football</SelectItem>
                       <SelectItem value="Soccer">Soccer</SelectItem>
@@ -295,7 +308,7 @@ const EditProfile = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="organization" className="dark:text-gray-200">Organization/Team</Label>
+                  <Label htmlFor="organization" className="dark:text-gray-200">{t("auth.organization")}</Label>
                   <Input 
                     id="organization" 
                     value={formData.position}
@@ -310,11 +323,11 @@ const EditProfile = () => {
           
           <Card className="dark:bg-gray-800 dark:border-gray-700">
             <CardHeader>
-              <CardTitle className="dark:text-white">Contact Information</CardTitle>
+              <CardTitle className="dark:text-white">{t("profile.contact")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email" className="dark:text-gray-200">Email</Label>
+                <Label htmlFor="email" className="dark:text-gray-200">{t("auth.email")}</Label>
                 <Input 
                   id="email" 
                   type="email" 
@@ -325,7 +338,7 @@ const EditProfile = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="phone" className="dark:text-gray-200">Phone</Label>
+                <Label htmlFor="phone" className="dark:text-gray-200">{t("auth.phone")}</Label>
                 <Input 
                   id="phone" 
                   value={formData.phone}
@@ -335,7 +348,7 @@ const EditProfile = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="website" className="dark:text-gray-200">Website/Social Media</Label>
+                <Label htmlFor="website" className="dark:text-gray-200">{t("auth.website")}</Label>
                 <Input 
                   id="website" 
                   value={formData.website}
@@ -351,9 +364,9 @@ const EditProfile = () => {
               type="button" 
               variant="outline" 
               onClick={handleBack}
-              className="dark:border-gray-600 dark:text-gray-200"
+              className="dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700"
             >
-              Cancel
+              {t("content.cancel")}
             </Button>
             <Button 
               type="submit" 
@@ -361,13 +374,13 @@ const EditProfile = () => {
                 isAthlete ? "bg-athlete hover:bg-athlete/90" : 
                 isScout ? "bg-scout hover:bg-scout/90" : 
                 "bg-team hover:bg-team/90"
-              }`} 
+              } text-white`} 
               disabled={isLoading}
             >
               {isLoading ? "Saving..." : (
                 <>
                   <Save className="h-4 w-4 mr-2" />
-                  Save Changes
+                  {t("content.save")}
                 </>
               )}
             </Button>

@@ -1,20 +1,28 @@
 
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Menu } from "lucide-react";
+import { Search, Menu, Settings } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import ContentFeed from "@/components/ContentFeed";
 import UploadButton from "@/components/UploadButton";
+import SideMenu from "@/components/SideMenu";
+import SearchDialog from "@/components/SearchDialog";
+import { useNavigate } from "react-router-dom";
 
 const ForYou = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
+  const navigate = useNavigate();
   const isAthlete = user?.role === "athlete";
   const [activeTab, setActiveTab] = useState("for-you");
+  const [sideMenuOpen, setSideMenuOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   
   const sportTabs = [
-    { id: "for-you", label: "For You" },
+    { id: "for-you", label: t("nav.forYou") },
     { id: "basketball", label: "Basketball" },
     { id: "football", label: "Football" },
     { id: "soccer", label: "Soccer" },
@@ -23,14 +31,27 @@ const ForYou = () => {
 
   return (
     <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"}`}>
+      {/* Side Menu */}
+      <SideMenu isOpen={sideMenuOpen} onClose={() => setSideMenuOpen(false)} />
+      
+      {/* Search Dialog */}
+      <SearchDialog isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
+      
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-border shadow-sm">
         <div className="container px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Menu className="h-6 w-6" />
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setSideMenuOpen(true)}
+              className="dark:text-white dark:hover:bg-gray-800"
+            >
+              <Menu className="h-6 w-6" />
+            </Button>
             <div className="flex items-center">
               <img 
-                src="/sportlinked-logo.png" 
+                src="/lovable-uploads/b2d96fc1-54f5-498d-a4b1-35583dc94648.png" 
                 alt="SportLinked" 
                 className="h-8 w-auto mr-2"
               />
@@ -38,8 +59,21 @@ const ForYou = () => {
           </div>
           
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => setSearchOpen(true)}
+              className="dark:text-white dark:hover:bg-gray-800"
+            >
               <Search className="h-5 w-5" />
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => navigate("/settings")}
+              className="dark:text-white dark:hover:bg-gray-800"
+            >
+              <Settings className="h-5 w-5" />
             </Button>
           </div>
         </div>
@@ -56,7 +90,7 @@ const ForYou = () => {
                 <TabsTrigger
                   key={tab.id}
                   value={tab.id}
-                  className={`px-4 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:font-medium data-[state=active]:border-b-2 ${
+                  className={`px-4 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:font-medium data-[state=active]:border-b-2 dark:text-gray-300 dark:data-[state=active]:text-white ${
                     isAthlete 
                       ? "data-[state=active]:text-athlete data-[state=active]:border-athlete" 
                       : "data-[state=active]:text-scout data-[state=active]:border-scout"

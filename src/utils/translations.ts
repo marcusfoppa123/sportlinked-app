@@ -7,6 +7,7 @@ const translations = {
     "nav.athletes": "Athletes",
     "nav.messages": "Messages",
     "nav.settings": "Settings",
+    "nav.notifications": "Notifications",
     
     // Settings page
     "settings.title": "Settings",
@@ -69,7 +70,53 @@ const translations = {
     "auth.positionDesc": "Point Guard, Forward, etc.",
     "auth.orgDesc": "Lakers, Michigan State, etc.",
     "auth.experience": "Experience Level",
-    "auth.experienceDesc": "College, Professional, High School"
+    "auth.experienceDesc": "College, Professional, High School",
+    
+    // Profile
+    "profile.connections": "Connections",
+    "profile.posts": "Posts",
+    "profile.offers": "Offers",
+    "profile.about": "About",
+    "profile.editProfile": "Edit Profile",
+    "profile.stats": "Stats",
+    "profile.location": "Location",
+    "profile.contact": "Contact Information",
+    "profile.experience": "Experience",
+    "profile.changePicture": "Change Picture",
+    "profile.uploadNew": "Upload New",
+    "profile.selectFromLibrary": "Select from Library",
+    "profile.remove": "Remove",
+    
+    // Content and interactions
+    "content.comment": "Comment",
+    "content.like": "Like",
+    "content.share": "Share",
+    "content.save": "Save",
+    "content.writeComment": "Write a comment...",
+    "content.postComment": "Post",
+    "content.cancel": "Cancel",
+    "content.noComments": "No comments yet. Be the first to comment!",
+    "content.replies": "Replies",
+    "content.viewMore": "View more",
+    
+    // Search
+    "search.title": "Search",
+    "search.placeholder": "Search for profiles, teams, or athletes...",
+    "search.noResults": "No results found for your search",
+    "search.tryAgain": "Please try another search term",
+    "search.recentSearches": "Recent Searches",
+    "search.clearRecent": "Clear",
+    "search.suggestions": "Suggestions",
+    
+    // SideMenu
+    "menu.home": "Home",
+    "menu.explore": "Explore",
+    "menu.myProfile": "My Profile",
+    "menu.savedItems": "Saved Items",
+    "menu.messages": "Messages",
+    "menu.notifications": "Notifications",
+    "menu.settings": "Settings",
+    "menu.help": "Help & Support",
   },
   sv: {
     // Navigation
@@ -78,6 +125,7 @@ const translations = {
     "nav.athletes": "Idrottare",
     "nav.messages": "Meddelanden",
     "nav.settings": "Inställningar",
+    "nav.notifications": "Aviseringar",
     
     // Settings page
     "settings.title": "Inställningar",
@@ -140,7 +188,53 @@ const translations = {
     "auth.positionDesc": "Point Guard, Forward, etc.",
     "auth.orgDesc": "Lakers, Michigan State, etc.",
     "auth.experience": "Erfarenhetsnivå",
-    "auth.experienceDesc": "Högskola, Professionell, Gymnasium"
+    "auth.experienceDesc": "Högskola, Professionell, Gymnasium",
+    
+    // Profile
+    "profile.connections": "Kontakter",
+    "profile.posts": "Inlägg",
+    "profile.offers": "Erbjudanden",
+    "profile.about": "Om",
+    "profile.editProfile": "Redigera Profil",
+    "profile.stats": "Statistik",
+    "profile.location": "Plats",
+    "profile.contact": "Kontaktinformation",
+    "profile.experience": "Erfarenhet",
+    "profile.changePicture": "Ändra Bild",
+    "profile.uploadNew": "Ladda upp ny",
+    "profile.selectFromLibrary": "Välj från bibliotek",
+    "profile.remove": "Ta bort",
+    
+    // Content and interactions
+    "content.comment": "Kommentera",
+    "content.like": "Gilla",
+    "content.share": "Dela",
+    "content.save": "Spara",
+    "content.writeComment": "Skriv en kommentar...",
+    "content.postComment": "Publicera",
+    "content.cancel": "Avbryt",
+    "content.noComments": "Inga kommentarer ännu. Var först med att kommentera!",
+    "content.replies": "Svar",
+    "content.viewMore": "Visa mer",
+    
+    // Search
+    "search.title": "Sök",
+    "search.placeholder": "Sök efter profiler, lag eller idrottare...",
+    "search.noResults": "Inga resultat hittades för din sökning",
+    "search.tryAgain": "Försök med ett annat sökord",
+    "search.recentSearches": "Senaste sökningar",
+    "search.clearRecent": "Rensa",
+    "search.suggestions": "Förslag",
+    
+    // SideMenu
+    "menu.home": "Hem",
+    "menu.explore": "Utforska",
+    "menu.myProfile": "Min Profil",
+    "menu.savedItems": "Sparade objekt",
+    "menu.messages": "Meddelanden",
+    "menu.notifications": "Aviseringar",
+    "menu.settings": "Inställningar",
+    "menu.help": "Hjälp & Support",
   }
 };
 
