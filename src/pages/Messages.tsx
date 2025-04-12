@@ -1,6 +1,8 @@
 
-import React from "react";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
@@ -8,8 +10,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Search, Edit } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 
-// Mock data for conversations
-const mockConversations = [
+// Mock data for conversations - exported so it can be used in Conversation.tsx
+export const mockConversations = [
   {
     id: "1",
     name: "Coach Wilson",
@@ -46,15 +48,31 @@ const mockConversations = [
 
 const Messages = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
+  const navigate = useNavigate();
   const isAthlete = user?.role === "athlete";
+  const [searchQuery, setSearchQuery] = useState("");
+  
+  // Filter conversations based on search query
+  const filteredConversations = mockConversations.filter(
+    convo => convo.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  const handleConversationClick = (id: string) => {
+    navigate(`/conversation/${id}`);
+  };
 
   return (
-    <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"}`}>
+    <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"} dark:bg-gray-900`}>
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-border shadow-sm">
+      <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-border shadow-sm">
         <div className="container px-4 h-16 flex items-center justify-between">
-          <h1 className="text-xl font-bold">Messages</h1>
-          <Button variant="ghost" size="icon">
+          <h1 className="text-xl font-bold dark:text-white">{t("nav.messages")}</h1>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            className="dark:text-white dark:hover:bg-gray-800"
+          >
             <Edit className="h-5 w-5" />
           </Button>
         </div>
@@ -66,17 +84,27 @@ const Messages = () => {
         <div className="relative mb-4">
           <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
           <Input 
-            placeholder="Search messages..." 
-            className="pl-9"
+            placeholder={t("messages.searchMessages")}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
           />
         </div>
         
+        {/* No results message */}
+        {filteredConversations.length === 0 && (
+          <div className="py-8 text-center text-gray-500 dark:text-gray-400">
+            {t("messages.noResults")}
+          </div>
+        )}
+        
         {/* Conversations list */}
         <div className="space-y-2">
-          {mockConversations.map((convo) => (
+          {filteredConversations.map((convo) => (
             <Card 
               key={convo.id}
-              className="flex items-center p-3 cursor-pointer hover:bg-muted transition-colors"
+              className="flex items-center p-3 cursor-pointer hover:bg-muted transition-colors dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700"
+              onClick={() => handleConversationClick(convo.id)}
             >
               <Avatar className="h-12 w-12">
                 <AvatarImage src={convo.avatar} />
@@ -87,14 +115,14 @@ const Messages = () => {
               
               <div className="ml-3 flex-1 overflow-hidden">
                 <div className="flex justify-between items-baseline">
-                  <h3 className={`font-medium truncate ${convo.unread ? "font-semibold" : ""}`}>
+                  <h3 className={`font-medium truncate dark:text-white ${convo.unread ? "font-semibold" : ""}`}>
                     {convo.name}
                   </h3>
-                  <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                  <span className="text-xs text-gray-500 whitespace-nowrap ml-2 dark:text-gray-400">
                     {convo.time}
                   </span>
                 </div>
-                <p className={`text-sm truncate ${convo.unread ? "font-medium" : "text-gray-500"}`}>
+                <p className={`text-sm truncate ${convo.unread ? "font-medium dark:text-gray-200" : "text-gray-500 dark:text-gray-400"}`}>
                   {convo.lastMessage}
                 </p>
               </div>
@@ -106,14 +134,16 @@ const Messages = () => {
           ))}
         </div>
         
-        <div className="mt-8 text-center">
-          <p className="text-sm text-gray-500">Connect with athletes and scouts to start messaging</p>
-          <Button 
-            className={`mt-2 ${isAthlete ? "bg-athlete hover:bg-athlete/90" : "bg-scout hover:bg-scout/90"}`}
-          >
-            Find Connections
-          </Button>
-        </div>
+        {filteredConversations.length > 0 && searchQuery === "" && (
+          <div className="mt-8 text-center">
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t("messages.connectWithAthletes")}</p>
+            <Button 
+              className={`mt-2 ${isAthlete ? "bg-athlete hover:bg-athlete/90" : "bg-scout hover:bg-scout/90"}`}
+            >
+              {t("messages.findConnections")}
+            </Button>
+          </div>
+        )}
       </main>
       
       {/* Bottom navigation */}

@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Menu, Settings } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import ContentFeed from "@/components/ContentFeed";
-import UploadButton from "@/components/UploadButton";
 import SideMenu from "@/components/SideMenu";
 import SearchDialog from "@/components/SearchDialog";
 import { useNavigate } from "react-router-dom";
@@ -111,9 +110,6 @@ const ForYou = () => {
           contentType="posts"
         />
       </main>
-
-      {/* Upload button for athletes */}
-      {isAthlete && <UploadButton />}
       
       {/* Bottom navigation */}
       <BottomNavigation />
