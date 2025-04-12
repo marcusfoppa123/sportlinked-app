@@ -2,6 +2,7 @@
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -25,6 +26,7 @@ import { useNavigate } from "react-router-dom";
 const Settings = () => {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  const { language, setLanguage, t } = useLanguage();
   const navigate = useNavigate();
   const isAthlete = user?.role === "athlete";
   const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
@@ -39,12 +41,17 @@ const Settings = () => {
     navigate("/");
   };
 
+  const handleLanguageChange = (newLang: "en" | "sv") => {
+    setLanguage(newLang);
+    toast.success(newLang === "en" ? "Language changed to English" : "Språk ändrat till Svenska");
+  };
+
   return (
     <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"}`}>
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white border-b border-border shadow-sm dark:bg-gray-900">
         <div className="container px-4 h-16 flex items-center justify-between">
-          <h1 className="text-xl font-bold">Settings</h1>
+          <h1 className="text-xl font-bold">{t("settings.title")}</h1>
         </div>
       </header>
 
@@ -54,14 +61,14 @@ const Settings = () => {
           {/* Account settings */}
           <Card className="dark:bg-gray-800 dark:border-gray-700">
             <CardHeader className="pb-2">
-              <CardTitle>Account</CardTitle>
-              <CardDescription>Manage your account settings</CardDescription>
+              <CardTitle>{t("settings.account")}</CardTitle>
+              <CardDescription>{t("settings.accountDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="flex items-center justify-between py-2 cursor-pointer">
                 <div className="flex items-center">
                   <UserCircle className="h-5 w-5 mr-3 text-gray-500" />
-                  <span>Profile Information</span>
+                  <span>{t("settings.profileInfo")}</span>
                 </div>
                 <ChevronRight className="h-5 w-5 text-gray-400" />
               </div>
@@ -69,17 +76,34 @@ const Settings = () => {
               <div className="flex items-center justify-between py-2 cursor-pointer">
                 <div className="flex items-center">
                   <Shield className="h-5 w-5 mr-3 text-gray-500" />
-                  <span>Privacy & Security</span>
+                  <span>{t("settings.privacySecurity")}</span>
                 </div>
                 <ChevronRight className="h-5 w-5 text-gray-400" />
               </div>
               
-              <div className="flex items-center justify-between py-2 cursor-pointer">
+              <div className="flex items-center justify-between py-2">
                 <div className="flex items-center">
                   <Languages className="h-5 w-5 mr-3 text-gray-500" />
-                  <span>Language</span>
+                  <span>{t("settings.language")}</span>
                 </div>
-                <span className="text-sm text-gray-500">English</span>
+                <div className="flex space-x-2">
+                  <Button 
+                    variant={language === "en" ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => handleLanguageChange("en")}
+                    className={language === "en" ? "bg-primary" : ""}
+                  >
+                    {t("settings.english")}
+                  </Button>
+                  <Button 
+                    variant={language === "sv" ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => handleLanguageChange("sv")}
+                    className={language === "sv" ? "bg-primary" : ""}
+                  >
+                    {t("settings.swedish")}
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -87,14 +111,14 @@ const Settings = () => {
           {/* Preferences */}
           <Card className="dark:bg-gray-800 dark:border-gray-700">
             <CardHeader className="pb-2">
-              <CardTitle>Preferences</CardTitle>
-              <CardDescription>Customize your app experience</CardDescription>
+              <CardTitle>{t("settings.preferences")}</CardTitle>
+              <CardDescription>{t("settings.prefDesc")}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <Bell className="h-5 w-5 mr-3 text-gray-500" />
-                  <span>Push Notifications</span>
+                  <span>{t("settings.pushNotif")}</span>
                 </div>
                 <Switch id="notifications" defaultChecked />
               </div>
@@ -102,7 +126,7 @@ const Settings = () => {
               <div className="flex items-center justify-between">
                 <div className="flex items-center">
                   <MessageSquare className="h-5 w-5 mr-3 text-gray-500" />
-                  <span>Email Notifications</span>
+                  <span>{t("settings.emailNotif")}</span>
                 </div>
                 <Switch id="email-notifications" defaultChecked />
               </div>
@@ -114,7 +138,7 @@ const Settings = () => {
                   ) : (
                     <Sun className="h-5 w-5 mr-3 text-gray-500" />
                   )}
-                  <span>Dark Appearance</span>
+                  <span>{t("settings.darkMode")}</span>
                 </div>
                 <Switch 
                   id="dark-mode" 
@@ -128,19 +152,19 @@ const Settings = () => {
           {/* About */}
           <Card className="dark:bg-gray-800 dark:border-gray-700">
             <CardHeader className="pb-2">
-              <CardTitle>About</CardTitle>
+              <CardTitle>{t("settings.about")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               <div className="flex justify-between py-2">
-                <span>Version</span>
+                <span>{t("settings.version")}</span>
                 <span className="text-gray-500">1.0.0</span>
               </div>
               <div className="flex justify-between py-2">
-                <span>Terms of Service</span>
+                <span>{t("settings.terms")}</span>
                 <ChevronRight className="h-5 w-5 text-gray-400" />
               </div>
               <div className="flex justify-between py-2">
-                <span>Privacy Policy</span>
+                <span>{t("settings.privacy")}</span>
                 <ChevronRight className="h-5 w-5 text-gray-400" />
               </div>
             </CardContent>
@@ -149,11 +173,11 @@ const Settings = () => {
           {/* Logout */}
           <Button 
             variant="outline" 
-            className="w-full text-destructive border-destructive/50 hover:bg-destructive/10"
+            className="w-full text-destructive border-destructive/50 hover:bg-destructive/10 dark:text-red-400 dark:border-red-800 dark:hover:bg-red-950/30"
             onClick={handleLogout}
           >
             <LogOut className="h-4 w-4 mr-2" />
-            Log Out
+            {t("settings.logout")}
           </Button>
         </div>
       </main>
@@ -162,14 +186,14 @@ const Settings = () => {
       <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogTitle>{t("settings.confirmLogout")}</AlertDialogTitle>
             <AlertDialogDescription>
-              You will be logged out of your account and redirected to the login screen.
+              {t("settings.logoutDesc")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>No</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmLogout}>Yes</AlertDialogAction>
+            <AlertDialogCancel>{t("settings.confirmNo")}</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmLogout}>{t("settings.confirmYes")}</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

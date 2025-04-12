@@ -2,11 +2,13 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { User, Home, MessageSquare, Bell, Settings, Users } from "lucide-react";
 
 const BottomNavigation = () => {
   const location = useLocation();
   const { user } = useAuth();
+  const { t } = useLanguage();
   const isAthlete = user?.role === "athlete";
   const isTeam = user?.role === "team";
   
@@ -15,27 +17,27 @@ const BottomNavigation = () => {
 
   const navItems = [
     {
-      name: "Profile",
+      name: t("nav.profile"),
       path: profileLink,
       icon: <User size={24} />
     },
     {
-      name: "For You",
+      name: t("nav.forYou"),
       path: "/for-you",
       icon: <Home size={24} />
     },
     {
-      name: "Athletes",
+      name: t("nav.athletes"),
       path: "/athletes",
       icon: <Users size={24} />
     },
     {
-      name: "Messages",
+      name: t("nav.messages"),
       path: "/messages",
       icon: <MessageSquare size={24} />
     },
     {
-      name: "Settings",
+      name: t("nav.settings"),
       path: "/settings",
       icon: <Settings size={24} />
     }

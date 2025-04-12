@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { LanguageProvider } from "@/context/LanguageContext";
 import Index from "./pages/Index";
 import ForYou from "./pages/ForYou";
 import Profile from "./pages/Profile";
@@ -23,24 +24,26 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <ThemeProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/for-you" element={<ForYou />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/team-profile" element={<TeamProfile />} />
-              <Route path="/edit-profile" element={<EditProfile />} />
-              <Route path="/messages" element={<Messages />} />
-              <Route path="/notifications" element={<Notifications />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/athletes" element={<Athletes />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+        <LanguageProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/for-you" element={<ForYou />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/team-profile" element={<TeamProfile />} />
+                <Route path="/edit-profile" element={<EditProfile />} />
+                <Route path="/messages" element={<Messages />} />
+                <Route path="/notifications" element={<Notifications />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/athletes" element={<Athletes />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </AuthProvider>
   </QueryClientProvider>
