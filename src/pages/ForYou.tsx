@@ -4,10 +4,9 @@ import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Menu, Settings } from "lucide-react";
+import { Search, Menu, Settings, PlusSquare } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import ContentFeed from "@/components/ContentFeed";
-import UploadButton from "@/components/UploadButton";
 import SideMenu from "@/components/SideMenu";
 import SearchDialog from "@/components/SearchDialog";
 import { useNavigate } from "react-router-dom";
@@ -38,7 +37,7 @@ const ForYou = () => {
       <SearchDialog isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
       
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-border shadow-sm">
+      <header className="sticky top-0 z-40 bg-background border-b border-border shadow-sm">
         <div className="container px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Button 
@@ -59,6 +58,16 @@ const ForYou = () => {
           </div>
           
           <div className="flex items-center gap-2">
+            {isAthlete && (
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => navigate("/create-post")}
+                className="dark:text-white dark:hover:bg-gray-800"
+              >
+                <PlusSquare className="h-5 w-5" />
+              </Button>
+            )}
             <Button 
               variant="ghost" 
               size="icon" 
@@ -111,9 +120,6 @@ const ForYou = () => {
           contentType="posts"
         />
       </main>
-
-      {/* Upload button for athletes */}
-      {isAthlete && <UploadButton />}
       
       {/* Bottom navigation */}
       <BottomNavigation />
