@@ -17,7 +17,6 @@ import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Athletes from "./pages/Athletes";
-import CreatePost from "./pages/CreatePost";
 
 const queryClient = new QueryClient();
 
@@ -40,7 +39,6 @@ const App = () => (
                 <Route path="/notifications" element={<Notifications />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/athletes" element={<Athletes />} />
-                <Route path="/create-post" element={<CreatePost />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
