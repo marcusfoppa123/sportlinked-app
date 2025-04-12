@@ -19,6 +19,16 @@ export interface User {
   homeVenue?: string;
   phone?: string;
   website?: string;
+  // Stats
+  connections?: number;
+  posts?: number;
+  offers?: number;
+  // Athlete stats
+  ppg?: number;
+  apg?: number;
+  rpg?: number;
+  games?: number;
+  winPercentage?: number;
 }
 
 interface AuthContextType {
@@ -66,7 +76,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       id: Math.random().toString(36).substring(2, 9),
       name: email.split('@')[0],
       email,
-      role: savedRole
+      role: savedRole,
+      connections: 450,
+      posts: 32,
+      offers: 15,
+      ppg: 18.7,
+      apg: 7.2,
+      rpg: 4.1,
+      games: 128,
+      winPercentage: 58
     };
     
     setUser(mockUser);
@@ -84,7 +102,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       id: Math.random().toString(36).substring(2, 9),
       name,
       email,
-      role
+      role,
+      connections: 0,
+      posts: 0,
+      offers: 0,
+      ppg: 0,
+      apg: 0,
+      rpg: 0,
+      games: 0,
+      winPercentage: 0
     };
     
     setUser(newUser);

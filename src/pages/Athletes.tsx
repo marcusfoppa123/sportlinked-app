@@ -1,6 +1,5 @@
 
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import BottomNavigation from "@/components/BottomNavigation";
 import { useAuth } from "@/context/AuthContext";
@@ -9,17 +8,9 @@ import ContentFeed from "@/components/ContentFeed";
 
 const Athletes = () => {
   const { isAuthenticated, user } = useAuth();
-  const navigate = useNavigate();
   const [showLogin, setShowLogin] = useState(!isAuthenticated);
   const isAthlete = user?.role === "athlete";
   
-  // Redirect to profile if already logged in as athlete
-  useEffect(() => {
-    if (isAuthenticated && isAthlete) {
-      navigate("/profile");
-    }
-  }, [isAuthenticated, isAthlete, navigate]);
-
   return (
     <div className="athlete-theme min-h-screen pb-16 dark:bg-gray-900">
       {/* Header */}
@@ -43,12 +34,12 @@ const Athletes = () => {
         {showLogin && !isAuthenticated ? (
           <div className="bg-[#E6F4FF] rounded-lg p-4 shadow-md dark:bg-gray-800">
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-athlete">Athlete Login</h2>
+              <h2 className="text-xl font-semibold text-athlete dark:text-white">Athlete Login</h2>
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={() => setShowLogin(false)}
-                className="text-athlete hover:bg-athlete/10"
+                className="text-athlete hover:bg-athlete/10 dark:text-white dark:hover:bg-gray-700"
               >
                 Browse as Guest
               </Button>

@@ -43,7 +43,7 @@ const BottomNavigation = () => {
 
   return (
     <div 
-      className={`fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center border-t px-2 py-1 bg-white shadow-md ${
+      className={`fixed bottom-0 left-0 right-0 z-50 flex justify-around items-center border-t px-2 py-1 bg-white shadow-md dark:bg-gray-900 dark:border-gray-800 ${
         isAthlete ? "border-athlete" : isTeam ? "border-team" : "border-scout"
       }`}
     >
@@ -60,7 +60,7 @@ const BottomNavigation = () => {
                     ? "text-athlete"
                     : "text-scout"
                 }`
-              : "text-gray-500"
+              : "text-gray-500 dark:text-gray-400"
           }`}
         >
           {item.icon}

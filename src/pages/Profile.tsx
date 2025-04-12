@@ -1,4 +1,5 @@
-import React from "react";
+
+import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,11 +10,45 @@ import { Edit, Settings, Share2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
 import UploadButton from "@/components/UploadButton";
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, updateUserProfile } = useAuth();
   const navigate = useNavigate();
   const isAthlete = user?.role === "athlete";
+  
+  // Stats state with real data based on user
+  const [stats, setStats] = useState({
+    connections: user?.connections || 450,
+    posts: user?.posts || 32,
+    offers: isAthlete ? (user?.offers || 15) : 0
+  });
+  
+  // State for editing stats
+  const [editingStat, setEditingStat] = useState<string | null>(null);
+  const [statValue, setStatValue] = useState<number>(0);
+  
+  // State for athlete stats
+  const [athleteStats, setAthleteStats] = useState({
+    ppg: user?.ppg || 18.7,
+    apg: user?.apg || 7.2,
+    rpg: user?.rpg || 4.1,
+    games: user?.games || 128,
+    winPercentage: user?.winPercentage || 58
+  });
+  
+  // State for editing athlete stats
+  const [editingAthleteStat, setEditingAthleteStat] = useState<string | null>(null);
+  const [athleteStatValue, setAthleteStatValue] = useState<number>(0);
   
   // Get initials for avatar fallback
   const getInitials = (name?: string) => {
@@ -28,9 +63,51 @@ const Profile = () => {
   const handleEditProfile = () => {
     navigate("/edit-profile");
   };
+  
+  const handleSettingsClick = () => {
+    navigate("/settings");
+  };
+  
+  const openStatEditor = (stat: string, value: number) => {
+    setEditingStat(stat);
+    setStatValue(value);
+  };
+  
+  const saveStatChange = () => {
+    if (editingStat) {
+      const newStats = { ...stats, [editingStat]: statValue };
+      setStats(newStats);
+      
+      // Save to user profile if needed
+      if (updateUserProfile) {
+        updateUserProfile({ [editingStat]: statValue });
+      }
+      
+      setEditingStat(null);
+    }
+  };
+  
+  const openAthleteStatEditor = (stat: string, value: number) => {
+    setEditingAthleteStat(stat);
+    setAthleteStatValue(value);
+  };
+  
+  const saveAthleteStatChange = () => {
+    if (editingAthleteStat) {
+      const newStats = { ...athleteStats, [editingAthleteStat]: athleteStatValue };
+      setAthleteStats(newStats);
+      
+      // Save to user profile if needed
+      if (updateUserProfile) {
+        updateUserProfile({ [editingAthleteStat]: athleteStatValue });
+      }
+      
+      setEditingAthleteStat(null);
+    }
+  };
 
   return (
-    <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"}`}>
+    <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"} dark:bg-gray-900`}>
       {/* Header */}
       <header className="relative">
         <div 
@@ -38,7 +115,12 @@ const Profile = () => {
         />
         
         <div className="absolute top-2 right-2 flex gap-2">
-          <Button variant="ghost" size="icon" className="bg-white/20 text-white">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="bg-white/20 text-white"
+            onClick={handleSettingsClick}
+          >
             <Settings className="h-5 w-5" />
           </Button>
           <Button variant="ghost" size="icon" className="bg-white/20 text-white">
@@ -57,7 +139,7 @@ const Profile = () => {
             <div className="flex-1 ml-4 mb-4">
               <Button 
                 variant="outline" 
-                className="ml-auto bg-white"
+                className="ml-auto bg-white dark:bg-gray-800 dark:text-white dark:border-gray-600"
                 onClick={handleEditProfile}
               >
                 <Edit className="h-4 w-4 mr-2" />
@@ -67,34 +149,34 @@ const Profile = () => {
           </div>
           
           <div className="mt-2">
-            <h1 className="text-2xl font-bold">{user?.name || "User Name"}</h1>
+            <h1 className="text-2xl font-bold dark:text-white">{user?.name || "User Name"}</h1>
             <div className="flex items-center mt-1">
-              <Badge variant="outline" className={isAthlete ? "athlete-badge" : "scout-badge"}>
+              <Badge variant="outline" className={`${isAthlete ? "athlete-badge" : "scout-badge"} dark:bg-gray-800 dark:text-white`}>
                 {isAthlete ? "Athlete" : "Scout"}
               </Badge>
               {isAthlete && (
-                <Badge variant="outline" className="ml-2 bg-gray-100">
-                  Basketball • Point Guard
+                <Badge variant="outline" className="ml-2 bg-gray-100 dark:bg-gray-800 dark:text-white">
+                  {user?.sport || "Basketball"} • {user?.position || "Point Guard"}
                 </Badge>
               )}
             </div>
             
-            <p className="mt-3 text-gray-600">
-              {isAthlete 
+            <p className="mt-3 text-gray-600 dark:text-gray-300">
+              {user?.bio || (isAthlete 
                 ? "Point guard with 5 years of college experience. Looking for professional opportunities."
-                : "Basketball scout for the Michigan Wolverines. Searching for talented guards and forwards."}
+                : "Basketball scout for the Michigan Wolverines. Searching for talented guards and forwards.")}
             </p>
             
-            <div className="flex gap-4 mt-4 text-sm">
-              <div>
-                <span className="font-semibold">450</span> Connections
+            <div className="flex gap-4 mt-4 text-sm dark:text-gray-300">
+              <div className="cursor-pointer" onClick={() => openStatEditor('connections', stats.connections)}>
+                <span className="font-semibold">{stats.connections}</span> Connections
               </div>
-              <div>
-                <span className="font-semibold">32</span> Posts
+              <div className="cursor-pointer" onClick={() => openStatEditor('posts', stats.posts)}>
+                <span className="font-semibold">{stats.posts}</span> Posts
               </div>
               {isAthlete && (
-                <div>
-                  <span className="font-semibold">15</span> Offers
+                <div className="cursor-pointer" onClick={() => openStatEditor('offers', stats.offers)}>
+                  <span className="font-semibold">{stats.offers}</span> Offers
                 </div>
               )}
             </div>
@@ -105,17 +187,17 @@ const Profile = () => {
       {/* Main content */}
       <main className="px-4 py-4">
         <Tabs defaultValue="posts" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-4">
-            <TabsTrigger value="posts">Posts</TabsTrigger>
-            <TabsTrigger value="stats">Stats</TabsTrigger>
-            <TabsTrigger value="about">About</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 mb-4 dark:bg-gray-800">
+            <TabsTrigger value="posts" className="dark:text-gray-300 dark:data-[state=active]:text-white">Posts</TabsTrigger>
+            <TabsTrigger value="stats" className="dark:text-gray-300 dark:data-[state=active]:text-white">Stats</TabsTrigger>
+            <TabsTrigger value="about" className="dark:text-gray-300 dark:data-[state=active]:text-white">About</TabsTrigger>
           </TabsList>
           
           <TabsContent value="posts" className="space-y-4">
             {isAthlete && (
-              <Card>
+              <Card className="dark:bg-gray-800 dark:border-gray-700">
                 <CardContent className="p-4">
-                  <p className="text-center text-gray-500">
+                  <p className="text-center text-gray-500 dark:text-gray-400">
                     Share your highlights and achievements with scouts!
                   </p>
                   <Button className={`mt-2 w-full ${isAthlete ? "bg-athlete hover:bg-athlete/90" : "bg-scout hover:bg-scout/90"}`}>
@@ -126,9 +208,9 @@ const Profile = () => {
               </Card>
             )}
             
-            <Card>
+            <Card className="dark:bg-gray-800 dark:border-gray-700">
               <CardContent className="p-6 text-center">
-                <p className="text-gray-500">No posts yet</p>
+                <p className="text-gray-500 dark:text-gray-400">No posts yet</p>
               </CardContent>
             </Card>
           </TabsContent>
@@ -136,76 +218,91 @@ const Profile = () => {
           <TabsContent value="stats" className="space-y-4">
             {isAthlete ? (
               <div className="grid grid-cols-2 gap-4">
-                <Card>
+                <Card className="dark:bg-gray-800 dark:border-gray-700">
                   <CardContent className="p-4">
-                    <h3 className="font-medium mb-2">Season Averages</h3>
+                    <h3 className="font-medium mb-2 dark:text-white">Season Averages</h3>
                     <div className="grid grid-cols-3 gap-2">
-                      <div className="text-center p-2 bg-gray-50 rounded-md">
-                        <p className="text-xs text-gray-500">PPG</p>
-                        <p className="font-semibold">18.7</p>
+                      <div 
+                        className="text-center p-2 bg-gray-50 rounded-md dark:bg-gray-700 cursor-pointer" 
+                        onClick={() => openAthleteStatEditor('ppg', athleteStats.ppg)}
+                      >
+                        <p className="text-xs text-gray-500 dark:text-gray-300">PPG</p>
+                        <p className="font-semibold dark:text-white">{athleteStats.ppg}</p>
                       </div>
-                      <div className="text-center p-2 bg-gray-50 rounded-md">
-                        <p className="text-xs text-gray-500">APG</p>
-                        <p className="font-semibold">7.2</p>
+                      <div 
+                        className="text-center p-2 bg-gray-50 rounded-md dark:bg-gray-700 cursor-pointer"
+                        onClick={() => openAthleteStatEditor('apg', athleteStats.apg)}
+                      >
+                        <p className="text-xs text-gray-500 dark:text-gray-300">APG</p>
+                        <p className="font-semibold dark:text-white">{athleteStats.apg}</p>
                       </div>
-                      <div className="text-center p-2 bg-gray-50 rounded-md">
-                        <p className="text-xs text-gray-500">RPG</p>
-                        <p className="font-semibold">4.1</p>
+                      <div 
+                        className="text-center p-2 bg-gray-50 rounded-md dark:bg-gray-700 cursor-pointer"
+                        onClick={() => openAthleteStatEditor('rpg', athleteStats.rpg)}
+                      >
+                        <p className="text-xs text-gray-500 dark:text-gray-300">RPG</p>
+                        <p className="font-semibold dark:text-white">{athleteStats.rpg}</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-                <Card>
+                <Card className="dark:bg-gray-800 dark:border-gray-700">
                   <CardContent className="p-4">
-                    <h3 className="font-medium mb-2">Career Stats</h3>
+                    <h3 className="font-medium mb-2 dark:text-white">Career Stats</h3>
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="text-center p-2 bg-gray-50 rounded-md">
-                        <p className="text-xs text-gray-500">Games</p>
-                        <p className="font-semibold">128</p>
+                      <div 
+                        className="text-center p-2 bg-gray-50 rounded-md dark:bg-gray-700 cursor-pointer"
+                        onClick={() => openAthleteStatEditor('games', athleteStats.games)}
+                      >
+                        <p className="text-xs text-gray-500 dark:text-gray-300">Games</p>
+                        <p className="font-semibold dark:text-white">{athleteStats.games}</p>
                       </div>
-                      <div className="text-center p-2 bg-gray-50 rounded-md">
-                        <p className="text-xs text-gray-500">Win %</p>
-                        <p className="font-semibold">58%</p>
+                      <div 
+                        className="text-center p-2 bg-gray-50 rounded-md dark:bg-gray-700 cursor-pointer"
+                        onClick={() => openAthleteStatEditor('winPercentage', athleteStats.winPercentage)}
+                      >
+                        <p className="text-xs text-gray-500 dark:text-gray-300">Win %</p>
+                        <p className="font-semibold dark:text-white">{athleteStats.winPercentage}%</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               </div>
             ) : (
-              <Card>
+              <Card className="dark:bg-gray-800 dark:border-gray-700">
                 <CardContent className="p-6 text-center">
-                  <p className="text-gray-500">Stats are only available for athletes</p>
+                  <p className="text-gray-500 dark:text-gray-400">Stats are only available for athletes</p>
                 </CardContent>
               </Card>
             )}
           </TabsContent>
           
           <TabsContent value="about" className="space-y-4">
-            <Card>
+            <Card className="dark:bg-gray-800 dark:border-gray-700">
               <CardContent className="p-4">
-                <h3 className="font-medium mb-2">Personal Information</h3>
+                <h3 className="font-medium mb-2 dark:text-white">Personal Information</h3>
                 <div className="space-y-2">
                   <div className="grid grid-cols-2">
-                    <span className="text-gray-500">Name</span>
-                    <span>{user?.name}</span>
+                    <span className="text-gray-500 dark:text-gray-400">Name</span>
+                    <span className="dark:text-white">{user?.name}</span>
                   </div>
                   <div className="grid grid-cols-2">
-                    <span className="text-gray-500">Location</span>
-                    <span>New York, NY</span>
+                    <span className="text-gray-500 dark:text-gray-400">Location</span>
+                    <span className="dark:text-white">{user?.location || "New York, NY"}</span>
                   </div>
                   {isAthlete && (
                     <>
                       <div className="grid grid-cols-2">
-                        <span className="text-gray-500">Sport</span>
-                        <span>Basketball</span>
+                        <span className="text-gray-500 dark:text-gray-400">Sport</span>
+                        <span className="dark:text-white">{user?.sport || "Basketball"}</span>
                       </div>
                       <div className="grid grid-cols-2">
-                        <span className="text-gray-500">Position</span>
-                        <span>Point Guard</span>
+                        <span className="text-gray-500 dark:text-gray-400">Position</span>
+                        <span className="dark:text-white">{user?.position || "Point Guard"}</span>
                       </div>
                       <div className="grid grid-cols-2">
-                        <span className="text-gray-500">Experience</span>
-                        <span>College</span>
+                        <span className="text-gray-500 dark:text-gray-400">Experience</span>
+                        <span className="dark:text-white">{user?.experience || "College"}</span>
                       </div>
                     </>
                   )}
@@ -215,6 +312,65 @@ const Profile = () => {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* Edit stat dialog */}
+      <Dialog open={!!editingStat} onOpenChange={(open) => !open && setEditingStat(null)}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit {editingStat}</DialogTitle>
+            <DialogDescription>
+              Update your {editingStat} count
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="stat-value" className="text-right">
+                Value
+              </Label>
+              <Input
+                id="stat-value"
+                type="number"
+                value={statValue}
+                onChange={(e) => setStatValue(Number(e.target.value))}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="submit" onClick={saveStatChange}>Save changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit athlete stat dialog */}
+      <Dialog open={!!editingAthleteStat} onOpenChange={(open) => !open && setEditingAthleteStat(null)}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit {editingAthleteStat}</DialogTitle>
+            <DialogDescription>
+              Update your {editingAthleteStat} statistic
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="athlete-stat-value" className="text-right">
+                Value
+              </Label>
+              <Input
+                id="athlete-stat-value"
+                type="number"
+                step="0.1"
+                value={athleteStatValue}
+                onChange={(e) => setAthleteStatValue(Number(e.target.value))}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="submit" onClick={saveAthleteStatChange}>Save changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Upload button for athletes */}
       {isAthlete && <UploadButton />}
