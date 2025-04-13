@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -13,6 +12,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ArrowLeft, Save } from "lucide-react";
 import { toast } from "sonner";
 import ProfilePictureUpload from "@/components/ProfilePictureUpload";
+
+const bgColors = [
+  { id: "blue", label: "Blue", value: "#1D9BF0", className: "bg-blue-500" },
+  { id: "green", label: "Green", value: "#4CAF50", className: "bg-green-500" },
+  { id: "purple", label: "Purple", value: "#8B5CF6", className: "bg-purple-500" },
+  { id: "orange", label: "Orange", value: "#F97316", className: "bg-orange-500" },
+  { id: "pink", label: "Pink", value: "#EC4899", className: "bg-pink-500" },
+  { id: "teal", label: "Teal", value: "#14B8A6", className: "bg-teal-500" },
+  { id: "red", label: "Red", value: "#EF4444", className: "bg-red-500" },
+  { id: "yellow", label: "Yellow", value: "#EAB308", className: "bg-yellow-500" },
+  { id: "indigo", label: "Indigo", value: "#6366F1", className: "bg-indigo-500" },
+  { id: "gray", label: "Gray", value: "#71717A", className: "bg-gray-500" },
+];
 
 const EditProfile = () => {
   const { user, updateUserProfile } = useAuth();
@@ -35,12 +47,12 @@ const EditProfile = () => {
     email: user?.email || "",
     phone: user?.phone || "(123) 456-7890",
     website: user?.website || "sportlinked.com/profile",
-    profilePic: user?.profilePic
+    profilePic: user?.profilePic,
+    profileBgColor: user?.profileBgColor || "#1D9BF0"
   });
   
   const [isLoading, setIsLoading] = useState(false);
   
-  // Get initials for avatar fallback
   const getInitials = (name?: string) => {
     if (!name) return isTeam ? "T" : isAthlete ? "A" : "S";
     return name
@@ -57,22 +69,23 @@ const EditProfile = () => {
   const handleProfilePicChange = (image: string | undefined) => {
     setFormData({ ...formData, profilePic: image });
   };
+
+  const handleColorChange = (color: string) => {
+    setFormData({ ...formData, profileBgColor: color });
+  };
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Update user profile
     if (updateUserProfile) {
       updateUserProfile(formData);
     }
     
-    // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
       toast.success("Profile updated successfully");
       
-      // Navigate back based on role
       if (isTeam) {
         navigate("/team-profile");
       } else {
@@ -82,7 +95,6 @@ const EditProfile = () => {
   };
   
   const handleBack = () => {
-    // Navigate back based on role
     if (isTeam) {
       navigate("/team-profile");
     } else {
@@ -94,7 +106,6 @@ const EditProfile = () => {
     <div className={`min-h-screen pb-8 ${
       isAthlete ? "athlete-theme" : isScout ? "scout-theme" : "team-theme"
     } dark:bg-gray-900`}>
-      {/* Header */}
       <header className={`p-4 flex items-center shadow-sm ${
         isAthlete ? "bg-athlete" : isScout ? "bg-scout" : "bg-team"
       } text-white`}>
@@ -104,7 +115,6 @@ const EditProfile = () => {
         <h1 className="text-xl font-bold ml-4">{t("profile.editProfile")}</h1>
       </header>
 
-      {/* Main content */}
       <main className="container mx-auto px-4 py-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           <Card className="dark:bg-gray-800 dark:border-gray-700">
@@ -112,6 +122,10 @@ const EditProfile = () => {
               <CardTitle className="dark:text-white">{t("profile.changePicture")}</CardTitle>
             </CardHeader>
             <CardContent className="flex flex-col items-center">
+              <div 
+                className="w-full h-20 mb-4 rounded-md overflow-hidden" 
+                style={{ backgroundColor: formData.profileBgColor }}
+              ></div>
               <ProfilePictureUpload
                 profilePic={formData.profilePic}
                 name={formData.name}
@@ -128,6 +142,23 @@ const EditProfile = () => {
                   </Avatar>
                 }
               />
+              <div className="w-full mt-4">
+                <Label className="block mb-2 dark:text-gray-200">{t("profile.backgroundColorLabel")}</Label>
+                <div className="grid grid-cols-5 gap-2">
+                  {bgColors.map((color) => (
+                    <button
+                      key={color.id}
+                      type="button"
+                      className={`h-10 rounded-md ${color.className} ${
+                        formData.profileBgColor === color.value ? 'ring-2 ring-offset-2 ring-blue-500' : ''
+                      }`}
+                      onClick={() => handleColorChange(color.value)}
+                      aria-label={`Select ${color.label} background`}
+                      title={color.label}
+                    />
+                  ))}
+                </div>
+              </div>
             </CardContent>
           </Card>
           

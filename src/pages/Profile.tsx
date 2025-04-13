@@ -102,7 +102,8 @@ const Profile = () => {
     <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"} dark:bg-gray-900`}>
       <header className="relative">
         <div 
-          className={`h-40 w-full ${isAthlete ? "bg-athlete" : "bg-scout"}`}
+          className={`h-40 w-full`}
+          style={{ backgroundColor: user?.profileBgColor || (isAthlete ? "#1D9BF0" : "#4CAF50") }}
         />
         
         <div className="absolute top-2 right-2 flex gap-2">
