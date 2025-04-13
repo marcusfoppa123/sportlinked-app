@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,12 +20,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { t } from "@/i18n";
+import { useLanguage } from "@/context/LanguageContext";
 
 const Profile = () => {
   const { user, updateUserProfile } = useAuth();
   const navigate = useNavigate();
   const isAthlete = user?.role === "athlete";
+  const { t } = useLanguage();
   
   const [stats, setStats] = useState({
     connections: user?.connections || 450,
