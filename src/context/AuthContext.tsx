@@ -9,6 +9,7 @@ export interface User {
   email: string;
   role: UserRole;
   profilePic?: string;
+  profileBgColor?: string; // Added this property
   bio?: string;
   location?: string;
   sport?: string;
