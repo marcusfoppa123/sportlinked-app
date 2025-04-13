@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Heart, MessageSquare, Share2, MoreHorizontal } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import ContentFeedCard from "./ContentFeedCard";
 import ProfileCard from "./ProfileCard";
 import ImageModal from "./ImageModal";
 import AthleteProfileModal from "./AthleteProfileModal";
@@ -70,7 +72,7 @@ const suggestedAthletes = [
 ];
 
 // Mock data for the feed
-const mockPosts = [
+const initialPosts = [
   {
     id: "1",
     user: {
@@ -81,11 +83,19 @@ const mockPosts = [
     },
     sport: "Basketball",
     position: "Shooting Guard",
-    content: "Just broke my career high with 38 points last night! 🏀🔥 Check out the highlights!",
-    media: "https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=2070&auto=format&fit=crop",
-    likes: 128,
-    comments: 24,
-    time: "2h ago"
+    content: {
+      text: "Just broke my career high with 38 points last night! 🏀🔥 Check out the highlights!",
+      image: "https://images.unsplash.com/photo-1546519638-68e109498ffc?q=80&w=2070&auto=format&fit=crop",
+      video: ""
+    },
+    stats: {
+      likes: 128,
+      comments: 24,
+      shares: 15
+    },
+    timestamp: new Date(Date.now() - 3600000 * 2), // 2 hours ago
+    userLiked: false,
+    userBookmarked: false
   },
   {
     id: "2",
@@ -97,11 +107,19 @@ const mockPosts = [
     },
     sport: "Soccer",
     position: "Forward",
-    content: "Perfect free kick at practice today. Working on consistency for the upcoming tournament next month. Any scouts in the New York area should come check out our game on the 15th!",
-    media: "",
-    likes: 95,
-    comments: 12,
-    time: "5h ago"
+    content: {
+      text: "Perfect free kick at practice today. Working on consistency for the upcoming tournament next month. Any scouts in the New York area should come check out our game on the 15th!",
+      image: "",
+      video: ""
+    },
+    stats: {
+      likes: 95,
+      comments: 12,
+      shares: 8
+    },
+    timestamp: new Date(Date.now() - 3600000 * 5), // 5 hours ago
+    userLiked: false,
+    userBookmarked: false
   },
   {
     id: "3",
@@ -113,11 +131,19 @@ const mockPosts = [
     },
     sport: "Baseball",
     position: "Pitcher",
-    content: "New personal best! 98 mph fastball during today's training session. 🔥⚾",
-    media: "https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=2067&auto=format&fit=crop",
-    likes: 211,
-    comments: 43,
-    time: "1d ago"
+    content: {
+      text: "New personal best! 98 mph fastball during today's training session. 🔥⚾",
+      image: "https://images.unsplash.com/photo-1531415074968-036ba1b575da?q=80&w=2067&auto=format&fit=crop",
+      video: ""
+    },
+    stats: {
+      likes: 211,
+      comments: 43,
+      shares: 29
+    },
+    timestamp: new Date(Date.now() - 3600000 * 24), // 1 day ago
+    userLiked: false,
+    userBookmarked: false
   }
 ];
 
@@ -128,15 +154,49 @@ interface AthleteContentProps {
 
 const AthleteContent = ({ filterSport, contentType = "posts" }: AthleteContentProps) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [likedPosts, setLikedPosts] = useState<Record<string, boolean>>({});
-  const [postsData, setPostsData] = useState(mockPosts);
+  const [postsData, setPostsData] = useState(initialPosts);
   const [displayedAthletes, setDisplayedAthletes] = useState(4);
   const [selectedAthlete, setSelectedAthlete] = useState<(typeof suggestedAthletes)[0] | null>(null);
+  const [postText, setPostText] = useState("");
   
   const filteredPosts = filterSport 
-    ? postsData.filter(post => post.sport.toLowerCase() === filterSport.toLowerCase())
+    ? postsData.filter(post => post.sport?.toLowerCase() === filterSport.toLowerCase())
     : postsData;
+
+  const handleNewPost = () => {
+    if (!postText.trim()) return;
+    
+    const newPost = {
+      id: `post-${Date.now()}`,
+      user: {
+        id: user?.id || "current-user",
+        name: user?.name || "You",
+        role: user?.role || "athlete",
+        profilePic: user?.profilePic
+      },
+      sport: user?.sport || "Basketball",
+      position: user?.position || "Player",
+      content: {
+        text: postText,
+        image: "",
+        video: ""
+      },
+      stats: {
+        likes: 0,
+        comments: 0,
+        shares: 0
+      },
+      timestamp: new Date(),
+      userLiked: false,
+      userBookmarked: false
+    };
+    
+    setPostsData([newPost, ...postsData]);
+    setPostText("");
+  };
 
   const handleLike = (postId: string) => {
     // Toggle liked state
@@ -149,7 +209,10 @@ const AthleteContent = ({ filterSport, contentType = "posts" }: AthleteContentPr
         if (post.id === postId) {
           return {
             ...post,
-            likes: likedPosts[postId] ? post.likes - 1 : post.likes + 1
+            stats: {
+              ...post.stats,
+              likes: likedPosts[postId] ? post.stats.likes - 1 : post.stats.likes + 1
+            }
           };
         }
         return post;
@@ -163,6 +226,10 @@ const AthleteContent = ({ filterSport, contentType = "posts" }: AthleteContentPr
 
   const handleViewProfile = (athlete: (typeof suggestedAthletes)[0]) => {
     setSelectedAthlete(athlete);
+  };
+
+  const handleCreatePostClick = () => {
+    navigate("/create-post");
   };
 
   // Render profiles only (for Athletes page)
@@ -208,12 +275,28 @@ const AthleteContent = ({ filterSport, contentType = "posts" }: AthleteContentPr
               </Avatar>
               <Input 
                 placeholder="Share your latest highlights or stats..." 
-                className="flex-1 dark:bg-gray-700 dark:border-gray-600"
+                className="flex-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                value={postText}
+                onChange={(e) => setPostText(e.target.value)}
               />
             </div>
             <div className="flex justify-between mt-4">
-              <Button variant="outline" size="sm" className="dark:border-gray-600 dark:text-gray-300">Photo/Video</Button>
-              <Button size="sm" className="bg-athlete hover:bg-athlete/90">Post</Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="dark:border-gray-600 dark:text-gray-300"
+                onClick={handleCreatePostClick}
+              >
+                Photo/Video
+              </Button>
+              <Button 
+                size="sm" 
+                className="bg-athlete hover:bg-athlete/90"
+                onClick={handleNewPost}
+                disabled={!postText.trim()}
+              >
+                Post
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -221,85 +304,16 @@ const AthleteContent = ({ filterSport, contentType = "posts" }: AthleteContentPr
 
       {/* Posts feed */}
       {filteredPosts.map((post) => (
-        <motion.div
+        <ContentFeedCard
           key={post.id}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Card className="athlete-card dark:bg-gray-800 dark:border-gray-700">
-            <CardHeader className="pb-3">
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-3">
-                  <Avatar>
-                    <AvatarFallback className="bg-blue-100">
-                      {post.user.name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <h3 className="font-medium dark:text-white">{post.user.name}</h3>
-                    <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                      <span>{post.sport} • {post.position}</span>
-                      <span className="mx-1">•</span>
-                      <span>{post.time}</span>
-                    </div>
-                  </div>
-                </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8">
-                  <MoreHorizontal className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardHeader>
-            
-            <CardContent className="pb-3">
-              <p className="text-sm mb-3 dark:text-gray-300">{post.content}</p>
-              {post.media && (
-                <div 
-                  className="rounded-md overflow-hidden cursor-pointer transition-transform hover:opacity-95"
-                  onClick={() => setSelectedImage(post.media)}
-                >
-                  <img 
-                    src={post.media} 
-                    alt="Post media" 
-                    className="w-full h-64 object-cover"
-                  />
-                </div>
-              )}
-            </CardContent>
-            
-            <CardFooter className="pt-0 flex-col">
-              <div className="flex items-center w-full text-sm text-gray-500 dark:text-gray-400 mb-2">
-                <span>{post.likes} likes</span>
-                <span className="mx-2">•</span>
-                <span>{post.comments} comments</span>
-              </div>
-              
-              <Separator className="dark:bg-gray-700" />
-              
-              <div className="flex justify-between w-full pt-2">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  className="flex-1 dark:text-gray-300"
-                  onClick={() => handleLike(post.id)}
-                >
-                  <Heart 
-                    className={`mr-1 h-4 w-4 ${likedPosts[post.id] ? 'fill-red-500 text-red-500' : ''}`} 
-                  />
-                  {likedPosts[post.id] ? 'Liked' : 'Like'}
-                </Button>
-                <Button variant="ghost" size="sm" className="flex-1 dark:text-gray-300">
-                  <MessageSquare className="mr-1 h-4 w-4" />
-                  Comment
-                </Button>
-                <Button variant="ghost" size="sm" className="flex-1 dark:text-gray-300">
-                  <Share2 className="mr-1 h-4 w-4" />
-                  Share
-                </Button>
-              </div>
-            </CardFooter>
-          </Card>
-        </motion.div>
+          id={post.id}
+          user={post.user}
+          timestamp={post.timestamp}
+          content={post.content}
+          stats={post.stats}
+          userLiked={likedPosts[post.id] || false}
+          userBookmarked={false}
+        />
       ))}
 
       {/* Image modal for expanded view */}

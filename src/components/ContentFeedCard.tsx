@@ -196,6 +196,7 @@ const ContentFeedCard = ({
         </CardFooter>
       </Card>
       
+      {/* Comment Section Dialog */}
       <CommentSection 
         isOpen={commentsOpen} 
         onClose={() => setCommentsOpen(false)} 

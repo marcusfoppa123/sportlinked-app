@@ -27,8 +27,20 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     // Update DOM when theme changes
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
+      // Set custom CSS variables for dark mode
+      document.documentElement.style.setProperty('--text-primary', 'rgba(255, 255, 255, 0.95)');
+      document.documentElement.style.setProperty('--text-secondary', 'rgba(255, 255, 255, 0.7)');
+      document.documentElement.style.setProperty('--bg-primary', '#121212');
+      document.documentElement.style.setProperty('--bg-secondary', '#1e1e1e');
+      document.documentElement.style.setProperty('--bg-tertiary', '#2a2a2a');
     } else {
       document.documentElement.classList.remove("dark");
+      // Reset CSS variables for light mode
+      document.documentElement.style.setProperty('--text-primary', 'rgba(0, 0, 0, 0.87)');
+      document.documentElement.style.setProperty('--text-secondary', 'rgba(0, 0, 0, 0.6)');
+      document.documentElement.style.setProperty('--bg-primary', '#ffffff');
+      document.documentElement.style.setProperty('--bg-secondary', '#f5f5f5');
+      document.documentElement.style.setProperty('--bg-tertiary', '#e0e0e0');
     }
     localStorage.setItem("theme", theme);
   }, [theme]);
