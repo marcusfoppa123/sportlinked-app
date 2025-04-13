@@ -3,7 +3,7 @@ import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Home, Search, PlusCircle, Bell, User, MessageCircle, Heart, CreditCard } from "lucide-react";
+import { Home, Search, PlusCircle, User, MessageCircle, Heart, CreditCard } from "lucide-react";
 
 const BottomNavigation = () => {
   const navigate = useNavigate();
@@ -28,19 +28,14 @@ const BottomNavigation = () => {
       icon: <MessageCircle className="h-6 w-6" />
     },
     {
-      path: "/notifications",
-      label: "Notifications",
-      icon: <Bell className="h-6 w-6" />
+      path: "/subscriptions",
+      label: "Subscriptions",
+      icon: <CreditCard className="h-6 w-6" />
     },
     {
       path: "/profile",
       label: "Profile",
       icon: <User className="h-6 w-6" />
-    },
-    {
-      path: "/subscriptions",
-      label: "Subscriptions",
-      icon: <CreditCard className="h-6 w-6" />
     }
   ];
 

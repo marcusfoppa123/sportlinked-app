@@ -6,7 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, ThumbsUp, Share, Bookmark } from "lucide-react";
+import { MessageSquare, ThumbsUp, Share2, Bookmark } from "lucide-react";
 import CommentSection from "./CommentSection";
 
 interface ContentFeedCardProps {
@@ -72,6 +72,14 @@ const ContentFeedCard = ({
   
   const handleBookmark = () => {
     setIsBookmarked(!isBookmarked);
+    // Simulating bookmarking functionality - in a real app, this would call an API
+    if (!isBookmarked) {
+      // Add to bookmarked posts
+      console.log("Post bookmarked:", id);
+    } else {
+      // Remove from bookmarked posts
+      console.log("Post removed from bookmarks:", id);
+    }
   };
   
   const formatTimestamp = (date: Date) => {
@@ -178,7 +186,7 @@ const ContentFeedCard = ({
               size="sm" 
               className="px-2 dark:text-gray-300 dark:hover:bg-gray-700"
             >
-              <Share className="h-4 w-4 mr-1" />
+              <Share2 className="h-4 w-4 mr-1" />
               <span className="text-xs">{stats.shares}</span>
             </Button>
           </div>
@@ -190,6 +198,7 @@ const ContentFeedCard = ({
             className={`px-2 dark:hover:bg-gray-700 ${
               isBookmarked ? "text-blue-500 dark:text-blue-400" : "dark:text-gray-300"
             }`}
+            aria-label={isBookmarked ? "Remove from saved items" : "Save to your items"}
           >
             <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
           </Button>

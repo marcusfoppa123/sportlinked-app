@@ -9,12 +9,13 @@ import {
   Home, 
   User, 
   Settings, 
-  MessageSquare, 
+  MessageCircle, 
   Bell, 
   Search, 
   Users, 
   Bookmark,
-  HelpCircle 
+  HelpCircle,
+  CreditCard
 } from "lucide-react";
 
 interface SideMenuProps {
@@ -46,8 +47,9 @@ const SideMenu = ({ isOpen, onClose }: SideMenuProps) => {
     { icon: Search, label: t("menu.explore"), path: "/athletes" },
     { icon: User, label: t("menu.myProfile"), path: profileLink },
     { icon: Bookmark, label: t("menu.savedItems"), path: "/saved" },
-    { icon: MessageSquare, label: t("menu.messages"), path: "/messages" },
+    { icon: MessageCircle, label: t("menu.messages"), path: "/messages" },
     { icon: Bell, label: t("menu.notifications"), path: "/notifications" },
+    { icon: CreditCard, label: t("menu.subscriptions"), path: "/subscriptions" },
     { icon: Settings, label: t("menu.settings"), path: "/settings" },
     { icon: HelpCircle, label: t("menu.help"), path: "/help" },
   ];
@@ -85,7 +87,7 @@ const SideMenu = ({ isOpen, onClose }: SideMenuProps) => {
                 key={item.path}
                 to={item.path}
                 onClick={onClose}
-                className="flex items-center gap-4 px-3 py-3 text-sm font-medium rounded-md hover:bg-muted dark:hover:bg-gray-800 transition-colors"
+                className="flex items-center gap-4 px-3 py-3 text-sm font-medium rounded-md hover:bg-muted dark:hover:bg-gray-800 dark:text-gray-200 transition-colors"
               >
                 <item.icon className="h-5 w-5" />
                 <span>{item.label}</span>

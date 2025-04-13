@@ -19,6 +19,7 @@ import NotFound from "./pages/NotFound";
 import Athletes from "./pages/Athletes";
 import CreatePost from "./pages/CreatePost";
 import Subscriptions from "./pages/Subscriptions";
+import SavedItems from "./pages/SavedItems";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const App = () => (
                 <Route path="/athletes" element={<Athletes />} />
                 <Route path="/create-post" element={<CreatePost />} />
                 <Route path="/subscriptions" element={<Subscriptions />} />
+                <Route path="/saved" element={<SavedItems />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>

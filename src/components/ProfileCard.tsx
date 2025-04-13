@@ -1,11 +1,14 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { UserRole } from "@/context/AuthContext";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/context/LanguageContext";
+import { useNavigate } from "react-router-dom";
+import { MessageCircle, UserPlus, Check } from "lucide-react";
+import { toast } from "sonner";
 
 interface ProfileCardProps {
   user: {
@@ -22,6 +25,9 @@ interface ProfileCardProps {
 
 const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stats }: ProfileCardProps) => {
   const { t } = useLanguage();
+  const navigate = useNavigate();
+  const [isConnected, setIsConnected] = useState(false);
+  const [isPending, setIsPending] = useState(false);
   
   // Get initials for avatar fallback
   const getInitials = (name: string) => {
@@ -33,6 +39,26 @@ const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stat
   };
   
   const isAthlete = user.role === "athlete";
+  
+  const handleConnect = () => {
+    if (isConnected) return;
+    
+    if (isPending) {
+      // Cancel connection request
+      setIsPending(false);
+      toast.info("Connection request cancelled");
+    } else {
+      // Send connection request
+      setIsPending(true);
+      toast.success("Connection request sent!");
+    }
+  };
+  
+  const handleMessage = () => {
+    // Navigate to messages page and open a conversation with this user
+    navigate("/messages");
+    toast.success(`Started conversation with ${user.name}`);
+  };
   
   return (
     <Card className={`overflow-hidden border ${isAthlete ? "athlete-border" : "scout-border"} dark:bg-gray-800 dark:border-gray-700`}>
@@ -73,12 +99,44 @@ const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stat
         </div>
       </CardContent>
       
-      <CardFooter className="flex justify-center pb-4">
+      <CardFooter className="flex justify-between gap-2 pb-4">
         <Button 
-          onClick={onViewProfile}
-          className={isAthlete ? "bg-athlete hover:bg-athlete/90" : "bg-scout hover:bg-scout/90"}
+          variant="outline"
+          size="sm"
+          onClick={handleConnect}
+          className={`flex-1 ${
+            isPending 
+              ? "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300" 
+              : isConnected 
+                ? "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400" 
+                : "dark:bg-gray-700 dark:text-white"
+          }`}
         >
-          View Profile
+          {isPending ? (
+            <>
+              <Check className="h-4 w-4 mr-1" />
+              Pending
+            </>
+          ) : isConnected ? (
+            <>
+              <Check className="h-4 w-4 mr-1" />
+              Connected
+            </>
+          ) : (
+            <>
+              <UserPlus className="h-4 w-4 mr-1" />
+              Connect
+            </>
+          )}
+        </Button>
+        
+        <Button 
+          size="sm"
+          className={`flex-1 ${isAthlete ? "bg-athlete hover:bg-athlete/90" : "bg-scout hover:bg-scout/90"}`}
+          onClick={handleMessage}
+        >
+          <MessageCircle className="h-4 w-4 mr-1" />
+          Message
         </Button>
       </CardFooter>
     </Card>
