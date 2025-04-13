@@ -1,6 +1,6 @@
+
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { useLanguage } from "@/context/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,17 +25,19 @@ const Profile = () => {
   const { user, updateUserProfile } = useAuth();
   const navigate = useNavigate();
   const isAthlete = user?.role === "athlete";
-  const { t } = useLanguage();
   
+  // Stats state with real data based on user
   const [stats, setStats] = useState({
     connections: user?.connections || 450,
     posts: user?.posts || 32,
     offers: isAthlete ? (user?.offers || 15) : 0
   });
   
+  // State for editing stats
   const [editingStat, setEditingStat] = useState<string | null>(null);
   const [statValue, setStatValue] = useState<number>(0);
   
+  // State for athlete stats
   const [athleteStats, setAthleteStats] = useState({
     ppg: user?.ppg || 18.7,
     apg: user?.apg || 7.2,
@@ -44,9 +46,11 @@ const Profile = () => {
     winPercentage: user?.winPercentage || 58
   });
   
+  // State for editing athlete stats
   const [editingAthleteStat, setEditingAthleteStat] = useState<string | null>(null);
   const [athleteStatValue, setAthleteStatValue] = useState<number>(0);
   
+  // Get initials for avatar fallback
   const getInitials = (name?: string) => {
     if (!name) return "U";
     return name
@@ -64,10 +68,6 @@ const Profile = () => {
     navigate("/settings");
   };
   
-  const handleCreatePost = () => {
-    navigate("/create-post");
-  };
-  
   const openStatEditor = (stat: string, value: number) => {
     setEditingStat(stat);
     setStatValue(value);
@@ -78,6 +78,7 @@ const Profile = () => {
       const newStats = { ...stats, [editingStat]: statValue };
       setStats(newStats);
       
+      // Save to user profile if needed
       if (updateUserProfile) {
         updateUserProfile({ [editingStat]: statValue });
       }
@@ -96,6 +97,7 @@ const Profile = () => {
       const newStats = { ...athleteStats, [editingAthleteStat]: athleteStatValue };
       setAthleteStats(newStats);
       
+      // Save to user profile if needed
       if (updateUserProfile) {
         updateUserProfile({ [editingAthleteStat]: athleteStatValue });
       }
@@ -106,6 +108,7 @@ const Profile = () => {
 
   return (
     <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"} dark:bg-gray-900`}>
+      {/* Header */}
       <header className="relative">
         <div 
           className={`h-40 w-full ${isAthlete ? "bg-athlete" : "bg-scout"}`}
@@ -181,6 +184,7 @@ const Profile = () => {
         </div>
       </header>
 
+      {/* Main content */}
       <main className="px-4 py-4">
         <Tabs defaultValue="posts" className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-4 dark:bg-gray-800">
@@ -194,14 +198,11 @@ const Profile = () => {
               <Card className="dark:bg-gray-800 dark:border-gray-700">
                 <CardContent className="p-4">
                   <p className="text-center text-gray-500 dark:text-gray-400">
-                    {t("profile.shareHighlights")}
+                    Share your highlights and achievements with scouts!
                   </p>
-                  <Button 
-                    className={`mt-2 w-full ${isAthlete ? "bg-athlete hover:bg-athlete/90" : "bg-scout hover:bg-scout/90"}`}
-                    onClick={handleCreatePost}
-                  >
+                  <Button className={`mt-2 w-full ${isAthlete ? "bg-athlete hover:bg-athlete/90" : "bg-scout hover:bg-scout/90"}`}>
                     <Edit className="h-4 w-4 mr-2" />
-                    {t("profile.createPost")}
+                    Create Post
                   </Button>
                 </CardContent>
               </Card>
@@ -209,7 +210,7 @@ const Profile = () => {
             
             <Card className="dark:bg-gray-800 dark:border-gray-700">
               <CardContent className="p-6 text-center">
-                <p className="text-gray-500 dark:text-gray-400">{t("profile.noPosts")}</p>
+                <p className="text-gray-500 dark:text-gray-400">No posts yet</p>
               </CardContent>
             </Card>
           </TabsContent>
@@ -312,6 +313,7 @@ const Profile = () => {
         </Tabs>
       </main>
 
+      {/* Edit stat dialog */}
       <Dialog open={!!editingStat} onOpenChange={(open) => !open && setEditingStat(null)}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -340,6 +342,7 @@ const Profile = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Edit athlete stat dialog */}
       <Dialog open={!!editingAthleteStat} onOpenChange={(open) => !open && setEditingAthleteStat(null)}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -369,8 +372,10 @@ const Profile = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Upload button for athletes */}
       {isAthlete && <UploadButton />}
       
+      {/* Bottom navigation */}
       <BottomNavigation />
     </div>
   );

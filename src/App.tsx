@@ -13,12 +13,11 @@ import Profile from "./pages/Profile";
 import TeamProfile from "./pages/TeamProfile";
 import EditProfile from "./pages/EditProfile";
 import Messages from "./pages/Messages";
-import Conversation from "./pages/Conversation";
-import CreatePost from "./pages/CreatePost";
 import Notifications from "./pages/Notifications";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 import Athletes from "./pages/Athletes";
+import CreatePost from "./pages/CreatePost";
 
 const queryClient = new QueryClient();
 
@@ -38,11 +37,10 @@ const App = () => (
                 <Route path="/team-profile" element={<TeamProfile />} />
                 <Route path="/edit-profile" element={<EditProfile />} />
                 <Route path="/messages" element={<Messages />} />
-                <Route path="/conversation/:id" element={<Conversation />} />
-                <Route path="/create-post" element={<CreatePost />} />
                 <Route path="/notifications" element={<Notifications />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/athletes" element={<Athletes />} />
+                <Route path="/create-post" element={<CreatePost />} />
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
