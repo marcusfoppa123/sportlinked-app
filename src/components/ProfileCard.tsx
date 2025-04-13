@@ -16,9 +16,11 @@ interface ProfileCardProps {
   sport?: string;
   position?: string;
   onViewProfile?: () => void;
+  isFullProfile?: boolean;
+  stats?: Record<string, string>;
 }
 
-const ProfileCard = ({ user, sport, position, onViewProfile }: ProfileCardProps) => {
+const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stats }: ProfileCardProps) => {
   const { t } = useLanguage();
   
   // Get initials for avatar fallback
@@ -57,6 +59,17 @@ const ProfileCard = ({ user, sport, position, onViewProfile }: ProfileCardProps)
               </span>
             )}
           </div>
+          
+          {isFullProfile && stats && (
+            <div className="grid grid-cols-3 gap-2 w-full mt-3">
+              {Object.entries(stats).map(([key, value]) => (
+                <div key={key} className="text-center p-2 bg-gray-50 rounded-md dark:bg-gray-700">
+                  <p className="text-xs text-gray-500 dark:text-gray-300">{key}</p>
+                  <p className="font-semibold dark:text-white">{value}</p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </CardContent>
       
