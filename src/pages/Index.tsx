@@ -11,6 +11,9 @@ const Index = () => {
   const [step, setStep] = useState<"role" | "auth" | "complete">("role");
 
   useEffect(() => {
+    console.log("Index: User changed", user);
+    console.log("Index: isAuthenticated", isAuthenticated);
+    
     if (isAuthenticated) {
       setStep("complete");
     } else if (user?.role) {

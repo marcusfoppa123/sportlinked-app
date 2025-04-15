@@ -10,6 +10,7 @@ const RoleSelection = () => {
 
   const handleRoleSelect = (role: UserRole) => {
     setRole(role);
+    console.log("Selected role:", role); // Add logging to help debug
   };
 
   return (
@@ -30,9 +31,7 @@ const RoleSelection = () => {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          <Card 
-            className="border-2 hover:border-athlete cursor-pointer overflow-hidden"
-          >
+          <Card className="border-2 hover:border-athlete cursor-pointer overflow-hidden">
             <CardHeader className="bg-athlete-light pb-2">
               <CardTitle>Athlete</CardTitle>
               <CardDescription>For players and athletes of all levels</CardDescription>
@@ -67,9 +66,7 @@ const RoleSelection = () => {
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 0.3, duration: 0.5 }}
         >
-          <Card 
-            className="border-2 hover:border-scout cursor-pointer overflow-hidden"
-          >
+          <Card className="border-2 hover:border-scout cursor-pointer overflow-hidden">
             <CardHeader className="bg-scout-light pb-2">
               <CardTitle>Scout</CardTitle>
               <CardDescription>For coaches, recruiters and sports organizations</CardDescription>
@@ -104,9 +101,7 @@ const RoleSelection = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.5 }}
         >
-          <Card 
-            className="border-2 hover:border-team cursor-pointer overflow-hidden"
-          >
+          <Card className="border-2 hover:border-team cursor-pointer overflow-hidden">
             <CardHeader className="bg-[#FEF7CD] pb-2">
               <CardTitle>Team/Club</CardTitle>
               <CardDescription>For sports teams, clubs and organizations</CardDescription>
