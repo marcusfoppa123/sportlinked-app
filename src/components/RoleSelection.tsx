@@ -31,8 +31,7 @@ const RoleSelection = () => {
           transition={{ delay: 0.2, duration: 0.5 }}
         >
           <Card 
-            className="border-2 hover:border-athlete cursor-pointer overflow-hidden" 
-            onClick={() => handleRoleSelect("athlete")}
+            className="border-2 hover:border-athlete cursor-pointer overflow-hidden"
           >
             <CardHeader className="bg-athlete-light pb-2">
               <CardTitle>Athlete</CardTitle>
@@ -69,8 +68,7 @@ const RoleSelection = () => {
           transition={{ delay: 0.3, duration: 0.5 }}
         >
           <Card 
-            className="border-2 hover:border-scout cursor-pointer overflow-hidden" 
-            onClick={() => handleRoleSelect("scout")}
+            className="border-2 hover:border-scout cursor-pointer overflow-hidden"
           >
             <CardHeader className="bg-scout-light pb-2">
               <CardTitle>Scout</CardTitle>
@@ -107,8 +105,7 @@ const RoleSelection = () => {
           transition={{ delay: 0.4, duration: 0.5 }}
         >
           <Card 
-            className="border-2 hover:border-team cursor-pointer overflow-hidden" 
-            onClick={() => handleRoleSelect("team")}
+            className="border-2 hover:border-team cursor-pointer overflow-hidden"
           >
             <CardHeader className="bg-[#FEF7CD] pb-2">
               <CardTitle>Team/Club</CardTitle>
