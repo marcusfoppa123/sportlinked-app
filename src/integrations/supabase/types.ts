@@ -9,7 +9,108 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          apg: number | null
+          avatar_url: string | null
+          bio: string | null
+          connections: number | null
+          created_at: string
+          experience: string | null
+          founded_year: string | null
+          full_name: string | null
+          games: number | null
+          home_venue: string | null
+          id: string
+          location: string | null
+          offers: number | null
+          phone: string | null
+          position: string | null
+          posts: number | null
+          ppg: number | null
+          role: string
+          rpg: number | null
+          sport: string | null
+          team_size: string | null
+          updated_at: string
+          username: string | null
+          website: string | null
+          win_percentage: number | null
+        }
+        Insert: {
+          apg?: number | null
+          avatar_url?: string | null
+          bio?: string | null
+          connections?: number | null
+          created_at?: string
+          experience?: string | null
+          founded_year?: string | null
+          full_name?: string | null
+          games?: number | null
+          home_venue?: string | null
+          id: string
+          location?: string | null
+          offers?: number | null
+          phone?: string | null
+          position?: string | null
+          posts?: number | null
+          ppg?: number | null
+          role?: string
+          rpg?: number | null
+          sport?: string | null
+          team_size?: string | null
+          updated_at?: string
+          username?: string | null
+          website?: string | null
+          win_percentage?: number | null
+        }
+        Update: {
+          apg?: number | null
+          avatar_url?: string | null
+          bio?: string | null
+          connections?: number | null
+          created_at?: string
+          experience?: string | null
+          founded_year?: string | null
+          full_name?: string | null
+          games?: number | null
+          home_venue?: string | null
+          id?: string
+          location?: string | null
+          offers?: number | null
+          phone?: string | null
+          position?: string | null
+          posts?: number | null
+          ppg?: number | null
+          role?: string
+          rpg?: number | null
+          sport?: string | null
+          team_size?: string | null
+          updated_at?: string
+          username?: string | null
+          website?: string | null
+          win_percentage?: number | null
+        }
+        Relationships: []
+      }
+      sportslinked: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: number
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: number
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
