@@ -17,6 +17,7 @@ const Index = () => {
     if (isAuthenticated) {
       setStep("complete");
     } else if (user?.role) {
+      console.log("Setting step to auth because user has role:", user.role);
       setStep("auth");
     } else {
       setStep("role");

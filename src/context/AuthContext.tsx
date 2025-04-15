@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
@@ -206,7 +205,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const setRole = (role: UserRole) => {
-    if (user) {
+    console.log("Setting role in AuthContext:", role);
+    setUser(prevUser => {
+      if (!prevUser) {
+        return { 
+          id: '', 
+          name: '', 
+          email: '', 
+          role 
+        };
+      }
+      
+      return { ...prevUser, role };
+    });
+    
+    if (user && user.id) {
       updateUserProfile({ role });
     }
   };
