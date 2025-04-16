@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowLeft, Image, Paperclip, Video, Hash, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const CreatePost = () => {
   const { user } = useAuth();
@@ -169,7 +170,7 @@ const CreatePost = () => {
       }
       
       // Create post in database
-      const { error } = await supabase
+      const { data: newPost, error } = await supabase
         .from('posts')
         .insert({
           user_id: user.id,
@@ -177,9 +178,21 @@ const CreatePost = () => {
           image_url: imageUrl,
           video_url: videoUrl,
           sport: selectedSport || null
-        });
+        })
+        .select('id')
+        .single();
       
       if (error) throw error;
+      
+      // Update profile post count
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ posts: (user.posts || 0) + 1 })
+        .eq('id', user.id);
+      
+      if (profileError) {
+        console.error('Error updating profile post count:', profileError);
+      }
       
       toast.success("Post published successfully!");
       navigate("/for-you");
@@ -216,8 +229,8 @@ const CreatePost = () => {
         </div>
       </header>
       
-      {/* Main content */}
-      <main className="container px-4 py-4">
+      {/* Main content - Make it scrollable */}
+      <ScrollArea className="container h-[calc(100vh-4rem)] px-4 py-4">
         <Card className="dark:bg-gray-800 dark:border-gray-700">
           <CardHeader className="flex-row items-center space-y-0 gap-3">
             <Avatar>
@@ -398,7 +411,7 @@ const CreatePost = () => {
             </div>
           </CardFooter>
         </Card>
-      </main>
+      </ScrollArea>
     </div>
   );
 };

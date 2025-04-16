@@ -1,12 +1,11 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Edit, Settings, Share2 } from "lucide-react";
+import { Edit, Settings, Share2, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
 import UploadButton from "@/components/UploadButton";
@@ -22,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import SideMenu from "@/components/SideMenu";
 import { useIsMobile } from "@/hooks/use-mobile";
+import AthleteContent from "@/components/AthleteContent";
 
 const Profile = () => {
   const { user, updateUserProfile } = useAuth();
@@ -68,6 +68,10 @@ const Profile = () => {
     navigate("/settings");
   };
   
+  const handleCreatePost = () => {
+    navigate("/create-post");
+  };
+  
   const openStatEditor = (stat: string, value: number) => {
     setEditingStat(stat);
     setStatValue(value);
@@ -106,7 +110,6 @@ const Profile = () => {
 
   return (
     <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"} dark:bg-gray-900`}>
-      {/* Side Menu */}
       <SideMenu isOpen={sideMenuOpen} onClose={() => setSideMenuOpen(false)} />
       
       <header className="relative">
@@ -185,7 +188,6 @@ const Profile = () => {
         </div>
       </header>
 
-      {/* Main content */}
       <main className="px-4 py-4">
         <Tabs defaultValue="posts" className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-4 dark:bg-gray-800">
@@ -201,19 +203,18 @@ const Profile = () => {
                   <p className="text-center text-gray-500 dark:text-gray-400">
                     Share your highlights and achievements with scouts!
                   </p>
-                  <Button className={`mt-2 w-full ${isAthlete ? "bg-athlete hover:bg-athlete/90" : "bg-scout hover:bg-scout/90"}`}>
-                    <Edit className="h-4 w-4 mr-2" />
+                  <Button 
+                    className={`mt-2 w-full ${isAthlete ? "bg-athlete hover:bg-athlete/90" : "bg-scout hover:bg-scout/90"}`}
+                    onClick={handleCreatePost}
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
                     Create Post
                   </Button>
                 </CardContent>
               </Card>
             )}
             
-            <Card className="dark:bg-gray-800 dark:border-gray-700">
-              <CardContent className="p-6 text-center">
-                <p className="text-gray-500 dark:text-gray-400">No posts yet</p>
-              </CardContent>
-            </Card>
+            <AthleteContent userId={user?.id} />
           </TabsContent>
           
           <TabsContent value="stats" className="space-y-4">
@@ -314,7 +315,6 @@ const Profile = () => {
         </Tabs>
       </main>
 
-      {/* Dialog for editing stats */}
       <Dialog open={!!editingStat} onOpenChange={(open) => !open && setEditingStat(null)}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -343,7 +343,6 @@ const Profile = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog for editing athlete stats */}
       <Dialog open={!!editingAthleteStat} onOpenChange={(open) => !open && setEditingAthleteStat(null)}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -381,4 +380,3 @@ const Profile = () => {
 };
 
 export default Profile;
-

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -9,9 +8,14 @@ import { toast } from "sonner";
 interface AthleteContentProps {
   filterSport?: string;
   contentType?: "posts" | "profiles";
+  userId?: string;
 }
 
-const AthleteContent = ({ filterSport, contentType = "posts" }: AthleteContentProps) => {
+const AthleteContent = ({ 
+  filterSport, 
+  contentType = "posts",
+  userId 
+}: AthleteContentProps) => {
   const { user } = useAuth();
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,6 +33,10 @@ const AthleteContent = ({ filterSport, contentType = "posts" }: AthleteContentPr
           query = query.eq('sport', filterSport);
         }
         
+        if (userId) {
+          query = query.eq('user_id', userId);
+        }
+        
         const { data: postsData, error: postsError } = await query;
         
         if (postsError) {
@@ -36,10 +44,8 @@ const AthleteContent = ({ filterSport, contentType = "posts" }: AthleteContentPr
         }
         
         if (postsData) {
-          // Fetch profile information for each post
           const postsWithStats = await Promise.all(
             postsData.map(async (post) => {
-              // Get profile info
               const { data: profileData, error: profileError } = await supabase
                 .from('profiles')
                 .select('*')
@@ -50,19 +56,16 @@ const AthleteContent = ({ filterSport, contentType = "posts" }: AthleteContentPr
                 console.error('Error fetching profile:', profileError);
               }
               
-              // Get likes count
               const { count: likesCount, error: likesError } = await supabase
                 .from('likes')
                 .select('id', { count: 'exact' })
                 .eq('post_id', post.id);
               
-              // Get comments count
               const { count: commentsCount, error: commentsError } = await supabase
                 .from('comments')
                 .select('id', { count: 'exact' })
                 .eq('post_id', post.id);
               
-              // Check if user liked the post
               const { data: userLiked, error: userLikedError } = await supabase
                 .from('likes')
                 .select('id')
@@ -70,7 +73,6 @@ const AthleteContent = ({ filterSport, contentType = "posts" }: AthleteContentPr
                 .eq('user_id', user?.id || '')
                 .maybeSingle();
               
-              // Check if user bookmarked the post
               const { data: userBookmarked, error: userBookmarkedError } = await supabase
                 .from('bookmarks')
                 .select('id')
@@ -113,7 +115,7 @@ const AthleteContent = ({ filterSport, contentType = "posts" }: AthleteContentPr
     };
     
     fetchPosts();
-  }, [filterSport, user?.id]);
+  }, [filterSport, userId, user?.id]);
   
   if (loading) {
     return (

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -10,19 +9,25 @@ import ContentFeed from "@/components/ContentFeed";
 import UploadButton from "@/components/UploadButton";
 import SideMenu from "@/components/SideMenu";
 import SearchDialog from "@/components/SearchDialog";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 
 const ForYou = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const location = useLocation();
+  
   const isAthlete = user?.role === "athlete";
   const [activeTab, setActiveTab] = useState("for-you");
   const [sideMenuOpen, setSideMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [key, setKey] = useState(0); // Used to force re-render of ContentFeed
+  
+  useEffect(() => {
+    setKey(prev => prev + 1);
+  }, [location.pathname]);
   
   const sportTabs = [
     { id: "for-you", label: t("nav.forYou") },
@@ -32,13 +37,10 @@ const ForYou = () => {
     { id: "baseball", label: "Baseball" }
   ];
   
-  // Refresh the feed
   const handleRefresh = () => {
     setRefreshing(true);
-    // Increment key to force re-render of ContentFeed
     setKey(prev => prev + 1);
     
-    // Simulate a refresh delay
     setTimeout(() => {
       setRefreshing(false);
       toast.success("Feed refreshed");
@@ -47,13 +49,10 @@ const ForYou = () => {
 
   return (
     <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"}`}>
-      {/* Side Menu */}
       <SideMenu isOpen={sideMenuOpen} onClose={() => setSideMenuOpen(false)} />
       
-      {/* Search Dialog */}
       <SearchDialog isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
       
-      {/* Header */}
       <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-border shadow-sm">
         <div className="container px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -103,7 +102,6 @@ const ForYou = () => {
           </div>
         </div>
         
-        {/* Tabs */}
         <div className="container px-4 overflow-x-auto pb-2 scrollbar-none">
           <Tabs 
             value={activeTab} 
@@ -129,19 +127,16 @@ const ForYou = () => {
         </div>
       </header>
 
-      {/* Main content */}
       <main className="container px-4 py-4">
         <ContentFeed 
-          key={key} // Force re-render when this key changes
+          key={key} 
           filterSport={activeTab !== "for-you" ? activeTab : undefined} 
           contentType="posts"
         />
       </main>
 
-      {/* Upload button for athletes */}
       {isAthlete && <UploadButton />}
       
-      {/* Bottom navigation */}
       <BottomNavigation />
     </div>
   );
