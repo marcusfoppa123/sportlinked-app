@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -19,11 +20,16 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import SideMenu from "@/components/SideMenu";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Profile = () => {
   const { user, updateUserProfile } = useAuth();
   const navigate = useNavigate();
   const isAthlete = user?.role === "athlete";
+  const isMobile = useIsMobile();
+  
+  const [sideMenuOpen, setSideMenuOpen] = useState(false);
   
   const [stats, setStats] = useState({
     connections: user?.connections || 450,
@@ -100,6 +106,9 @@ const Profile = () => {
 
   return (
     <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"} dark:bg-gray-900`}>
+      {/* Side Menu */}
+      <SideMenu isOpen={sideMenuOpen} onClose={() => setSideMenuOpen(false)} />
+      
       <header className="relative">
         <div 
           className={`h-40 w-full`}
@@ -176,6 +185,7 @@ const Profile = () => {
         </div>
       </header>
 
+      {/* Main content */}
       <main className="px-4 py-4">
         <Tabs defaultValue="posts" className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-4 dark:bg-gray-800">
@@ -304,6 +314,7 @@ const Profile = () => {
         </Tabs>
       </main>
 
+      {/* Dialog for editing stats */}
       <Dialog open={!!editingStat} onOpenChange={(open) => !open && setEditingStat(null)}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -332,6 +343,7 @@ const Profile = () => {
         </DialogContent>
       </Dialog>
 
+      {/* Dialog for editing athlete stats */}
       <Dialog open={!!editingAthleteStat} onOpenChange={(open) => !open && setEditingAthleteStat(null)}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -369,3 +381,4 @@ const Profile = () => {
 };
 
 export default Profile;
+
