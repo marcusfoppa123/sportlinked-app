@@ -177,7 +177,8 @@ const CreatePost = () => {
           content: postText.trim() ? postText : null,
           image_url: imageUrl,
           video_url: videoUrl,
-          sport: selectedSport || null
+          sport: selectedSport || null,
+          hashtags: hashtags.length > 0 ? hashtags : null
         })
         .select('id')
         .single();
@@ -267,7 +268,7 @@ const CreatePost = () => {
               onChange={(e) => setPostText(e.target.value)}
             />
             
-            {/* Sport selection */}
+            {/* Sport selection - FIX HERE: Adding non-empty value to SelectItem */}
             <div className="flex items-center gap-2">
               <Label className="text-gray-500 dark:text-gray-400">Sport:</Label>
               <Select
@@ -278,7 +279,7 @@ const CreatePost = () => {
                   <SelectValue placeholder="Select" />
                 </SelectTrigger>
                 <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
                   <SelectItem value="basketball">Basketball</SelectItem>
                   <SelectItem value="football">Football</SelectItem>
                   <SelectItem value="soccer">Soccer</SelectItem>
