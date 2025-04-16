@@ -1,16 +1,17 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Menu, Settings } from "lucide-react";
+import { Search, Menu, Settings, RefreshCw } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import ContentFeed from "@/components/ContentFeed";
 import UploadButton from "@/components/UploadButton";
 import SideMenu from "@/components/SideMenu";
 import SearchDialog from "@/components/SearchDialog";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 const ForYou = () => {
   const { user } = useAuth();
@@ -20,6 +21,8 @@ const ForYou = () => {
   const [activeTab, setActiveTab] = useState("for-you");
   const [sideMenuOpen, setSideMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [key, setKey] = useState(0); // Used to force re-render of ContentFeed
   
   const sportTabs = [
     { id: "for-you", label: t("nav.forYou") },
@@ -28,6 +31,19 @@ const ForYou = () => {
     { id: "soccer", label: "Soccer" },
     { id: "baseball", label: "Baseball" }
   ];
+  
+  // Refresh the feed
+  const handleRefresh = () => {
+    setRefreshing(true);
+    // Increment key to force re-render of ContentFeed
+    setKey(prev => prev + 1);
+    
+    // Simulate a refresh delay
+    setTimeout(() => {
+      setRefreshing(false);
+      toast.success("Feed refreshed");
+    }, 1000);
+  };
 
   return (
     <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"}`}>
@@ -59,6 +75,15 @@ const ForYou = () => {
           </div>
           
           <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={handleRefresh}
+              className="dark:text-white dark:hover:bg-gray-800"
+              disabled={refreshing}
+            >
+              <RefreshCw className={`h-5 w-5 ${refreshing ? 'animate-spin' : ''}`} />
+            </Button>
             <Button 
               variant="ghost" 
               size="icon" 
@@ -107,6 +132,7 @@ const ForYou = () => {
       {/* Main content */}
       <main className="container px-4 py-4">
         <ContentFeed 
+          key={key} // Force re-render when this key changes
           filterSport={activeTab !== "for-you" ? activeTab : undefined} 
           contentType="posts"
         />

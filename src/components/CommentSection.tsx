@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
 import { 
@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { ThumbsUp, Reply, MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 // Define types for comments
 interface Comment {
@@ -52,41 +53,8 @@ const CommentSection = ({ isOpen, onClose, postId }: CommentSectionProps) => {
   const [comment, setComment] = useState("");
   const [replyText, setReplyText] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
-  const [comments, setComments] = useState<Comment[]>([
-    {
-      id: "1",
-      userId: "user1",
-      userName: "John Smith",
-      userRole: "athlete",
-      text: "Great skills! Would love to connect and discuss opportunities.",
-      timestamp: new Date(Date.now() - 3600000 * 24 * 2), // 2 days ago
-      likes: 5,
-      userLiked: false,
-      replies: [
-        {
-          id: "reply1",
-          userId: "user3",
-          userName: "Coach Wilson",
-          userRole: "scout",
-          text: "I agree. Amazing talent on display!",
-          timestamp: new Date(Date.now() - 3600000 * 12), // 12 hours ago
-          likes: 2,
-          userLiked: false,
-        }
-      ]
-    },
-    {
-      id: "2",
-      userId: "user2",
-      userName: "Sarah Johnson",
-      userRole: "team",
-      text: "Impressive performance in the last game. Keep it up!",
-      timestamp: new Date(Date.now() - 3600000 * 8), // 8 hours ago
-      likes: 3,
-      userLiked: true,
-      replies: []
-    }
-  ]);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [loading, setLoading] = useState(false);
 
   // Get initials for avatar fallback
   const getInitials = (name: string) => {
@@ -97,36 +65,120 @@ const CommentSection = ({ isOpen, onClose, postId }: CommentSectionProps) => {
       .toUpperCase();
   };
 
-  const handlePostComment = () => {
-    if (!comment.trim()) return;
+  // Fetch comments when dialog opens
+  useEffect(() => {
+    if (isOpen && postId) {
+      fetchComments();
+    }
+  }, [isOpen, postId]);
+
+  const fetchComments = async () => {
+    if (!postId) return;
     
-    const newComment: Comment = {
-      id: `comment-${Date.now()}`,
-      userId: user?.id || "current-user",
-      userName: user?.name || "You",
-      userRole: user?.role || "athlete",
-      userProfilePic: user?.profilePic,
-      text: comment,
-      timestamp: new Date(),
-      likes: 0,
-      userLiked: false,
-      replies: []
-    };
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('comments')
+        .select(`
+          *,
+          profiles:user_id(full_name, role, avatar_url)
+        `)
+        .eq('post_id', postId)
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      if (data) {
+        // Format comments
+        const formattedComments = await Promise.all(
+          data.map(async (comment) => {
+            // Check if user liked this comment (in a real app)
+            // For now, we'll just simulate this
+            const userLiked = false;
+            
+            return {
+              id: comment.id,
+              userId: comment.user_id,
+              userName: comment.profiles?.full_name || 'Unknown User',
+              userRole: comment.profiles?.role || 'athlete',
+              userProfilePic: comment.profiles?.avatar_url,
+              text: comment.content,
+              timestamp: new Date(comment.created_at),
+              likes: 0, // Would fetch from a likes table in a full implementation
+              userLiked: userLiked,
+              replies: [] // Would fetch replies in a full implementation
+            };
+          })
+        );
+        
+        setComments(formattedComments);
+      }
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      toast.error('Failed to load comments');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePostComment = async () => {
+    if (!comment.trim() || !user) {
+      if (!user) toast.error("Please sign in to comment");
+      return;
+    }
     
-    setComments([newComment, ...comments]);
-    setComment("");
-    toast.success("Comment posted successfully");
+    try {
+      const { error } = await supabase
+        .from('comments')
+        .insert({
+          user_id: user.id,
+          post_id: postId,
+          content: comment
+        });
+      
+      if (error) throw error;
+      
+      // Add the new comment to the UI
+      const newComment: Comment = {
+        id: `temp-${Date.now()}`, // Will be replaced on refetch
+        userId: user.id,
+        userName: user.name || 'You',
+        userRole: user.role || 'athlete',
+        userProfilePic: user.profilePic,
+        text: comment,
+        timestamp: new Date(),
+        likes: 0,
+        userLiked: false,
+        replies: []
+      };
+      
+      setComments([newComment, ...comments]);
+      setComment("");
+      toast.success("Comment posted successfully");
+      
+      // Refresh comments to get the proper ID
+      fetchComments();
+    } catch (error) {
+      console.error('Error posting comment:', error);
+      toast.error('Failed to post comment');
+    }
   };
 
   const handlePostReply = (commentId: string) => {
-    if (!replyText.trim()) return;
+    if (!replyText.trim() || !user) {
+      if (!user) toast.error("Please sign in to reply");
+      return;
+    }
+    
+    // In a real app, you would save the reply to the database here
+    // For now, we'll just update the UI
     
     const newReply: Reply = {
       id: `reply-${Date.now()}`,
-      userId: user?.id || "current-user",
-      userName: user?.name || "You",
-      userRole: user?.role || "athlete",
-      userProfilePic: user?.profilePic,
+      userId: user.id || 'current-user',
+      userName: user.name || 'You',
+      userRole: user.role || 'athlete',
+      userProfilePic: user.profilePic,
       text: replyText,
       timestamp: new Date(),
       likes: 0,
@@ -150,6 +202,14 @@ const CommentSection = ({ isOpen, onClose, postId }: CommentSectionProps) => {
   };
 
   const toggleLike = (commentId: string, isReply = false, replyId?: string) => {
+    if (!user) {
+      toast.error("Please sign in to like comments");
+      return;
+    }
+    
+    // In a real app, you would update the database here
+    // For now, we'll just update the UI
+    
     if (isReply && replyId) {
       // Toggle like on a reply
       const updatedComments = comments.map(c => {
@@ -198,7 +258,11 @@ const CommentSection = ({ isOpen, onClose, postId }: CommentSectionProps) => {
         </DialogHeader>
         
         <div className="flex-grow overflow-y-auto py-4 space-y-4 px-1">
-          {comments.length === 0 ? (
+          {loading ? (
+            <div className="text-center dark:text-gray-400 py-8">
+              Loading comments...
+            </div>
+          ) : comments.length === 0 ? (
             <div className="text-center text-muted-foreground dark:text-gray-400 py-8">
               {t("content.noComments")}
             </div>
@@ -353,8 +417,9 @@ const CommentSection = ({ isOpen, onClose, postId }: CommentSectionProps) => {
               <Textarea 
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                placeholder={t("content.writeComment")}
+                placeholder={user ? t("content.writeComment") : "Sign in to comment"}
                 className="min-h-[80px] resize-none dark:bg-gray-800 dark:border-gray-700 dark:text-white"
+                disabled={!user}
               />
             </div>
           </div>
@@ -362,7 +427,7 @@ const CommentSection = ({ isOpen, onClose, postId }: CommentSectionProps) => {
           <div className="flex justify-end">
             <Button 
               onClick={handlePostComment}
-              disabled={!comment.trim()}
+              disabled={!comment.trim() || !user}
               className="dark:bg-blue-600 dark:hover:bg-blue-700 dark:text-white"
             >
               {t("content.postComment")}

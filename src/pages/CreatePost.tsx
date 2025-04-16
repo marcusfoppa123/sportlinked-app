@@ -10,8 +10,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Image, Paperclip, Video, Hash, X } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const CreatePost = () => {
   const { user } = useAuth();
@@ -22,9 +24,13 @@ const CreatePost = () => {
   const [postText, setPostText] = useState("");
   const [hashtags, setHashtags] = useState<string[]>([]);
   const [hashtagInput, setHashtagInput] = useState("");
+  const [selectedSport, setSelectedSport] = useState<string>("");
   
   const [previewImages, setPreviewImages] = useState<string[]>([]);
   const [previewVideo, setPreviewVideo] = useState<string | null>(null);
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -47,19 +53,22 @@ const CreatePost = () => {
     if (!files) return;
     
     const newImages: string[] = [];
+    const newImageFiles: File[] = [];
+    
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      const reader = new FileReader();
+      newImageFiles.push(file);
       
+      const reader = new FileReader();
       reader.onload = (e) => {
         if (e.target?.result) {
           newImages.push(e.target.result.toString());
           if (newImages.length === files.length) {
             setPreviewImages([...previewImages, ...newImages]);
+            setImageFiles([...imageFiles, ...newImageFiles]);
           }
         }
       };
-      
       reader.readAsDataURL(file);
     }
   };
@@ -68,22 +77,25 @@ const CreatePost = () => {
     const file = e.target.files?.[0];
     if (!file) return;
     
+    setVideoFile(file);
+    
     const reader = new FileReader();
     reader.onload = (e) => {
       if (e.target?.result) {
         setPreviewVideo(e.target.result.toString());
       }
     };
-    
     reader.readAsDataURL(file);
   };
   
   const handleRemoveImage = (index: number) => {
     setPreviewImages(prev => prev.filter((_, i) => i !== index));
+    setImageFiles(prev => prev.filter((_, i) => i !== index));
   };
   
   const handleRemoveVideo = () => {
     setPreviewVideo(null);
+    setVideoFile(null);
     if (videoInputRef.current) {
       videoInputRef.current.value = "";
     }
@@ -100,16 +112,83 @@ const CreatePost = () => {
     setHashtags(prev => prev.filter(h => h !== hashtag));
   };
   
-  const handlePublish = () => {
+  const handlePublish = async () => {
+    if (!user) {
+      toast.error("Please sign in to create posts");
+      return;
+    }
+    
     if (!postText.trim() && previewImages.length === 0 && !previewVideo) {
       toast.error("Please add some content to your post");
       return;
     }
     
-    // In a real app, we would send the data to the backend
-    // Here we'll just navigate back and show a success message
-    toast.success("Post published successfully!");
-    navigate("/for-you");
+    try {
+      setUploading(true);
+      
+      // Handle file uploads if any
+      let imageUrl = null;
+      let videoUrl = null;
+      
+      if (imageFiles.length > 0) {
+        // For simplicity, we'll just upload the first image
+        const file = imageFiles[0];
+        const fileExt = file.name.split('.').pop();
+        const filePath = `${user.id}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError, data } = await supabase.storage
+          .from('posts')
+          .upload(filePath, file);
+          
+        if (uploadError) throw uploadError;
+        
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('posts')
+          .getPublicUrl(filePath);
+          
+        imageUrl = publicUrl;
+      }
+      
+      if (videoFile) {
+        const fileExt = videoFile.name.split('.').pop();
+        const filePath = `${user.id}/${Date.now()}.${fileExt}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('posts')
+          .upload(filePath, videoFile);
+          
+        if (uploadError) throw uploadError;
+        
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('posts')
+          .getPublicUrl(filePath);
+          
+        videoUrl = publicUrl;
+      }
+      
+      // Create post in database
+      const { error } = await supabase
+        .from('posts')
+        .insert({
+          user_id: user.id,
+          content: postText.trim() ? postText : null,
+          image_url: imageUrl,
+          video_url: videoUrl,
+          sport: selectedSport || null
+        });
+      
+      if (error) throw error;
+      
+      toast.success("Post published successfully!");
+      navigate("/for-you");
+    } catch (error) {
+      console.error('Error creating post:', error);
+      toast.error('Failed to publish post');
+    } finally {
+      setUploading(false);
+    }
   };
   
   return (
@@ -130,9 +209,9 @@ const CreatePost = () => {
             variant="default"
             onClick={handlePublish}
             className={`${isAthlete ? "bg-athlete hover:bg-athlete/90" : "bg-scout hover:bg-scout/90"}`}
-            disabled={!postText.trim() && previewImages.length === 0 && !previewVideo}
+            disabled={(!postText.trim() && previewImages.length === 0 && !previewVideo) || uploading}
           >
-            Publish
+            {uploading ? "Publishing..." : "Publish"}
           </Button>
         </div>
       </header>
@@ -174,6 +253,26 @@ const CreatePost = () => {
               value={postText}
               onChange={(e) => setPostText(e.target.value)}
             />
+            
+            {/* Sport selection */}
+            <div className="flex items-center gap-2">
+              <Label className="text-gray-500 dark:text-gray-400">Sport:</Label>
+              <Select
+                value={selectedSport}
+                onValueChange={setSelectedSport}
+              >
+                <SelectTrigger className="w-32 h-8 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
+                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="basketball">Basketball</SelectItem>
+                  <SelectItem value="football">Football</SelectItem>
+                  <SelectItem value="soccer">Soccer</SelectItem>
+                  <SelectItem value="baseball">Baseball</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             
             {/* Preview images */}
             {previewImages.length > 0 && (

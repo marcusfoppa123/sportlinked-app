@@ -2,12 +2,15 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/context/LanguageContext";
+import { useAuth } from "@/context/AuthContext";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, ThumbsUp, Share2, Bookmark } from "lucide-react";
 import CommentSection from "./CommentSection";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 interface ContentFeedCardProps {
   id: string;
@@ -42,6 +45,7 @@ const ContentFeedCard = ({
   userBookmarked
 }: ContentFeedCardProps) => {
   const { t } = useLanguage();
+  const { user: currentUser } = useAuth();
   const navigate = useNavigate();
   const [isLiked, setIsLiked] = useState(userLiked);
   const [likeCount, setLikeCount] = useState(stats.likes);
@@ -65,20 +69,94 @@ const ContentFeedCard = ({
     }
   };
   
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+  const handleLike = async () => {
+    if (!currentUser) {
+      toast.error("Please sign in to like posts");
+      return;
+    }
+    
+    try {
+      if (!isLiked) {
+        // Add like
+        const { error } = await supabase
+          .from('likes')
+          .insert({
+            user_id: currentUser.id,
+            post_id: id
+          });
+        
+        if (error) {
+          if (error.code === '23505') { // Unique violation
+            // Like already exists, ignore
+            console.log('Like already exists');
+          } else {
+            throw error;
+          }
+        }
+      } else {
+        // Remove like
+        const { error } = await supabase
+          .from('likes')
+          .delete()
+          .eq('user_id', currentUser.id)
+          .eq('post_id', id);
+        
+        if (error) throw error;
+      }
+      
+      // Update state
+      setIsLiked(!isLiked);
+      setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
+    } catch (error) {
+      console.error('Error updating like:', error);
+      toast.error('Failed to update like');
+    }
   };
   
-  const handleBookmark = () => {
-    setIsBookmarked(!isBookmarked);
-    // Simulating bookmarking functionality - in a real app, this would call an API
-    if (!isBookmarked) {
-      // Add to bookmarked posts
-      console.log("Post bookmarked:", id);
-    } else {
-      // Remove from bookmarked posts
-      console.log("Post removed from bookmarks:", id);
+  const handleBookmark = async () => {
+    if (!currentUser) {
+      toast.error("Please sign in to bookmark posts");
+      return;
+    }
+    
+    try {
+      if (!isBookmarked) {
+        // Add bookmark
+        const { error } = await supabase
+          .from('bookmarks')
+          .insert({
+            user_id: currentUser.id,
+            post_id: id
+          });
+        
+        if (error) {
+          if (error.code === '23505') { // Unique violation
+            // Bookmark already exists, ignore
+            console.log('Bookmark already exists');
+          } else {
+            throw error;
+          }
+        }
+        
+        toast.success("Post saved to your bookmarks");
+      } else {
+        // Remove bookmark
+        const { error } = await supabase
+          .from('bookmarks')
+          .delete()
+          .eq('user_id', currentUser.id)
+          .eq('post_id', id);
+        
+        if (error) throw error;
+        
+        toast.success("Post removed from your bookmarks");
+      }
+      
+      // Update state
+      setIsBookmarked(!isBookmarked);
+    } catch (error) {
+      console.error('Error updating bookmark:', error);
+      toast.error('Failed to update bookmark');
     }
   };
   
