@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -11,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Image, Paperclip, Video, Hash, X, Trash2 } from "lucide-react";
+import { ArrowLeft, Image, Video, Hash, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -207,7 +206,6 @@ const CreatePost = () => {
   
   return (
     <div className={`min-h-screen ${isAthlete ? "athlete-theme" : "scout-theme"} dark:bg-gray-900`}>
-      {/* Header */}
       <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-border shadow-sm">
         <div className="container px-4 h-16 flex items-center justify-between">
           <Button 
@@ -230,7 +228,6 @@ const CreatePost = () => {
         </div>
       </header>
       
-      {/* Main content - Make it scrollable */}
       <ScrollArea className="container h-[calc(100vh-4rem)] px-4 py-4">
         <Card className="dark:bg-gray-800 dark:border-gray-700">
           <CardHeader className="flex-row items-center space-y-0 gap-3">
@@ -268,7 +265,6 @@ const CreatePost = () => {
               onChange={(e) => setPostText(e.target.value)}
             />
             
-            {/* Sport selection */}
             <div className="flex items-center gap-2">
               <Label className="text-gray-500 dark:text-gray-400">Sport:</Label>
               <Select
@@ -288,7 +284,6 @@ const CreatePost = () => {
               </Select>
             </div>
             
-            {/* Preview images */}
             {previewImages.length > 0 && (
               <div className="grid grid-cols-2 gap-2">
                 {previewImages.map((img, index) => (
@@ -309,7 +304,6 @@ const CreatePost = () => {
               </div>
             )}
             
-            {/* Preview video */}
             {previewVideo && (
               <div className="relative rounded-md overflow-hidden">
                 <video src={previewVideo} controls className="w-full h-auto" />
@@ -324,7 +318,6 @@ const CreatePost = () => {
               </div>
             )}
             
-            {/* Hashtags */}
             {hashtags.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {hashtags.map((hashtag) => (
@@ -347,7 +340,6 @@ const CreatePost = () => {
               </div>
             )}
             
-            {/* Hashtag input */}
             <div className="flex items-center gap-2">
               <Hash className="h-5 w-5 text-gray-400" />
               <Input

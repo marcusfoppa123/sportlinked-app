@@ -130,6 +130,7 @@ export type Database = {
         Row: {
           content: string | null
           created_at: string
+          hashtags: string[] | null
           id: string
           image_url: string | null
           sport: string | null
@@ -140,6 +141,7 @@ export type Database = {
         Insert: {
           content?: string | null
           created_at?: string
+          hashtags?: string[] | null
           id?: string
           image_url?: string | null
           sport?: string | null
@@ -150,6 +152,7 @@ export type Database = {
         Update: {
           content?: string | null
           created_at?: string
+          hashtags?: string[] | null
           id?: string
           image_url?: string | null
           sport?: string | null
