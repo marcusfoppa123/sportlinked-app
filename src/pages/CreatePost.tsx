@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Image, Paperclip, Video, Hash, X } from "lucide-react";
+import { ArrowLeft, Image, Paperclip, Video, Hash, X, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -25,7 +25,7 @@ const CreatePost = () => {
   const [postText, setPostText] = useState("");
   const [hashtags, setHashtags] = useState<string[]>([]);
   const [hashtagInput, setHashtagInput] = useState("");
-  const [selectedSport, setSelectedSport] = useState<string>("");
+  const [selectedSport, setSelectedSport] = useState<string>("none");
   
   const [previewImages, setPreviewImages] = useState<string[]>([]);
   const [previewVideo, setPreviewVideo] = useState<string | null>(null);
@@ -132,12 +132,12 @@ const CreatePost = () => {
       let videoUrl = null;
       
       if (imageFiles.length > 0) {
-        // For simplicity, we'll just upload the first image
+        // Upload first image for simplicity
         const file = imageFiles[0];
         const fileExt = file.name.split('.').pop();
         const filePath = `${user.id}/${Date.now()}.${fileExt}`;
         
-        const { error: uploadError, data } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from('posts')
           .upload(filePath, file);
           
@@ -268,7 +268,7 @@ const CreatePost = () => {
               onChange={(e) => setPostText(e.target.value)}
             />
             
-            {/* Sport selection - FIX HERE: Adding non-empty value to SelectItem */}
+            {/* Sport selection */}
             <div className="flex items-center gap-2">
               <Label className="text-gray-500 dark:text-gray-400">Sport:</Label>
               <Select
@@ -294,14 +294,16 @@ const CreatePost = () => {
                 {previewImages.map((img, index) => (
                   <div key={index} className="relative rounded-md overflow-hidden">
                     <img src={img} alt="Preview" className="w-full h-48 object-cover" />
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2 h-6 w-6 rounded-full opacity-80"
-                      onClick={() => handleRemoveImage(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+                    <div className="absolute top-2 right-2 flex gap-2">
+                      <Button
+                        variant="destructive"
+                        size="icon"
+                        className="h-6 w-6 rounded-full opacity-80"
+                        onClick={() => handleRemoveImage(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </div>
