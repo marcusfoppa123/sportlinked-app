@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -118,6 +119,13 @@ const CreatePost = () => {
       return;
     }
     
+    // Ensure user.id is available
+    if (!user.id) {
+      console.error("User ID is missing");
+      toast.error("Unable to publish: User ID is missing");
+      return;
+    }
+    
     if (!postText.trim() && previewImages.length === 0 && !previewVideo) {
       toast.error("Please add some content to your post");
       return;
@@ -125,22 +133,35 @@ const CreatePost = () => {
     
     try {
       setUploading(true);
+      console.log("Publishing post for user:", user.id);
       
       // Handle file uploads if any
       let imageUrl = null;
       let videoUrl = null;
       
       if (imageFiles.length > 0) {
+        // Create a storage bucket if it doesn't exist
+        const { data: buckets } = await supabase.storage.listBuckets();
+        if (!buckets?.find(bucket => bucket.name === 'posts')) {
+          await supabase.storage.createBucket('posts', {
+            public: true
+          });
+        }
+        
         // Upload first image for simplicity
         const file = imageFiles[0];
         const fileExt = file.name.split('.').pop();
-        const filePath = `${user.id}/${Date.now()}.${fileExt}`;
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `${user.id}/${fileName}`;
         
-        const { error: uploadError } = await supabase.storage
+        const { error: uploadError, data } = await supabase.storage
           .from('posts')
           .upload(filePath, file);
           
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error("Image upload error:", uploadError);
+          throw uploadError;
+        }
         
         // Get public URL
         const { data: { publicUrl } } = supabase.storage
@@ -148,17 +169,30 @@ const CreatePost = () => {
           .getPublicUrl(filePath);
           
         imageUrl = publicUrl;
+        console.log("Image uploaded:", imageUrl);
       }
       
       if (videoFile) {
+        // Create a storage bucket if it doesn't exist
+        const { data: buckets } = await supabase.storage.listBuckets();
+        if (!buckets?.find(bucket => bucket.name === 'posts')) {
+          await supabase.storage.createBucket('posts', {
+            public: true
+          });
+        }
+        
         const fileExt = videoFile.name.split('.').pop();
-        const filePath = `${user.id}/${Date.now()}.${fileExt}`;
+        const fileName = `${Date.now()}.${fileExt}`;
+        const filePath = `${user.id}/${fileName}`;
         
         const { error: uploadError } = await supabase.storage
           .from('posts')
           .upload(filePath, videoFile);
           
-        if (uploadError) throw uploadError;
+        if (uploadError) {
+          console.error("Video upload error:", uploadError);
+          throw uploadError;
+        }
         
         // Get public URL
         const { data: { publicUrl } } = supabase.storage
@@ -166,23 +200,34 @@ const CreatePost = () => {
           .getPublicUrl(filePath);
           
         videoUrl = publicUrl;
+        console.log("Video uploaded:", videoUrl);
       }
+      
+      // Create post data object
+      const postData = {
+        user_id: user.id,
+        content: postText.trim() || null,
+        image_url: imageUrl,
+        video_url: videoUrl,
+        sport: selectedSport !== "none" ? selectedSport : null,
+        hashtags: hashtags.length > 0 ? hashtags : null
+      };
+      
+      console.log("Creating post with data:", postData);
       
       // Create post in database
       const { data: newPost, error } = await supabase
         .from('posts')
-        .insert({
-          user_id: user.id,
-          content: postText.trim() ? postText : null,
-          image_url: imageUrl,
-          video_url: videoUrl,
-          sport: selectedSport || null,
-          hashtags: hashtags.length > 0 ? hashtags : null
-        })
+        .insert(postData)
         .select('id')
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Post creation error:", error);
+        throw error;
+      }
+      
+      console.log("Post created successfully:", newPost);
       
       // Update profile post count
       const { error: profileError } = await supabase
