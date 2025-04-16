@@ -77,31 +77,39 @@ const CommentSection = ({ isOpen, onClose, postId }: CommentSectionProps) => {
     
     setLoading(true);
     try {
-      const { data, error } = await supabase
+      const { data: commentsData, error: commentsError } = await supabase
         .from('comments')
-        .select(`
-          *,
-          profiles:user_id(full_name, role, avatar_url)
-        `)
+        .select('*')
         .eq('post_id', postId)
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (commentsError) throw commentsError;
       
-      if (data) {
-        // Format comments
+      if (commentsData) {
+        // Format comments with profile information
         const formattedComments = await Promise.all(
-          data.map(async (comment) => {
-            // Check if user liked this comment (in a real app)
-            // For now, we'll just simulate this
+          commentsData.map(async (comment) => {
+            // Get profile info for the comment author
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', comment.user_id)
+              .single();
+            
+            if (profileError) {
+              console.error('Error fetching profile:', profileError);
+            }
+            
+            // For a real app, we would fetch likes for each comment
+            // For now, we'll just use placeholder values
             const userLiked = false;
             
             return {
               id: comment.id,
               userId: comment.user_id,
-              userName: comment.profiles?.full_name || 'Unknown User',
-              userRole: comment.profiles?.role || 'athlete',
-              userProfilePic: comment.profiles?.avatar_url,
+              userName: profileData?.full_name || 'Unknown User',
+              userRole: profileData?.role || 'athlete',
+              userProfilePic: profileData?.avatar_url,
               text: comment.content,
               timestamp: new Date(comment.created_at),
               likes: 0, // Would fetch from a likes table in a full implementation

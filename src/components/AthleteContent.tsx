@@ -22,26 +22,34 @@ const AthleteContent = ({ filterSport, contentType = "posts" }: AthleteContentPr
       try {
         let query = supabase
           .from('posts')
-          .select(`
-            *,
-            profiles:user_id(full_name, role, avatar_url, sport, position)
-          `)
+          .select('*')
           .order('created_at', { ascending: false });
         
         if (filterSport && filterSport !== "for-you") {
           query = query.eq('sport', filterSport);
         }
         
-        const { data, error } = await query;
+        const { data: postsData, error: postsError } = await query;
         
-        if (error) {
-          throw error;
+        if (postsError) {
+          throw postsError;
         }
         
-        if (data) {
-          // Fetch likes count for each post
+        if (postsData) {
+          // Fetch profile information for each post
           const postsWithStats = await Promise.all(
-            data.map(async (post) => {
+            postsData.map(async (post) => {
+              // Get profile info
+              const { data: profileData, error: profileError } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', post.user_id)
+                .single();
+              
+              if (profileError) {
+                console.error('Error fetching profile:', profileError);
+              }
+              
               // Get likes count
               const { count: likesCount, error: likesError } = await supabase
                 .from('likes')
@@ -74,9 +82,9 @@ const AthleteContent = ({ filterSport, contentType = "posts" }: AthleteContentPr
                 ...post,
                 user: {
                   id: post.user_id,
-                  name: post.profiles?.full_name || 'Unknown User',
-                  role: post.profiles?.role || 'athlete',
-                  profilePic: post.profiles?.avatar_url
+                  name: profileData?.full_name || 'Unknown User',
+                  role: profileData?.role || 'athlete',
+                  profilePic: profileData?.avatar_url
                 },
                 content: {
                   text: post.content,
