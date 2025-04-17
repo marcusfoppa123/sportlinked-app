@@ -38,11 +38,15 @@ const Index = () => {
   }
 
   if (step === "complete") {
+    // Redirect based on user role
+    if (user?.role === "team") {
+      return <Navigate to="/team-profile" />;
+    }
     return <Navigate to="/for-you" />;
   }
 
   return (
-    <div className={`min-h-screen flex flex-col ${user?.role === "athlete" ? "athlete-theme" : user?.role === "scout" ? "scout-theme" : ""}`}>
+    <div className={`min-h-screen flex flex-col ${user?.role === "athlete" ? "athlete-theme" : user?.role === "scout" ? "scout-theme" : user?.role === "team" ? "team-theme" : ""}`}>
       <main className="flex-1 flex items-center justify-center">
         {step === "role" && <RoleSelection />}
         {step === "auth" && <Login initialRole={user?.role} />}

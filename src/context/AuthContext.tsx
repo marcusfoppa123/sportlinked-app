@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
@@ -102,6 +103,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error("Error fetching user profile:", error);
+        
+        // If profile doesn't exist yet, create it with the role from user metadata
+        if (error.code === "PGRST116") {
+          if (supabaseUser?.user_metadata?.role) {
+            const newProfile = {
+              id: userId,
+              role: supabaseUser.user_metadata.role as UserRole,
+              full_name: supabaseUser.user_metadata.full_name || '',
+            };
+            
+            const { error: insertError } = await supabase
+              .from('profiles')
+              .insert(newProfile);
+              
+            if (!insertError) {
+              // Retry fetching the profile
+              fetchUserProfile(userId);
+            }
+          }
+        }
         return;
       }
 
@@ -180,8 +201,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       toast.success("Account created successfully");
       
-      // User profile will be created by the database trigger
-      // and fetched by the onAuthStateChange event
+      // Create profile if registration was successful and we have a user
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            id: data.user.id,
+            full_name: name,
+            role: role
+          });
+          
+        if (profileError) {
+          console.error("Error creating profile:", profileError);
+        }
+      }
     } catch (error: any) {
       console.error("Registration error:", error);
       toast.error(error.message || "Registration failed. Please try again.");
@@ -219,18 +252,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { ...prevUser, role };
     });
     
-    if (user && user.id) {
+    if (user && user.id && supabaseUser) {
       updateUserProfile({ role });
     }
   };
 
   const updateUserProfile = async (updatedProfile: Partial<User>) => {
-    if (!user || !supabaseUser) {
+    if (!supabaseUser) {
       toast.error("You must be logged in to update your profile");
       return;
     }
     
     try {
+      // Ensure we have a valid user ID
+      const userId = supabaseUser.id;
+      if (!userId) {
+        toast.error("Invalid user ID");
+        return;
+      }
+      
       // Map our User interface fields to database column names
       const dbProfile: any = {};
       
@@ -247,20 +287,49 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (updatedProfile.homeVenue) dbProfile.home_venue = updatedProfile.homeVenue;
       if (updatedProfile.phone) dbProfile.phone = updatedProfile.phone;
       if (updatedProfile.website) dbProfile.website = updatedProfile.website;
+      if (updatedProfile.connections !== undefined) dbProfile.connections = updatedProfile.connections;
+      if (updatedProfile.posts !== undefined) dbProfile.posts = updatedProfile.posts;
+      if (updatedProfile.offers !== undefined) dbProfile.offers = updatedProfile.offers;
+      if (updatedProfile.ppg !== undefined) dbProfile.ppg = updatedProfile.ppg;
+      if (updatedProfile.apg !== undefined) dbProfile.apg = updatedProfile.apg;
+      if (updatedProfile.rpg !== undefined) dbProfile.rpg = updatedProfile.rpg;
+      if (updatedProfile.games !== undefined) dbProfile.games = updatedProfile.games;
+      if (updatedProfile.winPercentage !== undefined) dbProfile.win_percentage = updatedProfile.winPercentage;
       
       // Add updated_at timestamp
       dbProfile.updated_at = new Date().toISOString();
       
-      // Update the profile in Supabase
-      const { error } = await supabase
+      // First check if profile exists
+      const { data: existingProfile, error: checkError } = await supabase
         .from('profiles')
-        .update(dbProfile)
-        .eq('id', user.id);
-      
-      if (error) throw error;
+        .select('id')
+        .eq('id', userId)
+        .single();
+        
+      if (checkError && checkError.code === 'PGRST116') {
+        // Profile doesn't exist, create it
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            ...dbProfile,
+            id: userId,
+            role: updatedProfile.role || user?.role || 'athlete'
+          });
+          
+        if (insertError) throw insertError;
+      } else {
+        // Profile exists, update it
+        const { error: updateError } = await supabase
+          .from('profiles')
+          .update(dbProfile)
+          .eq('id', userId);
+          
+        if (updateError) throw updateError;
+      }
       
       // Update the local user state
-      setUser({ ...user, ...updatedProfile });
+      setUser(prev => prev ? { ...prev, ...updatedProfile } : null);
+      toast.success("Profile updated successfully");
     } catch (error: any) {
       console.error("Error updating profile:", error);
       toast.error("Failed to update profile");
@@ -274,7 +343,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         supabaseUser,
         session,
-        isAuthenticated: !!session && !!user,
+        isAuthenticated: !!session && !!supabaseUser,
         isLoading,
         login,
         register,

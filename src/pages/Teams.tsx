@@ -25,7 +25,8 @@ const Teams = () => {
       if (isTeam) {
         navigate("/team-profile");
       } else {
-        setShowLogin(true);
+        // If logged in as non-team user, show warning
+        toast.error("You're currently logged in as a " + user?.role + ". Please use a different account to create a team.");
       }
     } else {
       setShowLogin(true);
@@ -44,7 +45,7 @@ const Teams = () => {
               className="bg-white/20 text-white border-white/40 hover:bg-white/30"
               onClick={handleCreateTeam}
             >
-              Create Team
+              {isTeam ? "View Team" : "Create Team"}
             </Button>
           ) : (
             <Button 

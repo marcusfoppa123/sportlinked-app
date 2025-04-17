@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { useAuth, UserRole } from "@/context/AuthContext";
@@ -11,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 
 const LoginForm = ({ initialRole }: { initialRole: UserRole }) => {
-  const { login, user } = useAuth();
+  const { login, user, supabaseUser } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -20,12 +19,6 @@ const LoginForm = ({ initialRole }: { initialRole: UserRole }) => {
     e.preventDefault();
     if (!email || !password) {
       toast.error("Please fill in all fields");
-      return;
-    }
-    
-    // Check if user is trying to login as a different role
-    if (user && user.role !== initialRole) {
-      toast.error(`You are already registered as a ${user.role}. Please log out first or use a different account.`);
       return;
     }
     
@@ -117,7 +110,6 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Different validation based on role
     if (formData.role === "team") {
       if (!formData.role || !formData.sport || !formData.teamType) {
         toast.error("Please complete all required information");
@@ -310,10 +302,9 @@ interface LoginComponentProps {
 }
 
 const Login = ({ initialRole }: LoginComponentProps) => {
-  const { user } = useAuth();
+  const { user, supabaseUser } = useAuth();
   
-  // Prevent login as a different role if already logged in
-  const showRoleWarning = user && initialRole !== user.role;
+  const showRoleWarning = supabaseUser && user?.role && initialRole !== user.role;
   
   return (
     <div className="flex items-center justify-center w-full p-4">
@@ -338,7 +329,7 @@ const Login = ({ initialRole }: LoginComponentProps) => {
           {showRoleWarning ? (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4">
               <p className="text-sm">
-                You are currently logged in as a {user?.role}. You cannot login as a {initialRole} with the same account.
+                Your account is registered as a {user?.role}. You cannot login as a {initialRole} with the same account.
               </p>
               <p className="text-sm mt-2">
                 Please log out first or use a different email address to create a new account.
