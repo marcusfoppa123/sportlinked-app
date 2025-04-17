@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import SideMenu from "@/components/SideMenu";
 import { useIsMobile } from "@/hooks/use-mobile";
-import AthleteContent from "@/components/AthleteContent";
+import ContentFeed from "@/components/ContentFeed";
 
 const Profile = () => {
   const { user, updateUserProfile } = useAuth();
@@ -205,7 +205,7 @@ const Profile = () => {
                   </p>
                   <Button 
                     className={`mt-2 w-full ${isAthlete ? "bg-athlete hover:bg-athlete/90" : "bg-scout hover:bg-scout/90"}`}
-                    onClick={handleCreatePost}
+                    onClick={() => navigate("/create-post")}
                   >
                     <Plus className="h-4 w-4 mr-2" />
                     Create Post
@@ -214,7 +214,10 @@ const Profile = () => {
               </Card>
             )}
             
-            <AthleteContent userId={user?.id} />
+            <ContentFeed 
+              userId={user?.id} 
+              showAllPosts={false}
+            />
           </TabsContent>
           
           <TabsContent value="stats" className="space-y-4">

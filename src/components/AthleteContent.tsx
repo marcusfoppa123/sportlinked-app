@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -24,6 +25,8 @@ const AthleteContent = ({
     const fetchPosts = async () => {
       setLoading(true);
       try {
+        console.log("Fetching posts with params:", { filterSport, userId });
+        
         let query = supabase
           .from('posts')
           .select('*')
@@ -34,14 +37,18 @@ const AthleteContent = ({
         }
         
         if (userId) {
+          console.log("Filtering by user ID:", userId);
           query = query.eq('user_id', userId);
         }
         
         const { data: postsData, error: postsError } = await query;
         
         if (postsError) {
+          console.error("Error fetching posts:", postsError);
           throw postsError;
         }
+        
+        console.log("Posts data fetched:", postsData?.length || 0, "posts");
         
         if (postsData) {
           const postsWithStats = await Promise.all(
@@ -50,7 +57,7 @@ const AthleteContent = ({
                 .from('profiles')
                 .select('*')
                 .eq('id', post.user_id)
-                .single();
+                .maybeSingle();  // Changed from single() to maybeSingle()
               
               if (profileError) {
                 console.error('Error fetching profile:', profileError);

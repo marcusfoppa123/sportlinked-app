@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -132,6 +133,7 @@ const ForYou = () => {
           key={key} 
           filterSport={activeTab !== "for-you" ? activeTab : undefined} 
           contentType="posts"
+          showAllPosts={true} // Show all posts on the home page
         />
       </main>
 
