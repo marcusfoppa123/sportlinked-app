@@ -6,6 +6,7 @@ import TeamContent from "@/components/TeamContent";
 import BottomNavigation from "@/components/BottomNavigation";
 import { useAuth } from "@/context/AuthContext";
 import Login from "@/components/Login";
+import { toast } from "@/hooks/use-toast";
 
 const Teams = () => {
   const { isAuthenticated, user } = useAuth();
