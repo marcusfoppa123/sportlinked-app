@@ -27,7 +27,11 @@ const Teams = () => {
         navigate("/team-profile");
       } else {
         // If logged in as non-team user, show warning
-        toast.error("You're currently logged in as a " + user?.role + ". Please use a different account to create a team.");
+        toast({
+          variant: "destructive",
+          title: "Wrong account type",
+          description: `You're currently logged in as a ${user?.role}. Please use a different account to create a team.`
+        });
       }
     } else {
       setShowLogin(true);
