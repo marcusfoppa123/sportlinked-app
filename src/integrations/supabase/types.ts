@@ -73,30 +73,6 @@ export type Database = {
           },
         ]
       }
-      feedback: {
-        Row: {
-          content: string
-          created_at: string
-          id: string
-          rating: number | null
-          user_id: string
-        }
-        Insert: {
-          content: string
-          created_at?: string
-          id?: string
-          rating?: number | null
-          user_id: string
-        }
-        Update: {
-          content?: string
-          created_at?: string
-          id?: string
-          rating?: number | null
-          user_id?: string
-        }
-        Relationships: []
-      }
       likes: {
         Row: {
           created_at: string

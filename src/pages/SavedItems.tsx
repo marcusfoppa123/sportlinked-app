@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,98 +7,121 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import ContentFeedCard from "@/components/ContentFeedCard";
 import BottomNavigation from "@/components/BottomNavigation";
-
-// Mock saved posts data
-const mockSavedPosts = [
-  {
-    id: "post1",
-    user: {
-      id: "user1",
-      name: "Alex Johnson",
-      role: "athlete",
-      profilePic: "",
-    },
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
-    content: {
-      text: "Just had an amazing practice session today. Working on my three-point shots has really paid off!",
-      image: "https://images.unsplash.com/photo-1515523110800-9415d13b84a8?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    },
-    stats: {
-      likes: 123,
-      comments: 15,
-      shares: 5,
-    },
-    userLiked: true,
-    userBookmarked: true,
-  },
-  {
-    id: "post2",
-    user: {
-      id: "user2",
-      name: "Michigan Tigers",
-      role: "team",
-      profilePic: "",
-    },
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-    content: {
-      text: "We're excited to announce open tryouts for the upcoming season! If you think you have what it takes, sign up through the link in our bio.",
-    },
-    stats: {
-      likes: 89,
-      comments: 32,
-      shares: 12,
-    },
-    userLiked: false,
-    userBookmarked: true,
-  },
-  {
-    id: "post3",
-    user: {
-      id: "user3",
-      name: "Sarah Williams",
-      role: "athlete",
-      profilePic: "",
-    },
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 12), // 12 hours ago
-    content: {
-      text: "New personal best today! So proud of the progress I've been making.",
-      image: "https://images.unsplash.com/photo-1519861531473-9200262188bf?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    },
-    stats: {
-      likes: 156,
-      comments: 23,
-      shares: 7,
-    },
-    userLiked: true,
-    userBookmarked: true,
-  },
-  {
-    id: "post4",
-    user: {
-      id: "user4",
-      name: "Elite Scout Network",
-      role: "scout",
-      profilePic: "",
-    },
-    timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48), // 48 hours ago
-    content: {
-      text: "What qualities do you look for in a point guard? Comment below 👇",
-      image: "https://images.unsplash.com/photo-1518650451241-a7ceeac45fe9?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80",
-    },
-    stats: {
-      likes: 67,
-      comments: 45,
-      shares: 2,
-    },
-    userLiked: false,
-    userBookmarked: true,
-  },
-];
+import { supabase } from "@/integrations/supabase/client";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
 
 const SavedItems = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const isAthlete = user?.role === "athlete";
+  const [savedPosts, setSavedPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchSavedPosts = async () => {
+      if (!user?.id) return;
+      
+      try {
+        setLoading(true);
+        
+        // Fetch all bookmarks for the current user
+        const { data: bookmarks, error: bookmarksError } = await supabase
+          .from('bookmarks')
+          .select('post_id')
+          .eq('user_id', user.id);
+        
+        if (bookmarksError) {
+          console.error('Error fetching bookmarks:', bookmarksError);
+          throw bookmarksError;
+        }
+        
+        if (!bookmarks || bookmarks.length === 0) {
+          setSavedPosts([]);
+          setLoading(false);
+          return;
+        }
+        
+        // Extract post IDs from bookmarks
+        const postIds = bookmarks.map(bookmark => bookmark.post_id);
+        
+        // Fetch the actual posts
+        const { data: postsData, error: postsError } = await supabase
+          .from('posts')
+          .select('*')
+          .in('id', postIds)
+          .order('created_at', { ascending: false });
+        
+        if (postsError) {
+          console.error('Error fetching saved posts:', postsError);
+          throw postsError;
+        }
+        
+        // For each post, fetch additional data (user profile, stats, etc.)
+        const postsWithStats = await Promise.all(
+          (postsData || []).map(async (post) => {
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', post.user_id)
+              .maybeSingle();
+            
+            if (profileError) {
+              console.error('Error fetching profile:', profileError);
+            }
+            
+            const { count: likesCount, error: likesError } = await supabase
+              .from('likes')
+              .select('id', { count: 'exact' })
+              .eq('post_id', post.id);
+            
+            const { count: commentsCount, error: commentsError } = await supabase
+              .from('comments')
+              .select('id', { count: 'exact' })
+              .eq('post_id', post.id);
+            
+            const { data: userLiked, error: userLikedError } = await supabase
+              .from('likes')
+              .select('id')
+              .eq('post_id', post.id)
+              .eq('user_id', user.id || '')
+              .maybeSingle();
+            
+            return {
+              ...post,
+              user: {
+                id: post.user_id,
+                name: profileData?.full_name || 'Unknown User',
+                role: profileData?.role || 'athlete',
+                profilePic: profileData?.avatar_url
+              },
+              content: {
+                text: post.content,
+                image: post.image_url,
+                video: post.video_url
+              },
+              stats: {
+                likes: likesCount || 0,
+                comments: commentsCount || 0,
+                shares: 0
+              },
+              userLiked: !!userLiked,
+              userBookmarked: true // These are saved posts, so they are bookmarked
+            };
+          })
+        );
+        
+        setSavedPosts(postsWithStats);
+      } catch (error) {
+        console.error('Error fetching saved posts:', error);
+        toast.error('Failed to load saved posts');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchSavedPosts();
+  }, [user?.id]);
   
   // Function to render saved post in grid view
   const renderSavedPostCard = (post) => {
@@ -155,9 +178,15 @@ const SavedItems = () => {
           </TabsList>
           
           <TabsContent value="posts">
-            {mockSavedPosts.length > 0 ? (
+            {loading ? (
               <div className="grid grid-cols-2 gap-3">
-                {mockSavedPosts.map(post => renderSavedPostCard(post))}
+                {[1, 2, 3, 4].map((i) => (
+                  <Skeleton key={i} className="h-64 rounded-md" />
+                ))}
+              </div>
+            ) : savedPosts.length > 0 ? (
+              <div className="grid grid-cols-2 gap-3">
+                {savedPosts.map(post => renderSavedPostCard(post))}
               </div>
             ) : (
               <div className="text-center py-8">
