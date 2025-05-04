@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import RoleSelection from "@/components/RoleSelection";
 import Login from "@/components/Login";
 import BottomNavigation from "@/components/BottomNavigation";
+import logo from "@/assets/SportsLinked in app.png";
 
 const Index = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -37,7 +37,7 @@ const Index = () => {
     );
   }
 
-  if (step === "complete") {
+  if (step === "complete" && isAuthenticated) {
     // Redirect based on user role
     if (user?.role === "team") {
       return <Navigate to="/team-profile" />;
@@ -46,10 +46,25 @@ const Index = () => {
   }
 
   return (
-    <div className={`min-h-screen flex flex-col ${user?.role === "athlete" ? "athlete-theme" : user?.role === "scout" ? "scout-theme" : user?.role === "team" ? "team-theme" : ""}`}>
-      <main className="flex-1 flex items-center justify-center">
+    <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: '#102a37' }}>
+      {step === "role" && (
+        <div className="flex justify-center mt-16 mb-8">
+          <img src={logo} alt="SportsLinked Logo" className="h-40 w-auto" />
+        </div>
+      )}
+      <main className="flex-1 flex items-center justify-center w-full">
         {step === "role" && <RoleSelection />}
-        {step === "auth" && <Login initialRole={user?.role} />}
+        {step === "auth" && (
+          <>
+            <button
+              onClick={() => setStep("role")}
+              className="absolute top-8 left-8 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg shadow transition"
+            >
+              ← Back
+            </button>
+            <Login initialRole={user?.role} />
+          </>
+        )}
       </main>
       
       {isAuthenticated && <BottomNavigation />}

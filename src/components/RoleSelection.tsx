@@ -1,4 +1,3 @@
-
 import React from "react";
 import { motion } from "framer-motion";
 import { useAuth, UserRole } from "@/context/AuthContext";
@@ -32,9 +31,9 @@ const RoleSelection = () => {
           transition={{ delay: 0.2, duration: 0.5 }}
         >
           <Card className="border-2 hover:border-athlete cursor-pointer overflow-hidden">
-            <CardHeader className="bg-athlete-light pb-2">
-              <CardTitle>Athlete</CardTitle>
-              <CardDescription>For players and athletes of all levels</CardDescription>
+            <CardHeader className="pb-2" style={{ backgroundColor: '#1877c0' }}>
+              <CardTitle className="text-white">Athlete</CardTitle>
+              <CardDescription className="text-white/80">For players and athletes of all levels</CardDescription>
             </CardHeader>
             <CardContent className="pt-4">
               <ul className="space-y-2 text-sm">
@@ -67,9 +66,9 @@ const RoleSelection = () => {
           transition={{ delay: 0.3, duration: 0.5 }}
         >
           <Card className="border-2 hover:border-scout cursor-pointer overflow-hidden">
-            <CardHeader className="bg-scout-light pb-2">
-              <CardTitle>Scout</CardTitle>
-              <CardDescription>For coaches, recruiters and sports organizations</CardDescription>
+            <CardHeader className="pb-2" style={{ backgroundColor: '#238d4b' }}>
+              <CardTitle className="text-white">Scout</CardTitle>
+              <CardDescription className="text-white/80">For coaches, recruiters and sports organizations</CardDescription>
             </CardHeader>
             <CardContent className="pt-4">
               <ul className="space-y-2 text-sm">
@@ -102,9 +101,9 @@ const RoleSelection = () => {
           transition={{ delay: 0.4, duration: 0.5 }}
         >
           <Card className="border-2 hover:border-team cursor-pointer overflow-hidden">
-            <CardHeader className="bg-[#FEF7CD] pb-2">
-              <CardTitle>Team/Club</CardTitle>
-              <CardDescription>For sports teams, clubs and organizations</CardDescription>
+            <CardHeader className="pb-2" style={{ backgroundColor: '#e6c74c' }}>
+              <CardTitle className="text-white">Team/Club</CardTitle>
+              <CardDescription className="text-white/80">For sports teams, clubs and organizations</CardDescription>
             </CardHeader>
             <CardContent className="pt-4">
               <ul className="space-y-2 text-sm">

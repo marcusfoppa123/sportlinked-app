@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -12,6 +11,7 @@ import SideMenu from "@/components/SideMenu";
 import SearchDialog from "@/components/SearchDialog";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
+import logo from "@/assets/SportsLinked in app.png";
 
 const ForYou = () => {
   const { user } = useAuth();
@@ -67,9 +67,9 @@ const ForYou = () => {
             </Button>
             <div className="flex items-center">
               <img 
-                src="/lovable-uploads/b2d96fc1-54f5-498d-a4b1-35583dc94648.png" 
-                alt="SportLinked" 
-                className="h-8 w-auto mr-2"
+                src={logo} 
+                alt="SportsLinked Logo" 
+                className="h-12 w-auto mr-2"
               />
             </div>
           </div>

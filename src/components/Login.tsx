@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
+import logo from "@/assets/SportsLinked in app.png";
 
 const LoginForm = ({ initialRole }: { initialRole: UserRole }) => {
   const { login, user, supabaseUser } = useAuth();
@@ -307,55 +308,42 @@ const Login = ({ initialRole }: LoginComponentProps) => {
   const showRoleWarning = supabaseUser && user?.role && initialRole !== user.role;
   
   return (
-    <div className="flex items-center justify-center w-full p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className={`${
-            initialRole === "athlete" 
-              ? "bg-athlete-light" 
-              : initialRole === "scout" 
-                ? "bg-scout-light" 
-                : "bg-[#FEF7CD]"
-          } flex flex-col items-center`}
-        >
-          <img 
-            src="/sportlinked-logo.png" 
-            alt="SportLinked Logo" 
-            className="h-16 w-auto mb-4 object-contain"
-          />
-          <CardTitle>Welcome to SportLinked</CardTitle>
-          <CardDescription>Login or create an account to continue</CardDescription>
-        </CardHeader>
-        <CardContent className="pt-6">
-          {showRoleWarning ? (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4">
-              <p className="text-sm">
-                Your account is registered as a {user?.role}. You cannot login as a {initialRole} with the same account.
-              </p>
-              <p className="text-sm mt-2">
-                Please log out first or use a different email address to create a new account.
-              </p>
-            </div>
-          ) : (
-            <Tabs defaultValue="login" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 mb-4">
-                <TabsTrigger value="login">Login</TabsTrigger>
-                <TabsTrigger value="register">Register</TabsTrigger>
-              </TabsList>
-              <TabsContent value="login">
-                <LoginForm initialRole={initialRole} />
-              </TabsContent>
-              <TabsContent value="register">
-                <RegisterForm initialRole={initialRole} />
-              </TabsContent>
-            </Tabs>
-          )}
-        </CardContent>
-        <CardFooter className="flex-col space-y-2 border-t pt-4">
+    <div className="flex flex-col items-center justify-center w-full p-4 min-h-screen" style={{ backgroundColor: '#0d1a22' }}>
+      <div className="flex flex-col items-center justify-center py-8 w-full max-w-md rounded-lg shadow-md" style={{ backgroundColor: '#102a37' }}>
+        <img src={logo} alt="SportsLinked Logo" className="h-16 w-auto mb-4 object-contain" />
+        <h2 className="text-white text-2xl font-semibold mb-2">Welcome to SportsLinked</h2>
+        <p className="text-white/80 mb-6">Login or create an account to continue</p>
+      </div>
+      <div className="w-full max-w-md bg-transparent pt-6">
+        {showRoleWarning ? (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4">
+            <p className="text-sm">
+              Your account is registered as a {user?.role}. You cannot login as a {initialRole} with the same account.
+            </p>
+            <p className="text-sm mt-2">
+              Please log out first or use a different email address to create a new account.
+            </p>
+          </div>
+        ) : (
+          <Tabs defaultValue="login" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="register">Register</TabsTrigger>
+            </TabsList>
+            <TabsContent value="login">
+              <LoginForm initialRole={initialRole} />
+            </TabsContent>
+            <TabsContent value="register">
+              <RegisterForm initialRole={initialRole} />
+            </TabsContent>
+          </Tabs>
+        )}
+        <div className="flex-col space-y-2 border-t pt-4 mt-6">
           <p className="text-xs text-muted-foreground text-center">
-            By continuing, you agree to SportLinked's Terms of Service and Privacy Policy.
+            By continuing, you agree to SportsLinked's Terms of Service and Privacy Policy.
           </p>
-        </CardFooter>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -35,9 +34,8 @@ const Settings = () => {
     setShowLogoutConfirm(true);
   };
 
-  const confirmLogout = () => {
-    logout();
-    toast.success("Logged out successfully");
+  const confirmLogout = async () => {
+    await logout();
     navigate("/");
   };
 
@@ -56,59 +54,65 @@ const Settings = () => {
       </header>
 
       {/* Main content */}
-      <main className="container px-4 py-4">
+      <main className="container mx-auto px-4 py-4">
         <div className="space-y-4">
-          {/* Account settings */}
+          {/* Account Settings */}
           <Card className="dark:bg-gray-800 dark:border-gray-700">
             <CardHeader className="pb-2">
               <CardTitle>{t("settings.account")}</CardTitle>
               <CardDescription>{t("settings.accountDesc")}</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex items-center justify-between py-2 cursor-pointer">
-                <div className="flex items-center">
-                  <UserCircle className="h-5 w-5 mr-3 text-gray-500" />
-                  <span>{t("settings.profileInfo")}</span>
+            <CardContent className="space-y-4">
+              {/* Profile Information */}
+              <div className="space-y-2">
+                <Label>{t("settings.profileInfo")}</Label>
+                <div className="flex items-center space-x-4">
+                  <UserCircle className="h-8 w-8 text-gray-400" />
+                  <div>
+                    <p className="font-medium">{user?.name}</p>
+                    <p className="text-sm text-gray-500">{user?.email}</p>
+                  </div>
                 </div>
-                <ChevronRight className="h-5 w-5 text-gray-400" />
               </div>
-              
-              <div className="flex items-center justify-between py-2 cursor-pointer">
-                <div className="flex items-center">
-                  <Shield className="h-5 w-5 mr-3 text-gray-500" />
-                  <span>{t("settings.privacySecurity")}</span>
-                </div>
-                <ChevronRight className="h-5 w-5 text-gray-400" />
-              </div>
-              
-              <div className="flex items-center justify-between py-2">
-                <div className="flex items-center">
-                  <Languages className="h-5 w-5 mr-3 text-gray-500" />
-                  <span>{t("settings.language")}</span>
-                </div>
-                <div className="flex space-x-2">
-                  <Button 
-                    variant={language === "en" ? "default" : "outline"} 
-                    size="sm"
-                    onClick={() => handleLanguageChange("en")}
-                    className={language === "en" ? "bg-primary" : ""}
-                  >
-                    {t("settings.english")}
-                  </Button>
-                  <Button 
-                    variant={language === "sv" ? "default" : "outline"} 
-                    size="sm"
-                    onClick={() => handleLanguageChange("sv")}
-                    className={language === "sv" ? "bg-primary" : ""}
-                  >
-                    {t("settings.swedish")}
-                  </Button>
+
+              {/* Privacy & Security */}
+              <div className="space-y-2">
+                <Label>{t("settings.privacySecurity")}</Label>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Shield className="h-5 w-5 text-gray-400" />
+                    <span>Two-Factor Authentication</span>
+                  </div>
+                  <Switch />
                 </div>
               </div>
             </CardContent>
           </Card>
-          
-          {/* Preferences */}
+
+          {/* Language Settings */}
+          <Card className="dark:bg-gray-800 dark:border-gray-700">
+            <CardHeader className="pb-2">
+              <CardTitle>{t("settings.language")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <RadioGroup
+                value={language}
+                onValueChange={(value) => handleLanguageChange(value as "en" | "sv")}
+                className="flex flex-col space-y-2"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="en" id="en" />
+                  <Label htmlFor="en">{t("settings.english")}</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="sv" id="sv" />
+                  <Label htmlFor="sv">{t("settings.swedish")}</Label>
+                </div>
+              </RadioGroup>
+            </CardContent>
+          </Card>
+
+          {/* Theme Settings */}
           <Card className="dark:bg-gray-800 dark:border-gray-700">
             <CardHeader className="pb-2">
               <CardTitle>{t("settings.preferences")}</CardTitle>
@@ -116,39 +120,15 @@ const Settings = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <Bell className="h-5 w-5 mr-3 text-gray-500" />
-                  <span>{t("settings.pushNotif")}</span>
-                </div>
-                <Switch id="notifications" defaultChecked />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <MessageSquare className="h-5 w-5 mr-3 text-gray-500" />
-                  <span>{t("settings.emailNotif")}</span>
-                </div>
-                <Switch id="email-notifications" defaultChecked />
-              </div>
-              
-              <div className="flex items-center justify-between">
-                <div className="flex items-center">
-                  {theme === "dark" ? (
-                    <Moon className="h-5 w-5 mr-3 text-gray-500" />
-                  ) : (
-                    <Sun className="h-5 w-5 mr-3 text-gray-500" />
-                  )}
+                <div className="flex items-center space-x-2">
+                  <Sun className="h-5 w-5 text-gray-400" />
                   <span>{t("settings.darkMode")}</span>
                 </div>
-                <Switch 
-                  id="dark-mode" 
-                  checked={theme === "dark"}
-                  onCheckedChange={toggleTheme}
-                />
+                <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
               </div>
             </CardContent>
           </Card>
-          
+
           {/* About */}
           <Card className="dark:bg-gray-800 dark:border-gray-700">
             <CardHeader className="pb-2">
