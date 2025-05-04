@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
-import logo from "@/assets/SportsLinked in app.png";
+import logo from "@/assets/sportslinked-in-app.png";
 
 const LoginForm = ({ initialRole }: { initialRole: UserRole }) => {
   const { login, user, supabaseUser } = useAuth();

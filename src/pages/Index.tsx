@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import RoleSelection from "@/components/RoleSelection";
 import Login from "@/components/Login";
 import BottomNavigation from "@/components/BottomNavigation";
-import logo from "@/assets/SportsLinked in app.png";
+import logo from "@/assets/sportslinked-in-app.png";
 
 const Index = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
