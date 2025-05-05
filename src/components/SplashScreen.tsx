@@ -20,6 +20,7 @@ const splashImages = [
 interface SplashScreenProps {
   onComplete?: () => void;
   useFigmaEmbed?: boolean;
+  forceShow?: boolean;
 }
 
 const FigmaEmbed = () => (
@@ -35,24 +36,60 @@ const FigmaEmbed = () => (
   </div>
 );
 
-const SplashScreen = ({ onComplete, useFigmaEmbed = false }: SplashScreenProps) => {
+const SplashScreen = ({ onComplete, useFigmaEmbed = false, forceShow = false }: SplashScreenProps) => {
   const [index, setIndex] = useState(0);
   const [fade, setFade] = useState(true);
   const [showSplash, setShowSplash] = useState(true);
+  const [imagesLoaded, setImagesLoaded] = useState(false);
   const isMobile = useIsMobile();
 
-  // Preload all images to ensure smooth transitions
+  // Preload all images before showing splash screen
   useEffect(() => {
-    splashImages.forEach((src) => {
+    let loadedCount = 0;
+    const totalImages = splashImages.length;
+    
+    // Create an array to track which images are loaded
+    const imageLoadStatus = new Array(totalImages).fill(false);
+    
+    const checkAllLoaded = () => {
+      if (loadedCount === totalImages) {
+        console.log("All splash images loaded successfully");
+        setImagesLoaded(true);
+      }
+    };
+
+    splashImages.forEach((src, i) => {
       const img = new Image();
-      img.src = src;
-      img.onload = () => console.log(`Image loaded: ${src}`); // Log successful loading
-      img.onerror = (e) => console.error(`Image failed to load: ${src}`, e); // Log any errors
+      img.src = typeof src === 'string' ? src : '';
+      
+      img.onload = () => {
+        console.log(`Image loaded: ${i + 1}/${totalImages}`);
+        loadedCount++;
+        imageLoadStatus[i] = true;
+        checkAllLoaded();
+      };
+      
+      img.onerror = (e) => {
+        console.error(`Image ${i + 1} failed to load:`, e);
+        // Mark as loaded anyway to prevent hanging
+        loadedCount++;
+        checkAllLoaded();
+      };
     });
+
+    // Fallback in case images don't load after 3 seconds
+    const timeout = setTimeout(() => {
+      if (!imagesLoaded) {
+        console.log("Fallback: Setting images as loaded after timeout");
+        setImagesLoaded(true);
+      }
+    }, 3000);
+
+    return () => clearTimeout(timeout);
   }, []);
 
   useEffect(() => {
-    if (useFigmaEmbed) return;
+    if (useFigmaEmbed || !imagesLoaded) return;
     
     if (index < splashImages.length - 1) {
       const timeout = setTimeout(() => {
@@ -61,7 +98,7 @@ const SplashScreen = ({ onComplete, useFigmaEmbed = false }: SplashScreenProps) 
           setIndex((i) => i + 1);
           setFade(true);
         }, 300); // fade out duration
-      }, 2500); // show each image for 2.5s for better viewing
+      }, 2000); // show each image for 2 seconds for smoother transitions
       return () => clearTimeout(timeout);
     } else if (onComplete) {
       const timeout = setTimeout(() => {
@@ -70,25 +107,31 @@ const SplashScreen = ({ onComplete, useFigmaEmbed = false }: SplashScreenProps) 
           setShowSplash(false);
           onComplete();
         }, 300);
-      }, 2500);
+      }, 2000);
       return () => clearTimeout(timeout);
     }
-  }, [index, onComplete, useFigmaEmbed]);
+  }, [index, onComplete, useFigmaEmbed, imagesLoaded]);
 
   if (useFigmaEmbed) return <FigmaEmbed />;
   
-  if (!showSplash) return null;
+  if (!showSplash || (!forceShow && !imagesLoaded)) return null;
 
   return (
     <div className="fixed inset-0 flex flex-col items-center justify-center bg-black z-50">
       <div className="relative h-full w-full flex items-center justify-center">
-        <img
-          src={splashImages[index]}
-          alt={`Splash screen ${index + 1}`}
-          className={`transition-opacity duration-300 ${fade ? "opacity-100" : "opacity-0"} ${
-            isMobile ? "h-full w-auto object-contain" : "max-h-[90vh] max-w-[90vw]"
-          } shadow-lg`}
-        />
+        {imagesLoaded ? (
+          <img
+            src={splashImages[index]}
+            alt={`Splash screen ${index + 1}`}
+            className={`transition-opacity duration-300 ${fade ? "opacity-100" : "opacity-0"} ${
+              isMobile ? "h-full w-full object-cover" : "h-full w-full object-contain"
+            } shadow-lg`}
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full w-full">
+            <div className="animate-pulse text-white">Loading...</div>
+          </div>
+        )}
       </div>
       
       {index === 0 && (

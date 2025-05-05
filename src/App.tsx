@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -27,17 +26,44 @@ const queryClient = new QueryClient();
 
 const App = () => {
   const [showSplash, setShowSplash] = useState(true);
+  const [forceShowSplash, setForceShowSplash] = useState(false);
   
   // Check if the splash screen has been shown before
   useEffect(() => {
+    // Check URL parameters first for force show
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('showSplash')) {
+      setForceShowSplash(true);
+      setShowSplash(true);
+      return;
+    }
+    
+    // Otherwise, check localStorage
     const splashShown = localStorage.getItem("splashShown");
     if (splashShown) {
       setShowSplash(false);
     }
   }, []);
   
+  // Listen for special key combination to show splash (for testing)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+Alt+S to trigger splash screen
+      if (e.ctrlKey && e.altKey && e.key === 's') {
+        setForceShowSplash(true);
+        setShowSplash(true);
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+  
   const handleSplashComplete = () => {
     setShowSplash(false);
+    setForceShowSplash(false);
     // Save to local storage that splash has been shown
     localStorage.setItem("splashShown", "true");
   };
@@ -51,7 +77,7 @@ const App = () => {
               <Toaster />
               <Sonner />
               {showSplash ? (
-                <SplashScreen onComplete={handleSplashComplete} />
+                <SplashScreen onComplete={handleSplashComplete} forceShow={forceShowSplash} />
               ) : (
                 <BrowserRouter>
                   <Routes>
