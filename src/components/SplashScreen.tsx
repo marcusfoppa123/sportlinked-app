@@ -1,12 +1,19 @@
 
 import React, { useEffect, useState } from "react";
 
+// Import images properly using relative paths for browser compatibility
+import splashImage1 from "@/assets/splashscreen/png/iPhone 14 & 15 Pro - 5.jpg";
+import splashImage2 from "@/assets/splashscreen/png/iPhone 14 & 15 Pro - 7.jpg";
+import splashImage3 from "@/assets/splashscreen/png/iPhone 14 & 15 Pro - 8.jpg";
+import splashImage4 from "@/assets/splashscreen/png/iPhone 14 & 15 Pro - 9.jpg";
+import splashImage5 from "@/assets/splashscreen/png/iPhone 14 & 15 Pro - 10.jpg";
+
 const splashImages = [
-  require("@/assets/splashscreen/png/iPhone 14 & 15 Pro - 5.jpg"),
-  require("@/assets/splashscreen/png/iPhone 14 & 15 Pro - 7.jpg"),
-  require("@/assets/splashscreen/png/iPhone 14 & 15 Pro - 8.jpg"),
-  require("@/assets/splashscreen/png/iPhone 14 & 15 Pro - 9.jpg"),
-  require("@/assets/splashscreen/png/iPhone 14 & 15 Pro - 10.jpg"),
+  splashImage1,
+  splashImage2,
+  splashImage3,
+  splashImage4,
+  splashImage5,
 ];
 
 interface SplashScreenProps {
