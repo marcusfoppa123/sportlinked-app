@@ -6,6 +6,8 @@ import { LanguageProvider } from "@/context/LanguageContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import { useSplashScreen } from "@/hooks/useSplashScreen";
+import SplashScreen from "@/components/SplashScreen";
 import Index from "./pages/Index";
 import ForYou from "./pages/ForYou";
 import Profile from "./pages/Profile";
@@ -41,6 +43,8 @@ const AppRoutes = () => (
 );
 
 const App = () => {
+  const { showSplash, handleSplashComplete } = useSplashScreen();
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -49,9 +53,13 @@ const App = () => {
             <TooltipProvider>
               <Toaster />
               <Sonner />
-              <BrowserRouter>
-                <AppRoutes />
-              </BrowserRouter>
+              {showSplash ? (
+                <SplashScreen onComplete={handleSplashComplete} />
+              ) : (
+                <BrowserRouter>
+                  <AppRoutes />
+                </BrowserRouter>
+              )}
             </TooltipProvider>
           </LanguageProvider>
         </ThemeProvider>
