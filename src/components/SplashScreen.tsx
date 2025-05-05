@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 
 const splashImages = [
@@ -29,9 +30,11 @@ const FigmaEmbed = () => (
 const SplashScreen = ({ onComplete, useFigmaEmbed = false }: SplashScreenProps) => {
   const [index, setIndex] = useState(0);
   const [fade, setFade] = useState(true);
+  const [showSplash, setShowSplash] = useState(true);
 
   useEffect(() => {
     if (useFigmaEmbed) return;
+    
     if (index < splashImages.length - 1) {
       const timeout = setTimeout(() => {
         setFade(false);
@@ -39,15 +42,23 @@ const SplashScreen = ({ onComplete, useFigmaEmbed = false }: SplashScreenProps) 
           setIndex((i) => i + 1);
           setFade(true);
         }, 300); // fade out duration
-      }, 1000); // show each image for 1s
+      }, 1500); // show each image for 1.5s
       return () => clearTimeout(timeout);
     } else if (onComplete) {
-      const timeout = setTimeout(onComplete, 1000);
+      const timeout = setTimeout(() => {
+        setFade(false);
+        setTimeout(() => {
+          setShowSplash(false);
+          onComplete();
+        }, 300);
+      }, 1500);
       return () => clearTimeout(timeout);
     }
   }, [index, onComplete, useFigmaEmbed]);
 
   if (useFigmaEmbed) return <FigmaEmbed />;
+  
+  if (!showSplash) return null;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black z-50">
@@ -60,4 +71,4 @@ const SplashScreen = ({ onComplete, useFigmaEmbed = false }: SplashScreenProps) 
   );
 };
 
-export default SplashScreen; 
+export default SplashScreen;

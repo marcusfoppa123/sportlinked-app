@@ -1,4 +1,5 @@
 
+import { useState, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -7,6 +8,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { LanguageProvider } from "@/context/LanguageContext";
+import SplashScreen from "@/components/SplashScreen";
 import Index from "./pages/Index";
 import ForYou from "./pages/ForYou";
 import Profile from "./pages/Profile";
@@ -23,36 +25,58 @@ import SavedItems from "./pages/SavedItems";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AuthProvider>
-      <ThemeProvider>
-        <LanguageProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/for-you" element={<ForYou />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/team-profile" element={<TeamProfile />} />
-                <Route path="/edit-profile" element={<EditProfile />} />
-                <Route path="/messages" element={<Messages />} />
-                <Route path="/notifications" element={<Notifications />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/athletes" element={<Athletes />} />
-                <Route path="/create-post" element={<CreatePost />} />
-                <Route path="/subscriptions" element={<Subscriptions />} />
-                <Route path="/saved" element={<SavedItems />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </BrowserRouter>
-          </TooltipProvider>
-        </LanguageProvider>
-      </ThemeProvider>
-    </AuthProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  const [showSplash, setShowSplash] = useState(true);
+  
+  // Check if the splash screen has been shown before
+  useEffect(() => {
+    const splashShown = localStorage.getItem("splashShown");
+    if (splashShown) {
+      setShowSplash(false);
+    }
+  }, []);
+  
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+    // Save to local storage that splash has been shown
+    localStorage.setItem("splashShown", "true");
+  };
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <ThemeProvider>
+          <LanguageProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              {showSplash ? (
+                <SplashScreen onComplete={handleSplashComplete} />
+              ) : (
+                <BrowserRouter>
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/for-you" element={<ForYou />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/team-profile" element={<TeamProfile />} />
+                    <Route path="/edit-profile" element={<EditProfile />} />
+                    <Route path="/messages" element={<Messages />} />
+                    <Route path="/notifications" element={<Notifications />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/athletes" element={<Athletes />} />
+                    <Route path="/create-post" element={<CreatePost />} />
+                    <Route path="/subscriptions" element={<Subscriptions />} />
+                    <Route path="/saved" element={<SavedItems />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </BrowserRouter>
+              )}
+            </TooltipProvider>
+          </LanguageProvider>
+        </ThemeProvider>
+      </AuthProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
