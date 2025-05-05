@@ -25,13 +25,13 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
 
         {/* Text */}
         <div className="text-center space-y-4">
-          <h1 className="text-5xl font-bold text-white">Welcome to SportsLinked</h1>
-          <p className="text-white/80 text-xl">Connecting Athletes Worldwide</p>
+          <h1 className="text-5xl font-bold text-[#ffffff]">Welcome to SportsLinked</h1>
+          <p className="text-xl text-[rgba(255,255,255,0.8)]">Connecting Athletes Worldwide</p>
         </div>
 
         {/* Loading Indicator */}
-        <div className="w-64 h-1.5 bg-white/20 rounded-full overflow-hidden">
-          <div className="h-full bg-white w-1/4 animate-[loading_2s_linear_infinite]" />
+        <div className="w-64 h-1.5 bg-[rgba(255,255,255,0.2)] rounded-full overflow-hidden">
+          <div className="h-full bg-[#ffffff] w-1/4 animate-[loading_2s_linear_infinite]" />
         </div>
       </div>
     </div>
