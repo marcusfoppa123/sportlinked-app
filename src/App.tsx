@@ -1,13 +1,11 @@
-import { useState, useEffect } from "react";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { LanguageProvider } from "@/context/LanguageContext";
-import SplashScreen from "@/components/SplashScreen";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
 import Index from "./pages/Index";
 import ForYou from "./pages/ForYou";
 import Profile from "./pages/Profile";
@@ -24,50 +22,25 @@ import SavedItems from "./pages/SavedItems";
 
 const queryClient = new QueryClient();
 
+const AppRoutes = () => (
+  <Routes>
+    <Route path="/" element={<Index />} />
+    <Route path="/for-you" element={<ForYou />} />
+    <Route path="/profile" element={<Profile />} />
+    <Route path="/team-profile" element={<TeamProfile />} />
+    <Route path="/edit-profile" element={<EditProfile />} />
+    <Route path="/messages" element={<Messages />} />
+    <Route path="/notifications" element={<Notifications />} />
+    <Route path="/settings" element={<Settings />} />
+    <Route path="/athletes" element={<Athletes />} />
+    <Route path="/create-post" element={<CreatePost />} />
+    <Route path="/subscriptions" element={<Subscriptions />} />
+    <Route path="/saved" element={<SavedItems />} />
+    <Route path="*" element={<NotFound />} />
+  </Routes>
+);
+
 const App = () => {
-  const [showSplash, setShowSplash] = useState(true);
-  const [forceShowSplash, setForceShowSplash] = useState(false);
-  
-  // Check if the splash screen has been shown before
-  useEffect(() => {
-    // Check URL parameters first for force show
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('showSplash')) {
-      setForceShowSplash(true);
-      setShowSplash(true);
-      return;
-    }
-    
-    // Otherwise, check localStorage
-    const splashShown = localStorage.getItem("splashShown");
-    if (splashShown) {
-      setShowSplash(false);
-    }
-  }, []);
-  
-  // Listen for special key combination to show splash (for testing)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Ctrl+Alt+S to trigger splash screen
-      if (e.ctrlKey && e.altKey && e.key === 's') {
-        setForceShowSplash(true);
-        setShowSplash(true);
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, []);
-  
-  const handleSplashComplete = () => {
-    setShowSplash(false);
-    setForceShowSplash(false);
-    // Save to local storage that splash has been shown
-    localStorage.setItem("splashShown", "true");
-  };
-  
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -76,27 +49,9 @@ const App = () => {
             <TooltipProvider>
               <Toaster />
               <Sonner />
-              {showSplash ? (
-                <SplashScreen onComplete={handleSplashComplete} forceShow={forceShowSplash} />
-              ) : (
-                <BrowserRouter>
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/for-you" element={<ForYou />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/team-profile" element={<TeamProfile />} />
-                    <Route path="/edit-profile" element={<EditProfile />} />
-                    <Route path="/messages" element={<Messages />} />
-                    <Route path="/notifications" element={<Notifications />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/athletes" element={<Athletes />} />
-                    <Route path="/create-post" element={<CreatePost />} />
-                    <Route path="/subscriptions" element={<Subscriptions />} />
-                    <Route path="/saved" element={<SavedItems />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </BrowserRouter>
-              )}
+              <BrowserRouter>
+                <AppRoutes />
+              </BrowserRouter>
             </TooltipProvider>
           </LanguageProvider>
         </ThemeProvider>
