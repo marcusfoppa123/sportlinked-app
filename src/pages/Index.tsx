@@ -12,6 +12,7 @@ const Index = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
   const [step, setStep] = useState<"role" | "auth" | "complete">("role");
   const isMobile = useIsMobile();
+  const [logoError, setLogoError] = useState(false);
 
   useEffect(() => {
     console.log("Index: User changed", user);
@@ -33,7 +34,11 @@ const Index = () => {
         <img 
           src="/sportlinked-logo.png" 
           alt="SportLinked Logo" 
-          className="h-24 sm:h-32 w-auto mb-6 sm:mb-8 animate-pulse"
+          className="h-20 sm:h-24 md:h-32 w-auto mb-4 sm:mb-6 md:mb-8 animate-pulse"
+          onError={(e) => {
+            console.error("Loading logo failed", e);
+            e.currentTarget.src = "https://via.placeholder.com/200x100?text=SportLinked";
+          }}
         />
         <div className="text-gray-500">Loading...</div>
       </div>
@@ -51,16 +56,29 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: '#102a37' }}>
       {step === "role" && (
-        <div className="flex justify-center mt-8 sm:mt-16 mb-4 sm:mb-8">
-          <img 
-            src={logo} 
-            alt="SportsLinked Logo" 
-            className={`${isMobile ? 'h-28 w-auto' : 'h-40 w-auto'}`} 
-            onError={(e) => {
-              console.error("Logo failed to load", e);
-              e.currentTarget.src = "/sportlinked-logo.png"; // Fallback
-            }}
-          />
+        <div className="flex justify-center mt-6 sm:mt-10 md:mt-16 mb-4 sm:mb-6 md:mb-8 px-4">
+          {!logoError ? (
+            <img 
+              src={logo} 
+              alt="SportsLinked Logo" 
+              className={`${isMobile ? 'h-24 w-auto' : 'h-40 w-auto'}`} 
+              onError={(e) => {
+                console.error("Logo failed to load", e);
+                setLogoError(true);
+                e.currentTarget.src = "/sportlinked-logo.png"; // Try fallback
+              }}
+            />
+          ) : (
+            <img 
+              src="/sportlinked-logo.png" 
+              alt="SportLinked Logo" 
+              className={`${isMobile ? 'h-24 w-auto' : 'h-40 w-auto'}`} 
+              onError={(e) => {
+                console.error("Fallback logo failed too", e);
+                e.currentTarget.src = "https://via.placeholder.com/320x160?text=SportLinked";
+              }}
+            />
+          )}
         </div>
       )}
       <main className="flex-1 flex items-center justify-center w-full p-4">
