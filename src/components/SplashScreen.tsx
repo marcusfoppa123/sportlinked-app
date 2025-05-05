@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Import images properly using relative paths
 import splashImage1 from "../assets/Splashscreen/png/iPhone 14 & 15 Pro - 5.jpg";
@@ -38,6 +39,15 @@ const SplashScreen = ({ onComplete, useFigmaEmbed = false }: SplashScreenProps) 
   const [index, setIndex] = useState(0);
   const [fade, setFade] = useState(true);
   const [showSplash, setShowSplash] = useState(true);
+  const isMobile = useIsMobile();
+
+  // Preload images to ensure smooth transitions
+  useEffect(() => {
+    splashImages.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, []);
 
   useEffect(() => {
     if (useFigmaEmbed) return;
@@ -49,7 +59,7 @@ const SplashScreen = ({ onComplete, useFigmaEmbed = false }: SplashScreenProps) 
           setIndex((i) => i + 1);
           setFade(true);
         }, 300); // fade out duration
-      }, 1500); // show each image for 1.5s
+      }, 2000); // show each image for 2s (increased from 1.5s for better viewing)
       return () => clearTimeout(timeout);
     } else if (onComplete) {
       const timeout = setTimeout(() => {
@@ -58,7 +68,7 @@ const SplashScreen = ({ onComplete, useFigmaEmbed = false }: SplashScreenProps) 
           setShowSplash(false);
           onComplete();
         }, 300);
-      }, 1500);
+      }, 2000);
       return () => clearTimeout(timeout);
     }
   }, [index, onComplete, useFigmaEmbed]);
@@ -72,8 +82,15 @@ const SplashScreen = ({ onComplete, useFigmaEmbed = false }: SplashScreenProps) 
       <img
         src={splashImages[index]}
         alt={`Splash step ${index + 1}`}
-        className={`transition-opacity duration-300 ${fade ? "opacity-100" : "opacity-0"} max-h-full max-w-full rounded-xl shadow-lg`}
+        className={`transition-opacity duration-300 ${fade ? "opacity-100" : "opacity-0"} ${
+          isMobile ? "max-h-screen w-full object-contain" : "max-h-full max-w-full"
+        } rounded-xl shadow-lg`}
       />
+      {index === 0 && (
+        <div className="absolute bottom-10 left-0 right-0 text-center">
+          <h1 className="text-white font-bold text-xl sm:text-2xl md:text-3xl">Welcome to SportLinked</h1>
+        </div>
+      )}
     </div>
   );
 };
