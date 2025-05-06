@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { motion } from "framer-motion";
+import logo from "@/assets/SportsLinked in app.png";
 
 interface SplashScreenProps {
   onComplete: () => void;
@@ -31,7 +32,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onComplete }) => {
         >
           <div className="w-32 h-32 bg-white rounded-full flex items-center justify-center shadow-lg">
             <img 
-              src="/sportlinked-logo.png" 
+              src={logo} 
               alt="SportsLinked Logo" 
               className="w-24 h-24 object-contain"
             />
