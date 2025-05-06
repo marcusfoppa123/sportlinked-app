@@ -101,21 +101,21 @@ const Settings = () => {
               <button className="flex items-center justify-between py-3 w-full focus:outline-none">
                 <span className="flex items-center gap-3 w-full">
                   <Bell className={`h-5 w-5 ${iconColor}`} />
-                  <span className="text-gray-900 dark:text-white w-full text-left">{t("settings.notifications")}</span>
+                  <span className="text-gray-900 dark:text-white w-full text-left">Notifications</span>
                 </span>
                 <ChevronRight className="h-5 w-5 text-gray-300" />
               </button>
               <button className="flex items-center justify-between py-3 w-full focus:outline-none">
                 <span className="flex items-center gap-3 w-full">
                   <MessageSquare className={`h-5 w-5 ${iconColor}`} />
-                  <span className="text-gray-900 dark:text-white w-full text-left">{t("settings.messages")}</span>
+                  <span className="text-gray-900 dark:text-white w-full text-left">Messages</span>
                 </span>
                 <ChevronRight className="h-5 w-5 text-gray-300" />
               </button>
               <div className="relative flex items-center justify-between py-3 w-full cursor-pointer" onClick={() => setShowLanguageMenu(true)}>
                 <span className="flex items-center gap-3 w-full">
                   <Languages className={`h-5 w-5 ${iconColor}`} />
-                  <span className="text-gray-900 dark:text-white w-full text-left">{t("settings.language")}</span>
+                  <span className="text-gray-900 dark:text-white w-full text-left">Language</span>
                 </span>
                 <span className="text-sm text-gray-500 mr-2">{language === "en" ? "English" : "Swedish"}</span>
                 <ChevronRight className="h-5 w-5 text-gray-300" />
@@ -126,7 +126,7 @@ const Settings = () => {
                       <button
                         key={opt.value}
                         className={`w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 ${language === opt.value ? 'font-bold text-primary' : ''}`}
-                        onClick={() => { handleLanguageChange(opt.value as "en" | "sv"); setShowLanguageMenu(false); }}
+                        onClick={() => handleLanguageChange(opt.value as "en" | "sv")}
                       >
                         {opt.label}
                       </button>
@@ -136,7 +136,7 @@ const Settings = () => {
               </div>
               <div className="flex items-center justify-between py-3 w-full">
                 <Sun className={`h-5 w-5 ${iconColor}`} />
-                <span className="flex-1 ml-3 text-gray-900 dark:text-white w-full text-left">{t("settings.darkAppearance")}</span>
+                <span className="flex-1 ml-3 text-gray-900 dark:text-white w-full text-left">Dark Appearance</span>
                 <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
               </div>
             </div>
@@ -149,14 +149,14 @@ const Settings = () => {
               <button className="flex items-center justify-between py-3 w-full focus:outline-none">
                 <span className="flex items-center gap-3 w-full">
                   <InfoIcon className={`h-5 w-5 ${iconColor}`} />
-                  <span className="text-gray-900 dark:text-white w-full text-left">{t("settings.termsOfService")}</span>
+                  <span className="text-gray-900 dark:text-white w-full text-left">Terms of Service</span>
                 </span>
                 <ChevronRight className="h-5 w-5 text-gray-300" />
               </button>
               <button className="flex items-center justify-between py-3 w-full focus:outline-none">
                 <span className="flex items-center gap-3 w-full">
                   <InfoIcon className={`h-5 w-5 ${iconColor}`} />
-                  <span className="text-gray-900 dark:text-white w-full text-left">{t("settings.privacyPolicy")}</span>
+                  <span className="text-gray-900 dark:text-white w-full text-left">Privacy Policy</span>
                 </span>
                 <ChevronRight className="h-5 w-5 text-gray-300" />
               </button>
