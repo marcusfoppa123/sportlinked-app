@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -17,7 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 const CreatePost = () => {
-  const { user } = useAuth();
+  const { user, updateUserProfile } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
   const isAthlete = user?.role === "athlete";
@@ -193,6 +192,11 @@ const CreatePost = () => {
       
       if (profileError) {
         console.error('Error updating profile post count:', profileError);
+      }
+      
+      // Update local user state
+      if (updateUserProfile) {
+        updateUserProfile({ posts: (user.posts || 0) + 1 });
       }
       
       toast.success("Post published successfully!");

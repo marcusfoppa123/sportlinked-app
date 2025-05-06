@@ -32,9 +32,9 @@ const Profile = () => {
   const [sideMenuOpen, setSideMenuOpen] = useState(false);
   
   const [stats, setStats] = useState({
-    connections: user?.connections || 450,
-    posts: user?.posts || 32,
-    offers: isAthlete ? (user?.offers || 15) : 0
+    connections: user?.connections || 0,
+    posts: user?.posts || 0,
+    offers: isAthlete ? (user?.offers || 0) : 0
   });
   
   const [editingStat, setEditingStat] = useState<string | null>(null);
@@ -73,21 +73,11 @@ const Profile = () => {
   };
   
   const openStatEditor = (stat: string, value: number) => {
-    setEditingStat(stat);
-    setStatValue(value);
+    // Stats are now read-only
   };
   
   const saveStatChange = () => {
-    if (editingStat) {
-      const newStats = { ...stats, [editingStat]: statValue };
-      setStats(newStats);
-      
-      if (updateUserProfile) {
-        updateUserProfile({ [editingStat]: statValue });
-      }
-      
-      setEditingStat(null);
-    }
+    // Stats are now read-only
   };
   
   const openAthleteStatEditor = (stat: string, value: number) => {
@@ -172,14 +162,14 @@ const Profile = () => {
             </p>
             
             <div className="flex gap-4 mt-4 text-sm dark:text-gray-300">
-              <div className="cursor-pointer" onClick={() => openStatEditor('connections', stats.connections)}>
+              <div>
                 <span className="font-semibold">{stats.connections}</span> Connections
               </div>
-              <div className="cursor-pointer" onClick={() => openStatEditor('posts', stats.posts)}>
+              <div>
                 <span className="font-semibold">{stats.posts}</span> Posts
               </div>
               {isAthlete && (
-                <div className="cursor-pointer" onClick={() => openStatEditor('offers', stats.offers)}>
+                <div>
                   <span className="font-semibold">{stats.offers}</span> Offers
                 </div>
               )}
@@ -317,34 +307,6 @@ const Profile = () => {
           </TabsContent>
         </Tabs>
       </main>
-
-      <Dialog open={!!editingStat} onOpenChange={(open) => !open && setEditingStat(null)}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Edit {editingStat}</DialogTitle>
-            <DialogDescription>
-              Update your {editingStat} count
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="stat-value" className="text-right">
-                Value
-              </Label>
-              <Input
-                id="stat-value"
-                type="number"
-                value={statValue}
-                onChange={(e) => setStatValue(Number(e.target.value))}
-                className="col-span-3"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="submit" onClick={saveStatChange}>Save changes</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <Dialog open={!!editingAthleteStat} onOpenChange={(open) => !open && setEditingAthleteStat(null)}>
         <DialogContent className="sm:max-w-[425px]">

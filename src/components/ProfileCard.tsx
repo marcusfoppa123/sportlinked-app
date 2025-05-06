@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { UserRole } from "@/context/AuthContext";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -9,12 +8,14 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { MessageCircle, UserPlus, Check } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
 
 interface ProfileCardProps {
   user: {
     name: string;
     role: UserRole;
     profilePic?: string;
+    id: string;
   };
   sport?: string;
   position?: string;
@@ -40,16 +41,44 @@ const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stat
   
   const isAthlete = user.role === "athlete";
   
-  const handleConnect = () => {
+  const handleConnect = async () => {
     if (isConnected) return;
     
     if (isPending) {
       // Cancel connection request
       setIsPending(false);
       toast.info("Connection request cancelled");
+      
+      // Remove connection request from database
+      const { error } = await supabase
+        .from('connections')
+        .delete()
+        .eq('requester_id', user.id)
+        .eq('receiver_id', user.id);
+        
+      if (error) {
+        console.error('Error cancelling connection:', error);
+      }
     } else {
       // Send connection request
       setIsPending(true);
+      
+      // Add connection request to database
+      const { error } = await supabase
+        .from('connections')
+        .insert({
+          requester_id: user.id,
+          receiver_id: user.id,
+          status: 'pending'
+        });
+        
+      if (error) {
+        console.error('Error sending connection request:', error);
+        setIsPending(false);
+        toast.error('Failed to send connection request');
+        return;
+      }
+      
       toast.success("Connection request sent!");
     }
   };
