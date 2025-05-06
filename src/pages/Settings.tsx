@@ -29,6 +29,13 @@ const Settings = () => {
   const navigate = useNavigate();
   const isAthlete = user?.role === "athlete";
   const [showLogoutConfirm, setShowLogoutConfirm] = React.useState(false);
+  const iconColor = isAthlete ? "text-blue-500" : user?.role === "scout" ? "text-green-500" : "text-yellow-500";
+  const iconColorHex = isAthlete ? "#2979FF" : user?.role === "scout" ? "#00C853" : "#FFD600";
+  const [showLanguageMenu, setShowLanguageMenu] = React.useState(false);
+  const languageOptions = [
+    { value: "en", label: t("settings.english") },
+    { value: "sv", label: t("settings.swedish") },
+  ];
 
   const handleLogout = () => {
     setShowLogoutConfirm(true);
@@ -60,16 +67,11 @@ const Settings = () => {
           <div className="px-4 pt-4 pb-2">
             <div className="text-xs uppercase text-gray-400 font-semibold mb-2 tracking-wider">{t("settings.accountSection")}</div>
             <div className="flex flex-col">
-              <button className="flex items-center justify-between py-3 focus:outline-none">
-                <span className="flex items-center gap-3">
-                  <UserCircle className="h-5 w-5 text-blue-500" />
-                  <span className="text-gray-900 dark:text-white">{t("settings.profileInfo")}</span>
+              <button className="flex items-center justify-between py-3 w-full focus:outline-none">
+                <span className="flex items-center gap-3 w-full">
+                  <UserCircle className={`h-5 w-5 ${iconColor}`} />
+                  <span className="text-gray-900 dark:text-white w-full text-left">{t("settings.profileInfo")}</span>
                 </span>
-                <ChevronRight className="h-5 w-5 text-gray-300" />
-              </button>
-              <button className="flex items-center justify-between py-3 focus:outline-none">
-                <Shield className="h-5 w-5 text-green-500" />
-                <span className="flex-1 ml-3 text-gray-900 dark:text-white">{t("settings.privacySecurity")}</span>
                 <ChevronRight className="h-5 w-5 text-gray-300" />
               </button>
             </div>
@@ -79,26 +81,45 @@ const Settings = () => {
           <div className="px-4 pt-4 pb-2">
             <div className="text-xs uppercase text-gray-400 font-semibold mb-2 tracking-wider">{t("settings.contentSection")}</div>
             <div className="flex flex-col">
-              <button className="flex items-center justify-between py-3 focus:outline-none">
-                <Bell className="h-5 w-5 text-yellow-500" />
-                <span className="flex-1 ml-3 text-gray-900 dark:text-white">{t("settings.notifications")}</span>
+              <button className="flex items-center justify-between py-3 w-full focus:outline-none">
+                <span className="flex items-center gap-3 w-full">
+                  <Bell className={`h-5 w-5 ${iconColor}`} />
+                  <span className="text-gray-900 dark:text-white w-full text-left">{t("settings.notifications")}</span>
+                </span>
                 <ChevronRight className="h-5 w-5 text-gray-300" />
               </button>
-              <button className="flex items-center justify-between py-3 focus:outline-none">
-                <MessageSquare className="h-5 w-5 text-blue-500" />
-                <span className="flex-1 ml-3 text-gray-900 dark:text-white">{t("settings.liveEvents")}</span>
-                <span className="ml-2 text-xs text-red-500 font-bold">•</span>
+              <button className="flex items-center justify-between py-3 w-full focus:outline-none">
+                <span className="flex items-center gap-3 w-full">
+                  <MessageSquare className={`h-5 w-5 ${iconColor}`} />
+                  <span className="text-gray-900 dark:text-white w-full text-left">{t("settings.messages")}</span>
+                </span>
                 <ChevronRight className="h-5 w-5 text-gray-300" />
               </button>
-              <div className="flex items-center justify-between py-3">
-                <Languages className="h-5 w-5 text-blue-500" />
-                <span className="flex-1 ml-3 text-gray-900 dark:text-white">{t("settings.language")}</span>
+              <div className="relative flex items-center justify-between py-3 w-full cursor-pointer" onClick={() => setShowLanguageMenu(true)}>
+                <span className="flex items-center gap-3 w-full">
+                  <Languages className={`h-5 w-5 ${iconColor}`} />
+                  <span className="text-gray-900 dark:text-white w-full text-left">{t("settings.language")}</span>
+                </span>
                 <span className="text-sm text-gray-500 mr-2">{language === "en" ? t("settings.english") : t("settings.swedish")}</span>
                 <ChevronRight className="h-5 w-5 text-gray-300" />
+                {/* Language popup menu */}
+                {showLanguageMenu && (
+                  <div className="absolute right-0 top-10 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg w-40">
+                    {languageOptions.map(opt => (
+                      <button
+                        key={opt.value}
+                        className={`w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 ${language === opt.value ? 'font-bold text-primary' : ''}`}
+                        onClick={() => { setShowLanguageMenu(false); handleLanguageChange(opt.value as "en" | "sv"); }}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div className="flex items-center justify-between py-3">
-                <Sun className="h-5 w-5 text-green-500" />
-                <span className="flex-1 ml-3 text-gray-900 dark:text-white">{t("settings.darkMode")}</span>
+              <div className="flex items-center justify-between py-3 w-full">
+                <Sun className={`h-5 w-5 ${iconColor}`} />
+                <span className="flex-1 ml-3 text-gray-900 dark:text-white w-full text-left">{t("settings.darkMode")}</span>
                 <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
               </div>
             </div>
@@ -108,14 +129,18 @@ const Settings = () => {
           <div className="px-4 pt-4 pb-2">
             <div className="text-xs uppercase text-gray-400 font-semibold mb-2 tracking-wider">{t("settings.legalSection")}</div>
             <div className="flex flex-col">
-              <button className="flex items-center justify-between py-3 focus:outline-none">
-                <InfoIcon className="h-5 w-5 text-blue-500" />
-                <span className="flex-1 ml-3 text-gray-900 dark:text-white">{t("settings.terms")}</span>
+              <button className="flex items-center justify-between py-3 w-full focus:outline-none">
+                <span className="flex items-center gap-3 w-full">
+                  <InfoIcon className={`h-5 w-5 ${iconColor}`} />
+                  <span className="text-gray-900 dark:text-white w-full text-left">{t("settings.terms")}</span>
+                </span>
                 <ChevronRight className="h-5 w-5 text-gray-300" />
               </button>
-              <button className="flex items-center justify-between py-3 focus:outline-none">
-                <InfoIcon className="h-5 w-5 text-green-500" />
-                <span className="flex-1 ml-3 text-gray-900 dark:text-white">{t("settings.privacy")}</span>
+              <button className="flex items-center justify-between py-3 w-full focus:outline-none">
+                <span className="flex items-center gap-3 w-full">
+                  <InfoIcon className={`h-5 w-5 ${iconColor}`} />
+                  <span className="text-gray-900 dark:text-white w-full text-left">{t("settings.privacy")}</span>
+                </span>
                 <ChevronRight className="h-5 w-5 text-gray-300" />
               </button>
             </div>
