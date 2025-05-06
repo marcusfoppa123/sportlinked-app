@@ -51,6 +51,9 @@ const Settings = () => {
     toast.success(newLang === "en" ? "Language changed to English" : "Språk ändrat till Svenska");
   };
 
+  // For logout button color
+  const logoutButtonColor = isAthlete ? "bg-blue-500 hover:bg-blue-600 text-white" : user?.role === "scout" ? "bg-green-500 hover:bg-green-600 text-white" : "bg-yellow-400 hover:bg-yellow-500 text-black";
+
   return (
     <div className={`min-h-screen pb-16 bg-white dark:bg-gray-900`}>
       {/* Header */}
@@ -84,14 +87,14 @@ const Settings = () => {
               <button className="flex items-center justify-between py-3 w-full focus:outline-none">
                 <span className="flex items-center gap-3 w-full">
                   <Bell className={`h-5 w-5 ${iconColor}`} />
-                  <span className="text-gray-900 dark:text-white w-full text-left">{t("settings.notifications")}</span>
+                  <span className="text-gray-900 dark:text-white w-full text-left">Notification</span>
                 </span>
                 <ChevronRight className="h-5 w-5 text-gray-300" />
               </button>
               <button className="flex items-center justify-between py-3 w-full focus:outline-none">
                 <span className="flex items-center gap-3 w-full">
                   <MessageSquare className={`h-5 w-5 ${iconColor}`} />
-                  <span className="text-gray-900 dark:text-white w-full text-left">{t("settings.messages")}</span>
+                  <span className="text-gray-900 dark:text-white w-full text-left">Messages</span>
                 </span>
                 <ChevronRight className="h-5 w-5 text-gray-300" />
               </button>
@@ -104,12 +107,12 @@ const Settings = () => {
                 <ChevronRight className="h-5 w-5 text-gray-300" />
                 {/* Language popup menu */}
                 {showLanguageMenu && (
-                  <div className="absolute right-0 top-10 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg w-40">
+                  <div className="absolute right-0 top-10 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg w-40 animate-fade-in-down">
                     {languageOptions.map(opt => (
                       <button
                         key={opt.value}
                         className={`w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 ${language === opt.value ? 'font-bold text-primary' : ''}`}
-                        onClick={() => { setShowLanguageMenu(false); handleLanguageChange(opt.value as "en" | "sv"); }}
+                        onClick={() => { handleLanguageChange(opt.value as "en" | "sv"); setShowLanguageMenu(false); }}
                       >
                         {opt.label}
                       </button>
@@ -149,10 +152,10 @@ const Settings = () => {
           {/* Logout */}
           <div className="px-4 pt-4 pb-4">
             <Button 
-              className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold rounded-xl py-3 mt-2 shadow-md border-none"
+              className={`w-full ${logoutButtonColor} font-bold rounded-xl py-3 mt-2 shadow-md border-none`}
               onClick={handleLogout}
             >
-              <LogOut className="h-4 w-4 mr-2 text-black" />
+              <LogOut className="h-4 w-4 mr-2 text-white" />
               {t("settings.logout")}
             </Button>
           </div>
