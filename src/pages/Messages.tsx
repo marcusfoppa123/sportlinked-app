@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { Search, Edit, Bell, Send, Image, Paperclip, X, ArrowLeft } from "lucide
 import BottomNavigation from "@/components/BottomNavigation";
 import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "react-router-dom";
+import logo from "@/assets/SportsLinked in app.png";
 
 // Mock data for conversations
 const mockConversations = [
@@ -169,7 +169,14 @@ const Messages = () => {
       {!activeConversation ? (
         <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-border shadow-sm">
           <div className="container px-4 h-16 flex items-center justify-between">
-            <h1 className="text-xl font-bold dark:text-white">Messages</h1>
+            <div className="flex items-center gap-2">
+              <img 
+                src={logo} 
+                alt="SportsLinked Logo" 
+                className="h-8 w-auto mr-2"
+              />
+              <h1 className="text-xl font-bold dark:text-white">Messages</h1>
+            </div>
             <div className="flex gap-2">
               <Button 
                 variant="ghost" 

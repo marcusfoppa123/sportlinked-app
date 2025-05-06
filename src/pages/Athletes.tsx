@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import BottomNavigation from "@/components/BottomNavigation";
@@ -6,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import Login from "@/components/Login";
 import ContentFeed from "@/components/ContentFeed";
+import logo from "@/assets/SportsLinked in app.png";
 
 const Athletes = () => {
   const { isAuthenticated, user } = useAuth();
@@ -18,7 +18,14 @@ const Athletes = () => {
       {/* Header */}
       <header className="bg-athlete text-white p-4 shadow-md">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold">{t("athletes.title")}</h1>
+          <div className="flex items-center gap-2">
+            <img 
+              src={logo} 
+              alt="SportsLinked Logo" 
+              className="h-8 w-auto mr-2"
+            />
+            <h1 className="text-xl font-bold">{t("athletes.title")}</h1>
+          </div>
           {!isAuthenticated && (
             <Button 
               variant="outline" 

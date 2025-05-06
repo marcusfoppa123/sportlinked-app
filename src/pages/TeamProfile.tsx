@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Edit, Settings, Share2, Users, Trophy, Calendar } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
+import logo from "@/assets/SportsLinked in app.png";
 
 const TeamProfile = () => {
   const { user } = useAuth();
@@ -39,65 +39,33 @@ const TeamProfile = () => {
   return (
     <div className="team-theme min-h-screen pb-16">
       {/* Header */}
-      <header className="relative">
-        <div className="h-40 w-full bg-team"></div>
-        
-        <div className="absolute top-2 right-2 flex gap-2">
-          <Button variant="ghost" size="icon" className="bg-white/20 text-white">
-            <Settings className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="bg-white/20 text-white">
-            <Share2 className="h-5 w-5" />
-          </Button>
-        </div>
-        
-        <div className="relative px-4 -mt-16">
-          <div className="flex items-end">
-            <Avatar className="h-32 w-32 border-4 border-white">
-              <AvatarImage src={user?.profilePic} />
-              <AvatarFallback className="text-3xl bg-yellow-100">
-                {getInitials(user?.name)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 ml-4 mb-4">
-              <Button 
-                variant="outline" 
-                className="ml-auto bg-white"
-                onClick={handleEditProfile}
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                Edit Profile
-              </Button>
+      <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-border shadow-sm">
+        <div className="container px-4 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              onClick={() => navigate(-1)}
+              className="dark:text-white dark:hover:bg-gray-800"
+            >
+              <Settings className="h-6 w-6" />
+            </Button>
+            <div className="flex items-center">
+              <img 
+                src={logo} 
+                alt="SportsLinked Logo" 
+                className="h-8 w-auto mr-2"
+              />
             </div>
           </div>
-          
-          <div className="mt-2">
-            <h1 className="text-2xl font-bold">{user?.name || "Team Name"}</h1>
-            <div className="flex items-center mt-1">
-              <Badge variant="outline" className="team-badge">
-                Team
-              </Badge>
-              <Badge variant="outline" className="ml-2 bg-gray-100">
-                Basketball
-              </Badge>
-            </div>
-            
-            <p className="mt-3 text-gray-600">
-              Basketball team based in New York with over 20 athletes. Established in 2015 and competing in regional tournaments.
-            </p>
-            
-            <div className="flex gap-4 mt-4 text-sm">
-              <div>
-                <span className="font-semibold">34</span> Members
-              </div>
-              <div>
-                <span className="font-semibold">16</span> Posts
-              </div>
-              <div>
-                <span className="font-semibold">8</span> Seasons
-              </div>
-            </div>
-          </div>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={handleEditProfile}
+            className="dark:text-white dark:hover:bg-gray-800"
+          >
+            <Edit className="h-6 w-6" />
+          </Button>
         </div>
       </header>
 
