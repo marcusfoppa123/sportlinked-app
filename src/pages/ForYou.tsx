@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -12,7 +11,7 @@ import SideMenu from "@/components/SideMenu";
 import SearchDialog from "@/components/SearchDialog";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
-import logo from "@/assets/SportsLinked in app.png";
+import Logo from "@/components/Logo";
 
 const ForYou = () => {
   const { user } = useAuth();
@@ -67,11 +66,7 @@ const ForYou = () => {
               <Menu className="h-6 w-6" />
             </Button>
             <div className="flex items-center">
-              <img 
-                src={logo} 
-                alt="SportsLinked Logo" 
-                className="h-12 w-auto mr-2"
-              />
+              <Logo className="h-12 w-auto mr-2" />
             </div>
           </div>
           
