@@ -48,8 +48,22 @@ const Settings = () => {
 
   const handleLanguageChange = (newLang: "en" | "sv") => {
     setLanguage(newLang);
+    setShowLanguageMenu(false);
     toast.success(newLang === "en" ? "Language changed to English" : "Språk ändrat till Svenska");
   };
+
+  // Add a click/blur handler to close the menu if user clicks outside
+  const languageMenuRef = React.useRef<HTMLDivElement>(null);
+  React.useEffect(() => {
+    if (!showLanguageMenu) return;
+    function handleClick(event: MouseEvent) {
+      if (languageMenuRef.current && !languageMenuRef.current.contains(event.target as Node)) {
+        setShowLanguageMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [showLanguageMenu]);
 
   // For logout button color
   const logoutButtonColor = isAthlete ? "bg-blue-500 hover:bg-blue-600 text-white" : user?.role === "scout" ? "bg-green-500 hover:bg-green-600 text-white" : "bg-yellow-400 hover:bg-yellow-500 text-black";
@@ -107,12 +121,12 @@ const Settings = () => {
                 <ChevronRight className="h-5 w-5 text-gray-300" />
                 {/* Language popup menu */}
                 {showLanguageMenu && (
-                  <div className="absolute right-0 top-10 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg w-40 animate-fade-in-down">
+                  <div ref={languageMenuRef} className="absolute right-0 top-10 z-50 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg w-40 animate-fade-in-down">
                     {languageOptions.map(opt => (
                       <button
                         key={opt.value}
                         className={`w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 ${language === opt.value ? 'font-bold text-primary' : ''}`}
-                        onClick={() => { handleLanguageChange(opt.value as "en" | "sv"); setShowLanguageMenu(false); }}
+                        onClick={() => handleLanguageChange(opt.value as "en" | "sv")}
                       >
                         {opt.label}
                       </button>
