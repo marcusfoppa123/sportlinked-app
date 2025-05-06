@@ -68,12 +68,12 @@ const Settings = () => {
         <div className="divide-y divide-gray-200 dark:divide-gray-800 bg-white dark:bg-gray-900 rounded-2xl shadow-sm">
           {/* Account Section */}
           <div className="px-4 pt-4 pb-2">
-            <div className="text-xs uppercase text-gray-400 font-semibold mb-2 tracking-wider">{t("settings.accountSection")}</div>
+            <div className="text-xs uppercase text-gray-400 font-semibold mb-2 tracking-wider">Account</div>
             <div className="flex flex-col">
               <button className="flex items-center justify-between py-3 w-full focus:outline-none">
                 <span className="flex items-center gap-3 w-full">
                   <UserCircle className={`h-5 w-5 ${iconColor}`} />
-                  <span className="text-gray-900 dark:text-white w-full text-left">{t("settings.profileInfo")}</span>
+                  <span className="text-gray-900 dark:text-white w-full text-left">Profile Information</span>
                 </span>
                 <ChevronRight className="h-5 w-5 text-gray-300" />
               </button>
@@ -82,12 +82,12 @@ const Settings = () => {
 
           {/* Content & Activity Section */}
           <div className="px-4 pt-4 pb-2">
-            <div className="text-xs uppercase text-gray-400 font-semibold mb-2 tracking-wider">{t("settings.contentSection")}</div>
+            <div className="text-xs uppercase text-gray-400 font-semibold mb-2 tracking-wider">Content & Activity</div>
             <div className="flex flex-col">
               <button className="flex items-center justify-between py-3 w-full focus:outline-none">
                 <span className="flex items-center gap-3 w-full">
                   <Bell className={`h-5 w-5 ${iconColor}`} />
-                  <span className="text-gray-900 dark:text-white w-full text-left">Notification</span>
+                  <span className="text-gray-900 dark:text-white w-full text-left">Notifications</span>
                 </span>
                 <ChevronRight className="h-5 w-5 text-gray-300" />
               </button>
@@ -101,9 +101,9 @@ const Settings = () => {
               <div className="relative flex items-center justify-between py-3 w-full cursor-pointer" onClick={() => setShowLanguageMenu(true)}>
                 <span className="flex items-center gap-3 w-full">
                   <Languages className={`h-5 w-5 ${iconColor}`} />
-                  <span className="text-gray-900 dark:text-white w-full text-left">{t("settings.language")}</span>
+                  <span className="text-gray-900 dark:text-white w-full text-left">Language</span>
                 </span>
-                <span className="text-sm text-gray-500 mr-2">{language === "en" ? t("settings.english") : t("settings.swedish")}</span>
+                <span className="text-sm text-gray-500 mr-2">{language === "en" ? "English" : "Swedish"}</span>
                 <ChevronRight className="h-5 w-5 text-gray-300" />
                 {/* Language popup menu */}
                 {showLanguageMenu && (
@@ -122,7 +122,7 @@ const Settings = () => {
               </div>
               <div className="flex items-center justify-between py-3 w-full">
                 <Sun className={`h-5 w-5 ${iconColor}`} />
-                <span className="flex-1 ml-3 text-gray-900 dark:text-white w-full text-left">{t("settings.darkMode")}</span>
+                <span className="flex-1 ml-3 text-gray-900 dark:text-white w-full text-left">Dark Appearance</span>
                 <Switch checked={theme === "dark"} onCheckedChange={toggleTheme} />
               </div>
             </div>
@@ -130,19 +130,19 @@ const Settings = () => {
 
           {/* Legal Section */}
           <div className="px-4 pt-4 pb-2">
-            <div className="text-xs uppercase text-gray-400 font-semibold mb-2 tracking-wider">{t("settings.legalSection")}</div>
+            <div className="text-xs uppercase text-gray-400 font-semibold mb-2 tracking-wider">Legal</div>
             <div className="flex flex-col">
               <button className="flex items-center justify-between py-3 w-full focus:outline-none">
                 <span className="flex items-center gap-3 w-full">
                   <InfoIcon className={`h-5 w-5 ${iconColor}`} />
-                  <span className="text-gray-900 dark:text-white w-full text-left">{t("settings.terms")}</span>
+                  <span className="text-gray-900 dark:text-white w-full text-left">Terms of Service</span>
                 </span>
                 <ChevronRight className="h-5 w-5 text-gray-300" />
               </button>
               <button className="flex items-center justify-between py-3 w-full focus:outline-none">
                 <span className="flex items-center gap-3 w-full">
                   <InfoIcon className={`h-5 w-5 ${iconColor}`} />
-                  <span className="text-gray-900 dark:text-white w-full text-left">{t("settings.privacy")}</span>
+                  <span className="text-gray-900 dark:text-white w-full text-left">Privacy Policy</span>
                 </span>
                 <ChevronRight className="h-5 w-5 text-gray-300" />
               </button>
