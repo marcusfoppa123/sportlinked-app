@@ -20,8 +20,8 @@ const RoleSelection = () => {
         transition={{ duration: 0.5 }}
         className="text-center mb-8"
       >
-        <h1 className="text-3xl font-bold mb-2">Welcome to SportLinked</h1>
-        <p className="text-muted-foreground">Select your role to get started</p>
+        <h1 className="text-3xl font-bold mb-2 text-white">Welcome to SportLinked</h1>
+        <p className="text-white/80">Select your role to get started</p>
       </motion.div>
 
       <div className="w-full max-w-md grid gap-6">
