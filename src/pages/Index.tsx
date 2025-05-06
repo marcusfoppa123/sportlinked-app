@@ -54,13 +54,6 @@ const Index = () => {
     return <Navigate to="/for-you" />;
   }
 
-  const showSplashScreen = () => {
-    // Clear splash shown flag and reload the page
-    localStorage.removeItem("splashShown");
-    // Add URL parameter and reload
-    window.location.href = window.location.pathname + "?showSplash=true";
-  };
-
   return (
     <div className="min-h-screen flex flex-col items-center justify-center" style={{ backgroundColor: '#102a37' }}>
       {step === "role" && (
@@ -87,29 +80,21 @@ const Index = () => {
               }}
             />
           )}
-          
-          <button 
-            onClick={showSplashScreen}
-            className="mt-4 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg shadow transition text-sm"
-          >
-            Show Splash Screen
-          </button>
         </div>
       )}
-      <main className="flex-1 flex items-center justify-center w-full p-4">
-        {step === "role" && <RoleSelection />}
-        {step === "auth" && (
-          <>
-            <button
-              onClick={() => setStep("role")}
-              className="absolute top-8 left-8 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg shadow transition"
-            >
-              ← Back
-            </button>
-            <Login initialRole={user?.role} />
-          </>
-        )}
-      </main>
+      
+      {step === "role" && <RoleSelection />}
+      {step === "auth" && (
+        <>
+          <button
+            onClick={() => setStep("role")}
+            className="absolute top-8 left-8 bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-lg shadow transition"
+          >
+            ← Back
+          </button>
+          <Login initialRole={user?.role} />
+        </>
+      )}
       
       {isAuthenticated && <BottomNavigation />}
     </div>
