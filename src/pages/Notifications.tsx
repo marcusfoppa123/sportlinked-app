@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -7,7 +8,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Settings } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
-import logo from "@/assets/SportsLinked in app.png";
 
 // Mock data for notifications
 const mockNotifications = [
@@ -77,14 +77,7 @@ const Notifications = () => {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white border-b border-border shadow-sm">
         <div className="container px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img 
-              src={logo} 
-              alt="SportsLinked Logo" 
-              className="h-8 w-auto mr-2"
-            />
-            <h1 className="text-xl font-bold">Notifications</h1>
-          </div>
+          <h1 className="text-xl font-bold">Notifications</h1>
           <Button variant="ghost" size="icon">
             <Settings className="h-5 w-5" />
           </Button>

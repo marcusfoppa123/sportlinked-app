@@ -22,7 +22,6 @@ import { Label } from "@/components/ui/label";
 import SideMenu from "@/components/SideMenu";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ContentFeed from "@/components/ContentFeed";
-import logo from "@/assets/SportsLinked in app.png";
 
 const Profile = () => {
   const { user, updateUserProfile } = useAuth();
@@ -103,33 +102,79 @@ const Profile = () => {
     <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"} dark:bg-gray-900`}>
       <SideMenu isOpen={sideMenuOpen} onClose={() => setSideMenuOpen(false)} />
       
-      <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-border shadow-sm">
-        <div className="container px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setSideMenuOpen(true)}
-              className="dark:text-white dark:hover:bg-gray-800"
-            >
-              <Settings className="h-6 w-6" />
-            </Button>
-            <div className="flex items-center">
-              <img 
-                src={logo} 
-                alt="SportsLinked Logo" 
-                className="h-8 w-auto mr-2"
-              />
-            </div>
-          </div>
+      <header className="relative">
+        <div 
+          className={`h-40 w-full`}
+          style={{ backgroundColor: user?.profileBgColor || (isAthlete ? "#1D9BF0" : "#4CAF50") }}
+        />
+        
+        <div className="absolute top-2 right-2 flex gap-2">
           <Button 
             variant="ghost" 
-            size="icon"
-            onClick={() => setEditingAthleteStat(null)}
-            className="dark:text-white dark:hover:bg-gray-800"
+            size="icon" 
+            className="bg-white/20 text-white"
+            onClick={handleSettingsClick}
           >
-            <Edit className="h-6 w-6" />
+            <Settings className="h-5 w-5" />
           </Button>
+          <Button variant="ghost" size="icon" className="bg-white/20 text-white">
+            <Share2 className="h-5 w-5" />
+          </Button>
+        </div>
+        
+        <div className="relative px-4 -mt-16">
+          <div className="flex items-end">
+            <Avatar className="h-32 w-32 border-4 border-white">
+              <AvatarImage src={user?.profilePic} />
+              <AvatarFallback className={`text-3xl ${isAthlete ? "bg-blue-100" : "bg-green-100"}`}>
+                {getInitials(user?.name)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 ml-4 mb-4">
+              <Button 
+                variant="outline" 
+                className="ml-auto bg-white dark:bg-gray-800 dark:text-white dark:border-gray-600"
+                onClick={handleEditProfile}
+              >
+                <Edit className="h-4 w-4 mr-2" />
+                Edit Profile
+              </Button>
+            </div>
+          </div>
+          
+          <div className="mt-2">
+            <h1 className="text-2xl font-bold dark:text-white">{user?.name || "User Name"}</h1>
+            <div className="flex items-center mt-1">
+              <Badge variant="outline" className={`${isAthlete ? "athlete-badge" : "scout-badge"} dark:bg-gray-800 dark:text-white`}>
+                {isAthlete ? "Athlete" : "Scout"}
+              </Badge>
+              {isAthlete && (
+                <Badge variant="outline" className="ml-2 bg-gray-100 dark:bg-gray-800 dark:text-white">
+                  {user?.sport || "Basketball"} • {user?.position || "Point Guard"}
+                </Badge>
+              )}
+            </div>
+            
+            <p className="mt-3 text-gray-600 dark:text-gray-300">
+              {user?.bio || (isAthlete 
+                ? "Point guard with 5 years of college experience. Looking for professional opportunities."
+                : "Basketball scout for the Michigan Wolverines. Searching for talented guards and forwards.")}
+            </p>
+            
+            <div className="flex gap-4 mt-4 text-sm dark:text-gray-300">
+              <div>
+                <span className="font-semibold">{stats.connections}</span> Connections
+              </div>
+              <div>
+                <span className="font-semibold">{stats.posts}</span> Posts
+              </div>
+              {isAthlete && (
+                <div>
+                  <span className="font-semibold">{stats.offers}</span> Offers
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </header>
 

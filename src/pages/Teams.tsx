@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,12 +7,9 @@ import BottomNavigation from "@/components/BottomNavigation";
 import { useAuth } from "@/context/AuthContext";
 import Login from "@/components/Login";
 import { toast } from "@/hooks/use-toast";
-import { useLanguage } from "@/context/LanguageContext";
-import logo from "@/assets/SportsLinked in app.png";
 
 const Teams = () => {
   const { isAuthenticated, user } = useAuth();
-  const { t } = useLanguage();
   const navigate = useNavigate();
   const [showLogin, setShowLogin] = useState(!isAuthenticated);
   const isTeam = user?.role === "team";
@@ -45,14 +43,7 @@ const Teams = () => {
       {/* Header */}
       <header className="bg-team text-white p-4 shadow-md">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img 
-              src={logo} 
-              alt="SportsLinked Logo" 
-              className="h-8 w-auto mr-2"
-            />
-            <h1 className="text-xl font-bold">Teams & Clubs</h1>
-          </div>
+          <h1 className="text-xl font-bold">Teams & Clubs</h1>
           {isAuthenticated ? (
             <Button 
               variant="outline" 
