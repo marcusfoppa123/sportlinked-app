@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -11,7 +12,7 @@ import SideMenu from "@/components/SideMenu";
 import SearchDialog from "@/components/SearchDialog";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
-import logo from "@/assets/sportslinked-in-app.png";
+import logo from "@/assets/SportsLinked in app.png";
 
 const ForYou = () => {
   const { user } = useAuth();

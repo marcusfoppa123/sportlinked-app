@@ -5,12 +5,8 @@ import { useAuth } from "@/context/AuthContext";
 import RoleSelection from "@/components/RoleSelection";
 import Login from "@/components/Login";
 import BottomNavigation from "@/components/BottomNavigation";
-<<<<<<< HEAD
-import logo from "@/assets/sportslinked-in-app.png";
-=======
 import logo from "@/assets/SportsLinked in app.png";
 import { useIsMobile } from "@/hooks/use-mobile";
->>>>>>> c5682ce9d1c3c60cedbbdecd22ea56c9454a5ac1
 
 const Index = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
