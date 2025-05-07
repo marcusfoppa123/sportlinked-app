@@ -22,6 +22,7 @@ import { Label } from "@/components/ui/label";
 import SideMenu from "@/components/SideMenu";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ContentFeed from "@/components/ContentFeed";
+import ProfilePostGrid from "@/components/ProfilePostGrid";
 
 const highlightData = [
   { label: "Before/After", icon: <span className="text-xl">🛠️</span> },
@@ -56,8 +57,6 @@ const Profile = () => {
   
   const [editingAthleteStat, setEditingAthleteStat] = useState<string | null>(null);
   const [athleteStatValue, setAthleteStatValue] = useState<number>(0);
-  
-  const [postCount, setPostCount] = useState(0);
   
   const getInitials = (name?: string) => {
     if (!name) return "U";
@@ -138,7 +137,7 @@ const Profile = () => {
         
         <div className="flex justify-around mt-6 mb-2">
           <div className="text-center">
-            <span className="font-bold text-lg">{postCount}</span>
+            <span className="font-bold text-lg">{user?.posts ?? 0}</span>
             <div className="text-xs text-gray-500">Posts</div>
           </div>
           <div className="text-center">
@@ -165,11 +164,7 @@ const Profile = () => {
           </TabsList>
           
           <TabsContent value="posts" className="space-y-4">
-            <ContentFeed 
-              userId={user?.id} 
-              showAllPosts={false}
-              onPostCount={setPostCount}
-            />
+            {user?.id && <ProfilePostGrid userId={user.id} />}
           </TabsContent>
           
           <TabsContent value="stats" className="space-y-4">
