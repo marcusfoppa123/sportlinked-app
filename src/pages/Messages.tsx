@@ -151,27 +151,34 @@ const Messages = () => {
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !activeConversation) return;
-
     try {
-      // Check if there's a pending message request
+      // Check for message request status
       const { data: request, error: requestError } = await supabase
         .from('message_requests')
         .select('*')
         .or(`sender_id.eq.${user?.id},receiver_id.eq.${user?.id}`)
-        .eq('status', 'pending')
         .single();
 
       if (requestError && requestError.code !== 'PGRST116') {
         throw requestError;
       }
 
-      if (request) {
-        // If there's a pending request, try to send a message request first
+      // If there is a pending request and it is not accepted, block sending and send a request if not already sent
+      if (request && request.status === 'pending') {
+        if (request.sender_id === user?.id) {
+          // Already sent, just block
+          return;
+        } else {
+          // Received, block
+          return;
+        }
+      }
+      // If no request exists, send a request and block sending
+      if (!request) {
         await sendMessageRequest(activeConversation.id);
         return;
       }
-
-      // If no pending request or request is accepted, send the message
+      // If request is accepted or not needed, send the message
       const updatedConversations = conversations.map(convo => {
         if (convo.id === activeConversation.id) {
           const newMsg = {
@@ -369,12 +376,12 @@ const Messages = () => {
                     {/* Action buttons area, absolutely positioned to the right */}
                     {isMobileDevice && isSwipedConvo && (
                       <div
-                        className="absolute top-0 right-0 h-full flex flex-col justify-center items-center bg-white dark:bg-gray-900 z-10 shadow-lg"
+                        className="absolute top-0 right-0 h-full flex flex-row justify-center items-center bg-white dark:bg-gray-900 z-10 shadow-lg"
                         style={{ width: ACTION_WIDTH }}
                       >
-                        <Button size="icon" variant="ghost" className="mb-2" onClick={e => { e.stopPropagation(); handlePin(convo.id); }}><span className="text-xs">Pin</span></Button>
-                        <Button size="icon" variant="ghost" className="mb-2" onClick={e => { e.stopPropagation(); handleMute(convo.id); }}><span className="text-xs">{mutedConversations.includes(convo.id) ? 'Unmute' : 'Mute'}</span></Button>
-                        <Button size="icon" variant="destructive" onClick={e => { e.stopPropagation(); handleDelete(convo.id); }}><span className="text-xs">Delete</span></Button>
+                        <Button size="icon" variant="ghost" className="mx-1" onClick={e => { e.stopPropagation(); handlePin(convo.id); }}><span className="text-xs">Pin</span></Button>
+                        <Button size="icon" variant="ghost" className="mx-1" onClick={e => { e.stopPropagation(); handleMute(convo.id); }}><span className="text-xs">{mutedConversations.includes(convo.id) ? 'Unmute' : 'Mute'}</span></Button>
+                        <Button size="icon" variant="destructive" className="mx-1" onClick={e => { e.stopPropagation(); handleDelete(convo.id); }}><span className="text-xs">Delete</span></Button>
                       </div>
                     )}
                     {/* Conversation bar, slides left when swiped */}
