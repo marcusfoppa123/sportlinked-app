@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -123,6 +123,14 @@ const mockConversations = [
   }
 ];
 
+const isTouchDevice = () => {
+  return (
+    "ontouchstart" in window ||
+    navigator.maxTouchPoints > 0 ||
+    navigator.msMaxTouchPoints > 0
+  );
+};
+
 const Messages = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -134,6 +142,7 @@ const Messages = () => {
   const recentContacts = mockConversations.slice(0, 5);
   const [activeTab, setActiveTab] = useState("All");
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
+  const swipeRefs = useRef({});
 
   React.useEffect(() => {
     if (messagesEndRef.current) {
@@ -143,7 +152,6 @@ const Messages = () => {
 
   const handleSendMessage = () => {
     if (!newMessage.trim() || !activeConversation) return;
-    
     const updatedConversations = conversations.map(convo => {
       if (convo.id === activeConversation.id) {
         const newMsg = {
@@ -153,7 +161,6 @@ const Messages = () => {
           time: "Just now",
           isMe: true
         };
-        
         return {
           ...convo,
           lastMessage: newMessage,
@@ -163,8 +170,9 @@ const Messages = () => {
       }
       return convo;
     });
-    
     setConversations(updatedConversations);
+    const updatedActive = updatedConversations.find(c => c.id === activeConversation.id);
+    setActiveConversation(updatedActive);
     setNewMessage("");
   };
 
@@ -216,34 +224,53 @@ const Messages = () => {
           </div>
           {/* Conversation List */}
           <div className="divide-y divide-gray-200 dark:divide-gray-800">
-            {conversations.map((convo) => (
-              <div
-                key={convo.id}
-                className="flex items-center px-4 py-4 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer relative group"
-                onClick={() => setActiveConversation(convo)}
-              >
-                <Avatar className="h-12 w-12 mr-3">
-                  <AvatarImage src={convo.avatar} alt={convo.name} />
-                  <AvatarFallback>{convo.name[0]}</AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <div className="flex justify-between items-center">
-                    <span className="font-semibold text-gray-900 dark:text-white truncate">{convo.name}</span>
-                    <span className="text-xs text-gray-500 ml-2">{convo.time}</span>
+            {conversations.map((convo) => {
+              const [swiped, setSwiped] = useState(false);
+              let touchStartX = 0;
+              let touchEndX = 0;
+              const handleTouchStart = (e) => {
+                touchStartX = e.touches[0].clientX;
+              };
+              const handleTouchMove = (e) => {
+                touchEndX = e.touches[0].clientX;
+              };
+              const handleTouchEnd = () => {
+                if (touchStartX - touchEndX > 60) setSwiped(true);
+                else setSwiped(false);
+              };
+              return (
+                <div
+                  key={convo.id}
+                  className={`flex items-center px-4 py-4 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer relative group transition-transform duration-200 ${swiped ? 'translate-x-[-120px]' : ''}`}
+                  onClick={() => !swiped && setActiveConversation(convo)}
+                  onTouchStart={isTouchDevice() ? handleTouchStart : undefined}
+                  onTouchMove={isTouchDevice() ? handleTouchMove : undefined}
+                  onTouchEnd={isTouchDevice() ? handleTouchEnd : undefined}
+                >
+                  <Avatar className="h-12 w-12 mr-3">
+                    <AvatarImage src={convo.avatar} alt={convo.name} />
+                    <AvatarFallback>{convo.name[0]}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-center">
+                      <span className="font-semibold text-gray-900 dark:text-white truncate">{convo.name}</span>
+                      <span className="text-xs text-gray-500 ml-2">{convo.time}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className={`truncate text-sm ${convo.unread ? "font-bold text-blue-600" : "text-gray-600 dark:text-gray-300"}`}>{convo.lastMessage}</span>
+                      {convo.unread && <span className="ml-2 w-2 h-2 rounded-full bg-blue-500 inline-block" />}
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className={`truncate text-sm ${convo.unread ? "font-bold text-blue-600" : "text-gray-600 dark:text-gray-300"}`}>{convo.lastMessage}</span>
-                    {convo.unread && <span className="ml-2 w-2 h-2 rounded-full bg-blue-500 inline-block" />}
-                  </div>
+                  {(swiped || !isTouchDevice()) && (
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-2 bg-white dark:bg-gray-900 p-1 rounded-xl shadow-lg z-10">
+                      <Button size="icon" variant="ghost" className="hover:bg-gray-200 dark:hover:bg-gray-700"><span className="text-xs">Pin</span></Button>
+                      <Button size="icon" variant="ghost" className="hover:bg-gray-200 dark:hover:bg-gray-700"><span className="text-xs">Mute</span></Button>
+                      <Button size="icon" variant="destructive" className="hover:bg-red-100 dark:hover:bg-red-900"><span className="text-xs">Delete</span></Button>
+                    </div>
+                  )}
                 </div>
-                {/* Swipe/hover actions */}
-                <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden group-hover:flex gap-2">
-                  <Button size="icon" variant="ghost" className="hover:bg-gray-200 dark:hover:bg-gray-700"><span className="text-xs">Pin</span></Button>
-                  <Button size="icon" variant="ghost" className="hover:bg-gray-200 dark:hover:bg-gray-700"><span className="text-xs">Mute</span></Button>
-                  <Button size="icon" variant="destructive" className="hover:bg-red-100 dark:hover:bg-red-900"><span className="text-xs">Delete</span></Button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </>
       ) : (
