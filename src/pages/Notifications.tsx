@@ -40,7 +40,7 @@ const Notifications = () => {
   const navigate = useNavigate();
   return (
     <div className="min-h-screen flex justify-center items-start bg-gray-50 py-4">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-lg overflow-hidden">
+      <div className="w-full max-w-md bg-white rounded-3xl shadow-lg overflow-hidden flex flex-col min-h-[80vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-4 border-b">
           <button onClick={() => navigate(-1)} className="p-2">
@@ -52,7 +52,7 @@ const Notifications = () => {
           </button>
         </div>
         {/* Notifications */}
-        <div className="divide-y divide-gray-200">
+        <div className="divide-y divide-gray-200 flex-1 flex flex-col">
           {Object.entries(grouped).map(([section, items]) => (
             <div key={section}>
               <div className="bg-white px-4 pt-6 pb-2 text-gray-500 font-semibold text-sm">
@@ -77,6 +77,8 @@ const Notifications = () => {
               ))}
             </div>
           ))}
+          {/* Blank space to fill the rest of the card */}
+          <div className="flex-1" />
         </div>
       </div>
     </div>
