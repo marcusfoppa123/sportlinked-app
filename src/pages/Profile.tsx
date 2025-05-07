@@ -151,7 +151,7 @@ const Profile = () => {
         </div>
         
         <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-          <div className="font-semibold">{user?.bio || "The best Architecture & Design platform."}</div>
+          <div className="font-semibold break-words whitespace-pre-line">{user?.bio || "The best Architecture & Design platform."}</div>
         </div>
       </div>
 

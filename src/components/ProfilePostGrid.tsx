@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import ContentFeedCard from "./ContentFeedCard";
+import PostModal from "./PostModal";
 
 interface ProfilePostGridProps {
   userId: string;
@@ -8,6 +10,7 @@ interface ProfilePostGridProps {
 const ProfilePostGrid: React.FC<ProfilePostGridProps> = ({ userId }) => {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [modalPost, setModalPost] = useState<any | null>(null);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -15,11 +18,21 @@ const ProfilePostGrid: React.FC<ProfilePostGridProps> = ({ userId }) => {
       try {
         const { data, error } = await supabase
           .from("posts")
-          .select("id, image_url, video_url, created_at")
+          .select("*, profiles:profiles(*), likes(count), comments(count), bookmarks(count)")
           .eq("user_id", userId)
           .order("created_at", { ascending: false });
         if (error) throw error;
-        setPosts(data || []);
+        // Map stats for modal
+        const mapped = (data || []).map((post: any) => ({
+          ...post,
+          stats: {
+            likes: post.likes?.[0]?.count ?? 0,
+            comments: post.comments?.[0]?.count ?? 0,
+            bookmarks: post.bookmarks?.[0]?.count ?? 0,
+            shares: post.shares ?? 0,
+          },
+        }));
+        setPosts(mapped);
       } catch (err) {
         setPosts([]);
       } finally {
@@ -38,30 +51,24 @@ const ProfilePostGrid: React.FC<ProfilePostGridProps> = ({ userId }) => {
   }
 
   return (
-    <div className="grid grid-cols-3 gap-1 md:gap-2">
-      {posts.map((post) => (
-        <button
-          key={post.id}
-          className="aspect-square w-full overflow-hidden bg-gray-100 focus:outline-none"
-          onClick={() => { /* TODO: open post detail modal */ }}
-        >
-          {post.image_url ? (
-            <img
-              src={post.image_url}
-              alt="Post"
-              className="object-cover w-full h-full"
+    <>
+      <div className="grid grid-cols-2 gap-2">
+        {posts.map((post) => (
+          <div key={post.id} onClick={() => setModalPost(post)} className="cursor-pointer">
+            <ContentFeedCard
+              id={post.id}
+              user={post.user || post.profiles || {}}
+              timestamp={new Date(post.created_at)}
+              content={{ text: post.content, image: post.image_url, video: post.video_url }}
+              stats={post.stats}
+              userLiked={post.userLiked}
+              userBookmarked={post.userBookmarked}
             />
-          ) : post.video_url ? (
-            <video
-              src={post.video_url}
-              className="object-cover w-full h-full"
-              controls={false}
-              muted
-            />
-          ) : null}
-        </button>
-      ))}
-    </div>
+          </div>
+        ))}
+      </div>
+      <PostModal open={!!modalPost} onClose={() => setModalPost(null)} post={modalPost} />
+    </>
   );
 };
 
