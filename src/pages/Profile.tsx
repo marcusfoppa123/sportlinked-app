@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Edit, Settings, Share2, Plus } from "lucide-react";
+import { Edit, Settings, Share2, Plus, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
 import UploadButton from "@/components/UploadButton";
@@ -22,6 +22,12 @@ import { Label } from "@/components/ui/label";
 import SideMenu from "@/components/SideMenu";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ContentFeed from "@/components/ContentFeed";
+
+const highlightData = [
+  { label: "Before/After", icon: <span className="text-xl">🛠️</span> },
+  { label: "Quiz", icon: <span className="text-xl">❓</span> },
+  { label: "Architecture", icon: <span className="text-xl">🏛️</span> },
+];
 
 const Profile = () => {
   const { user, updateUserProfile } = useAuth();
@@ -99,86 +105,75 @@ const Profile = () => {
   };
 
   return (
-    <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"} dark:bg-gray-900`}>
+    <div className="min-h-screen pb-16 bg-white dark:bg-gray-900">
       <SideMenu isOpen={sideMenuOpen} onClose={() => setSideMenuOpen(false)} />
       
-      <header className="relative">
-        <div 
-          className={`h-40 w-full`}
-          style={{ backgroundColor: user?.profileBgColor || (isAthlete ? "#1D9BF0" : "#4CAF50") }}
-        />
-        
-        <div className="absolute top-2 right-2 flex gap-2">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="bg-white/20 text-white"
-            onClick={handleSettingsClick}
-          >
-            <Settings className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" className="bg-white/20 text-white">
-            <Share2 className="h-5 w-5" />
-          </Button>
-        </div>
-        
-        <div className="relative px-4 -mt-16">
-          <div className="flex items-end">
-            <Avatar className="h-32 w-32 border-4 border-white">
+      <div className="w-full px-4 pt-8 pb-4 flex flex-col border-b bg-white dark:bg-gray-900">
+        <div className="flex items-center w-full justify-between">
+          <div className="flex items-center">
+            <Avatar className="h-20 w-20 border-2 border-gray-200">
               <AvatarImage src={user?.profilePic} />
-              <AvatarFallback className={`text-3xl ${isAthlete ? "bg-blue-100" : "bg-green-100"}`}>
+              <AvatarFallback className="text-2xl bg-gray-100">
                 {getInitials(user?.name)}
               </AvatarFallback>
             </Avatar>
-            <div className="flex-1 ml-4 mb-4">
-              <Button 
-                variant="outline" 
-                className="ml-auto bg-white dark:bg-gray-800 dark:text-white dark:border-gray-600"
-                onClick={handleEditProfile}
-              >
-                <Edit className="h-4 w-4 mr-2" />
-                Edit Profile
-              </Button>
-            </div>
-          </div>
-          
-          <div className="mt-2">
-            <h1 className="text-2xl font-bold dark:text-white">{user?.name || "User Name"}</h1>
-            <div className="flex items-center mt-1">
-              <Badge variant="outline" className={`${isAthlete ? "athlete-badge" : "scout-badge"} dark:bg-gray-800 dark:text-white`}>
-                {isAthlete ? "Athlete" : "Scout"}
-              </Badge>
-              {isAthlete && (
-                <Badge variant="outline" className="ml-2 bg-gray-100 dark:bg-gray-800 dark:text-white">
-                  {user?.sport || "Basketball"} • {user?.position || "Point Guard"}
-                </Badge>
-              )}
-            </div>
-            
-            <p className="mt-3 text-gray-600 dark:text-gray-300">
-              {user?.bio || (isAthlete 
-                ? "Point guard with 5 years of college experience. Looking for professional opportunities."
-                : "Basketball scout for the Michigan Wolverines. Searching for talented guards and forwards.")}
-            </p>
-            
-            <div className="flex gap-4 mt-4 text-sm dark:text-gray-300">
-              <div>
-                <span className="font-semibold">{stats.connections}</span> Connections
+            <div className="ml-4 flex flex-col">
+              <div className="flex items-center">
+                <span className="text-xl font-bold mr-2">{user?.name || "User Name"}</span>
+                <CheckCircle2 className="text-blue-500 h-5 w-5" />
               </div>
-              <div>
-                <span className="font-semibold">{stats.posts}</span> Posts
+              <span className="text-gray-500 text-sm">@{user?.username || "username"}</span>
+              <div className="flex mt-2 space-x-2">
+                <Button className="bg-green-500 text-white px-4 py-1 rounded-full text-sm" onClick={() => {}}>
+                  Following
+                </Button>
+                <Button className="bg-gray-200 text-black px-4 py-1 rounded-full text-sm" onClick={handleEditProfile}>
+                  Message
+                </Button>
+                <Button className="bg-gray-200 text-black px-4 py-1 rounded-full text-sm" onClick={handleSettingsClick}>
+                  <Settings className="h-4 w-4" />
+                </Button>
               </div>
-              {isAthlete && (
-                <div>
-                  <span className="font-semibold">{stats.offers}</span> Offers
-                </div>
-              )}
             </div>
           </div>
         </div>
-      </header>
+        
+        <div className="flex justify-around mt-6 mb-2">
+          <div className="text-center">
+            <span className="font-bold text-lg">{stats.posts}</span>
+            <div className="text-xs text-gray-500">Posts</div>
+          </div>
+          <div className="text-center">
+            <span className="font-bold text-lg">7.5M</span>
+            <div className="text-xs text-gray-500">Followers</div>
+          </div>
+          <div className="text-center">
+            <span className="font-bold text-lg">{stats.connections}</span>
+            <div className="text-xs text-gray-500">Following</div>
+          </div>
+        </div>
+        
+        <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+          <div className="font-semibold">{user?.bio || "The best Architecture & Design platform."}</div>
+          <div className="text-gray-500">Contact: {user?.email || "info@architectanddesign.net"}</div>
+          {user?.website && (
+            <a href={user.website} className="text-blue-500" target="_blank" rel="noopener noreferrer">{user.website}</a>
+          )}
+        </div>
+        
+        <div className="flex mt-4 space-x-4 overflow-x-auto">
+          {highlightData.map((h, idx) => (
+            <div key={idx} className="flex flex-col items-center">
+              <div className="h-14 w-14 rounded-full border-2 border-gray-300 flex items-center justify-center bg-white">
+                {h.icon}
+              </div>
+              <span className="text-xs mt-1 text-gray-600">{h.label}</span>
+            </div>
+          ))}
+        </div>
+      </div>
 
-      <main className="px-4 py-4">
+      <main className="px-0 py-4">
         <Tabs defaultValue="posts" className="w-full">
           <TabsList className="grid w-full grid-cols-3 mb-4 dark:bg-gray-800">
             <TabsTrigger value="posts" className="dark:text-gray-300 dark:data-[state=active]:text-white">Posts</TabsTrigger>
@@ -207,6 +202,7 @@ const Profile = () => {
             <ContentFeed 
               userId={user?.id} 
               showAllPosts={false}
+              grid
             />
           </TabsContent>
           
