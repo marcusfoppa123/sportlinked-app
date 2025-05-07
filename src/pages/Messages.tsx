@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Search, Edit, Bell, Send, Image, Paperclip, X, ArrowLeft } from "lucide-react";
+import { Search, Edit, Bell, Send, Image, Paperclip, X, ArrowLeft, VolumeX } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "react-router-dom";
@@ -403,7 +403,14 @@ const Messages = () => {
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-center">
-                          <span className="font-semibold text-gray-900 dark:text-white truncate">{convo.name}</span>
+                          <span className="font-semibold text-gray-900 dark:text-white truncate flex items-center">
+                            {convo.name}
+                            {mutedConversations.includes(convo.id) && (
+                              <span title="Muted">
+                                <VolumeX className="ml-2 w-4 h-4 text-gray-400" />
+                              </span>
+                            )}
+                          </span>
                           <span className="text-xs text-gray-500 ml-2">{convo.time}</span>
                         </div>
                         <div className="flex justify-between items-center">
