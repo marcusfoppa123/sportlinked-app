@@ -108,7 +108,10 @@ const Profile = () => {
     <div className="min-h-screen pb-16 bg-white dark:bg-gray-900">
       <SideMenu isOpen={sideMenuOpen} onClose={() => setSideMenuOpen(false)} />
       
-      <div className="w-full px-4 pt-8 pb-4 flex flex-col border-b bg-white dark:bg-gray-900">
+      <div className="w-full px-4 pt-8 pb-4 flex flex-col border-b bg-white dark:bg-gray-900 relative">
+        <button className="absolute top-4 right-4 bg-gray-200 p-2 rounded-full" onClick={handleSettingsClick}>
+          <Settings className="h-5 w-5 text-gray-700" />
+        </button>
         <div className="flex items-center w-full justify-between">
           <div className="flex items-center">
             <Avatar className="h-20 w-20 border-2 border-gray-200">
@@ -124,14 +127,8 @@ const Profile = () => {
               </div>
               <span className="text-gray-500 text-sm">@{user?.username || "username"}</span>
               <div className="flex mt-2 space-x-2">
-                <Button className="bg-green-500 text-white px-4 py-1 rounded-full text-sm" onClick={() => {}}>
-                  Following
-                </Button>
                 <Button className="bg-gray-200 text-black px-4 py-1 rounded-full text-sm" onClick={handleEditProfile}>
-                  Message
-                </Button>
-                <Button className="bg-gray-200 text-black px-4 py-1 rounded-full text-sm" onClick={handleSettingsClick}>
-                  <Settings className="h-4 w-4" />
+                  Edit Profile
                 </Button>
               </div>
             </div>
@@ -148,28 +145,13 @@ const Profile = () => {
             <div className="text-xs text-gray-500">Followers</div>
           </div>
           <div className="text-center">
-            <span className="font-bold text-lg">{stats.connections}</span>
+            <span className="font-bold text-lg">{user?.following || 0}</span>
             <div className="text-xs text-gray-500">Following</div>
           </div>
         </div>
         
         <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
           <div className="font-semibold">{user?.bio || "The best Architecture & Design platform."}</div>
-          <div className="text-gray-500">Contact: {user?.email || "info@architectanddesign.net"}</div>
-          {user?.website && (
-            <a href={user.website} className="text-blue-500" target="_blank" rel="noopener noreferrer">{user.website}</a>
-          )}
-        </div>
-        
-        <div className="flex mt-4 space-x-4 overflow-x-auto">
-          {highlightData.map((h, idx) => (
-            <div key={idx} className="flex flex-col items-center">
-              <div className="h-14 w-14 rounded-full border-2 border-gray-300 flex items-center justify-center bg-white">
-                {h.icon}
-              </div>
-              <span className="text-xs mt-1 text-gray-600">{h.label}</span>
-            </div>
-          ))}
         </div>
       </div>
 
