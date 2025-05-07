@@ -3,12 +3,14 @@ import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Heart, MessageCircle, Bookmark, Share2, ArrowLeft } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/context/AuthContext";
 
 const PostPage: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
   const [searchParams] = useSearchParams();
   let userId = searchParams.get("userId");
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -28,37 +30,59 @@ const PostPage: React.FC = () => {
           userId = post.user_id;
         }
         if (!userId) throw new Error("No userId found");
-        // Now fetch all posts for the user
+        // Fetch all posts for the user
         const { data: postsData, error: postsError } = await supabase
           .from("posts")
           .select("*")
           .eq("user_id", userId)
           .order("created_at", { ascending: false });
         if (postsError) throw postsError;
-        const postsWithUser = await Promise.all(
-          (postsData || []).map(async (post: any) => {
-            const { data: profileData } = await supabase
-              .from("profiles")
-              .select("*")
-              .eq("id", post.user_id)
-              .maybeSingle();
-            return {
-              ...post,
-              user: {
-                id: post.user_id,
-                name: profileData?.full_name || profileData?.username || 'Unknown User',
-                role: profileData?.role || 'athlete',
-                profilePic: profileData?.avatar_url,
-              },
-              stats: {
-                likes: post.likes_count || 0,
-                comments: post.comments_count || 0,
-                bookmarks: post.bookmarks_count || 0,
-                shares: post.shares || 0,
-              },
-            };
-          })
-        );
+        // Collect all unique user_ids (should be just one, but future-proof)
+        const userIds = Array.from(new Set((postsData || []).map((p: any) => p.user_id)));
+        // Fetch all needed profiles in one query
+        const { data: profilesData, error: profilesError } = await supabase
+          .from("profiles")
+          .select("*")
+          .in("id", userIds);
+        if (profilesError) throw profilesError;
+        // Fetch likes and bookmarks for the current user
+        let userLikes: string[] = [];
+        let userBookmarks: string[] = [];
+        if (currentUser) {
+          const { data: likesData } = await supabase
+            .from("likes")
+            .select("post_id")
+            .eq("user_id", currentUser.id);
+          userLikes = (likesData || []).map((l: any) => l.post_id);
+          const { data: bookmarksData } = await supabase
+            .from("bookmarks")
+            .select("post_id")
+            .eq("user_id", currentUser.id);
+          userBookmarks = (bookmarksData || []).map((b: any) => b.post_id);
+        }
+        // Map user_id to profile
+        const profileMap = new Map((profilesData || []).map((profile: any) => [profile.id, profile]));
+        // Map posts to include user info and like/bookmark state
+        const postsWithUser = (postsData || []).map((post: any) => {
+          const profileData = profileMap.get(post.user_id);
+          return {
+            ...post,
+            user: {
+              id: post.user_id,
+              name: profileData?.full_name || profileData?.username || 'Unknown User',
+              role: profileData?.role || 'athlete',
+              profilePic: profileData?.avatar_url,
+            },
+            stats: {
+              likes: post.likes_count || 0,
+              comments: post.comments_count || 0,
+              bookmarks: post.bookmarks_count || 0,
+              shares: post.shares || 0,
+            },
+            userLiked: userLikes.includes(post.id),
+            userBookmarked: userBookmarks.includes(post.id),
+          };
+        });
         setPosts(postsWithUser);
         // Scroll to the selected post
         setTimeout(() => {
@@ -70,7 +94,6 @@ const PostPage: React.FC = () => {
         }, 100);
       } catch (err) {
         setPosts([]);
-        // Optionally log error for debugging
         console.error("PostPage error:", err);
       } finally {
         setLoading(false);
@@ -78,7 +101,37 @@ const PostPage: React.FC = () => {
     };
     fetchPosts();
     // eslint-disable-next-line
-  }, [postId]);
+  }, [postId, currentUser?.id]);
+
+  // Like, Bookmark, Share handlers
+  const handleLike = async (post: any, idx: number) => {
+    if (!currentUser) return;
+    const liked = post.userLiked;
+    if (!liked) {
+      await supabase.from("likes").insert({ user_id: currentUser.id, post_id: post.id });
+      setPosts((prev) => prev.map((p, i) => i === idx ? { ...p, userLiked: true, stats: { ...p.stats, likes: p.stats.likes + 1 } } : p));
+    } else {
+      await supabase.from("likes").delete().eq("user_id", currentUser.id).eq("post_id", post.id);
+      setPosts((prev) => prev.map((p, i) => i === idx ? { ...p, userLiked: false, stats: { ...p.stats, likes: Math.max(0, p.stats.likes - 1) } } : p));
+    }
+  };
+  const handleBookmark = async (post: any, idx: number) => {
+    if (!currentUser) return;
+    const bookmarked = post.userBookmarked;
+    if (!bookmarked) {
+      await supabase.from("bookmarks").insert({ user_id: currentUser.id, post_id: post.id });
+      setPosts((prev) => prev.map((p, i) => i === idx ? { ...p, userBookmarked: true, stats: { ...p.stats, bookmarks: p.stats.bookmarks + 1 } } : p));
+    } else {
+      await supabase.from("bookmarks").delete().eq("user_id", currentUser.id).eq("post_id", post.id);
+      setPosts((prev) => prev.map((p, i) => i === idx ? { ...p, userBookmarked: false, stats: { ...p.stats, bookmarks: Math.max(0, p.stats.bookmarks - 1) } } : p));
+    }
+  };
+  const handleShare = async (post: any, idx: number) => {
+    // Increment share count in DB
+    await supabase.from("posts").update({ shares: (post.stats.shares || 0) + 1 }).eq("id", post.id);
+    setPosts((prev) => prev.map((p, i) => i === idx ? { ...p, stats: { ...p.stats, shares: p.stats.shares + 1 } } : p));
+    // Optionally, trigger share UI (navigator.share, copy link, etc.)
+  };
 
   if (loading) {
     return <div className="text-center py-8 text-gray-500">Loading...</div>;
@@ -125,10 +178,22 @@ const PostPage: React.FC = () => {
             </div>
             {/* Icons row */}
             <div className="w-full flex flex-row justify-start gap-6 px-4 py-2 bg-white dark:bg-black">
-              <button className="flex items-center text-black dark:text-white"><Heart className="h-6 w-6" /></button>
-              <button className="flex items-center text-black dark:text-white"><MessageCircle className="h-6 w-6" /></button>
-              <button className="flex items-center text-black dark:text-white"><Share2 className="h-6 w-6" /></button>
-              <button className="flex items-center text-black dark:text-white ml-auto"><Bookmark className="h-6 w-6" /></button>
+              <button className={`flex items-center ${post.userLiked ? 'text-red-500' : 'text-black dark:text-white'}`} onClick={() => handleLike(post, idx)}>
+                <Heart className="h-6 w-6" fill={post.userLiked ? 'currentColor' : 'none'} />
+                <span className="ml-1 text-sm">{post.stats.likes}</span>
+              </button>
+              <button className="flex items-center text-black dark:text-white">
+                <MessageCircle className="h-6 w-6" />
+                <span className="ml-1 text-sm">{post.stats.comments}</span>
+              </button>
+              <button className="flex items-center text-black dark:text-white" onClick={() => handleShare(post, idx)}>
+                <Share2 className="h-6 w-6" />
+                <span className="ml-1 text-sm">{post.stats.shares}</span>
+              </button>
+              <button className={`flex items-center ml-auto ${post.userBookmarked ? 'text-blue-500' : 'text-black dark:text-white'}`} onClick={() => handleBookmark(post, idx)}>
+                <Bookmark className="h-6 w-6" fill={post.userBookmarked ? 'currentColor' : 'none'} />
+                <span className="ml-1 text-sm">{post.stats.bookmarks}</span>
+              </button>
             </div>
             {/* Liked by line */}
             <div className="px-4 text-sm text-gray-700 dark:text-gray-300 pb-1 w-full">
