@@ -431,7 +431,7 @@ const Messages = () => {
                 );
               })}
               {/* Encouragement message for empty space */}
-              <div className="flex-1 flex flex-col justify-end items-center pb-8">
+              <div className="flex-1 flex flex-col justify-center items-center">
                 <span className="text-gray-400 text-sm text-center">
                   Add more friends and start new conversations to grow your network!
                 </span>
