@@ -90,10 +90,10 @@ const PostPage: React.FC = () => {
         {posts.map((post, idx) => (
           <section
             key={post.id}
-            className="h-screen w-full flex flex-col items-center justify-start snap-start bg-white dark:bg-black"
+            className={`h-screen w-full flex flex-col items-center justify-start snap-start bg-white dark:bg-black ${idx !== 0 ? 'border-t border-gray-200 dark:border-gray-800' : ''}`}
           >
             {/* Profile picture and name in the empty space */}
-            <div className="flex items-center gap-2 pt-8 pb-4">
+            <div className="flex items-center gap-2 pt-4 pb-2 w-full px-4">
               <Avatar className="h-10 w-10">
                 <AvatarImage src={post.user?.profilePic} />
                 <AvatarFallback>{post.user?.name?.[0] || "U"}</AvatarFallback>
