@@ -57,10 +57,10 @@ const grouped = notifications.reduce((acc, n) => {
 const Notifications = () => {
   const navigate = useNavigate();
   return (
-    <div className="w-full min-h-screen bg-white flex flex-col" style={{backgroundColor: '#fff', opacity: 1}}>
+    <div className="fixed inset-0 w-full h-full bg-white flex flex-col z-50">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-4 border-b bg-white" style={{backgroundColor: '#fff', opacity: 1, zIndex: 10}}>
-        <button onClick={() => navigate(-1)} className="p-2" style={{display: 'block'}}>
+      <div className="flex items-center justify-between px-4 py-4 border-b bg-white">
+        <button onClick={() => navigate(-1)} className="p-2">
           <ArrowLeft className="h-6 w-6" />
         </button>
         <h1 className="text-2xl font-bold flex-1 text-left ml-2">Notifications</h1>
