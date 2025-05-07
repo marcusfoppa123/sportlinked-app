@@ -25,6 +25,12 @@ const ProfilePostGrid: React.FC<ProfilePostGridProps> = ({ userId }) => {
         // Map stats for modal
         const mapped = (data || []).map((post: any) => ({
           ...post,
+          user: {
+            id: post.profiles?.id || post.user_id,
+            name: post.profiles?.full_name || post.profiles?.username || 'Unknown User',
+            role: post.profiles?.role || 'athlete',
+            profilePic: post.profiles?.avatar_url,
+          },
           stats: {
             likes: post.likes?.[0]?.count ?? 0,
             comments: post.comments?.[0]?.count ?? 0,
@@ -57,7 +63,7 @@ const ProfilePostGrid: React.FC<ProfilePostGridProps> = ({ userId }) => {
           <div key={post.id} onClick={() => setModalPost(post)} className="cursor-pointer">
             <ContentFeedCard
               id={post.id}
-              user={post.user || post.profiles || {}}
+              user={post.user}
               timestamp={new Date(post.created_at)}
               content={{ text: post.content, image: post.image_url, video: post.video_url }}
               stats={post.stats}
