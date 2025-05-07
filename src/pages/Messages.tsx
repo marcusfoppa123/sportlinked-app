@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -131,6 +130,16 @@ const Messages = () => {
   const [activeConversation, setActiveConversation] = useState(null);
   const [newMessage, setNewMessage] = useState("");
   const [conversations, setConversations] = useState(mockConversations);
+  const TABS = ["All", "Messages", "Channels", "Requests"];
+  const recentContacts = mockConversations.slice(0, 5);
+  const [activeTab, setActiveTab] = useState("All");
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [activeConversation, conversations]);
 
   const handleSendMessage = () => {
     if (!newMessage.trim() || !activeConversation) return;
@@ -165,182 +174,128 @@ const Messages = () => {
 
   return (
     <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"}`}>
-      {/* Header */}
+      {/* Header and Recent Contacts */}
       {!activeConversation ? (
-        <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-border shadow-sm">
-          <div className="container px-4 h-16 flex items-center justify-between">
-            <h1 className="text-xl font-bold dark:text-white">Messages</h1>
-            <div className="flex gap-2">
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={navigateToNotifications}
-              >
-                <Bell className="h-5 w-5 dark:text-white" />
-              </Button>
-              <Button variant="ghost" size="icon">
-                <Edit className="h-5 w-5 dark:text-white" />
-              </Button>
-            </div>
-          </div>
-        </header>
-      ) : (
-        <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-border shadow-sm">
-          <div className="container px-4 h-16 flex items-center">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => setActiveConversation(null)}
-              className="mr-2"
-            >
-              <ArrowLeft className="h-5 w-5 dark:text-white" />
-            </Button>
-            
-            <div className="flex items-center flex-1">
-              <Avatar className="h-8 w-8 mr-3">
-                <AvatarImage src={activeConversation.avatar} />
-                <AvatarFallback className={isAthlete ? "bg-blue-100" : "bg-green-100"}>
-                  {activeConversation.name.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <h1 className="text-lg font-medium dark:text-white">{activeConversation.name}</h1>
-            </div>
-          </div>
-        </header>
-      )}
-
-      {/* Main content */}
-      <main className="container px-4 py-4">
-        {!activeConversation ? (
-          <>
-            {/* Search */}
-            <div className="relative mb-4">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-              <Input 
-                placeholder="Search messages..." 
-                className="pl-9 dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-              />
-            </div>
-            
-            {/* Conversations list */}
-            <div className="space-y-2">
-              {conversations.map((convo) => (
-                <Card 
-                  key={convo.id}
-                  className="flex items-center p-3 cursor-pointer hover:bg-muted transition-colors dark:bg-gray-800 dark:border-gray-700"
-                  onClick={() => setActiveConversation(convo)}
-                >
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={convo.avatar} />
-                    <AvatarFallback className={isAthlete ? "bg-blue-100" : "bg-green-100"}>
-                      {convo.name.charAt(0)}
-                    </AvatarFallback>
-                  </Avatar>
-                  
-                  <div className="ml-3 flex-1 overflow-hidden">
-                    <div className="flex justify-between items-baseline">
-                      <h3 className={`font-medium truncate dark:text-white ${convo.unread ? "font-semibold" : ""}`}>
-                        {convo.name}
-                      </h3>
-                      <span className="text-xs text-gray-500 whitespace-nowrap ml-2 dark:text-gray-400">
-                        {convo.time}
-                      </span>
-                    </div>
-                    <p className={`text-sm truncate ${convo.unread ? "font-medium dark:text-white" : "text-gray-500 dark:text-gray-400"}`}>
-                      {convo.lastMessage}
-                    </p>
-                  </div>
-                  
-                  {convo.unread && (
-                    <div className={`h-2 w-2 rounded-full ml-2 ${isAthlete ? "bg-athlete" : "bg-scout"}`} />
-                  )}
-                </Card>
-              ))}
-            </div>
-            
-            <div className="mt-8 text-center">
-              <p className="text-sm text-gray-500 dark:text-gray-400">Connect with athletes and scouts to start messaging</p>
-              <Button 
-                className={`mt-2 ${isAthlete ? "bg-athlete hover:bg-athlete/90" : "bg-scout hover:bg-scout/90"}`}
-              >
-                Find Connections
-              </Button>
-            </div>
-          </>
-        ) : (
-          <div className="flex flex-col h-[calc(100vh-8rem)]">
-            {/* Message thread */}
-            <div className="flex-1 overflow-y-auto space-y-4 mb-4">
-              {activeConversation.messages.map((message) => (
-                <div 
-                  key={message.id} 
-                  className={`flex ${message.isMe ? 'justify-end' : 'justify-start'}`}
-                >
-                  {!message.isMe && (
-                    <Avatar className="h-8 w-8 mr-2 mt-1">
-                      <AvatarFallback className={isAthlete ? "bg-blue-100" : "bg-green-100"}>
-                        {activeConversation.name.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
-                  
-                  <div 
-                    className={`max-w-[80%] rounded-lg p-3 ${
-                      message.isMe 
-                        ? `${isAthlete ? 'bg-athlete' : 'bg-scout'} text-white` 
-                        : 'bg-gray-100 dark:bg-gray-800'
-                    }`}
-                  >
-                    <p className={`text-sm ${message.isMe ? 'text-white' : 'dark:text-white'}`}>{message.text}</p>
-                    <span className={`text-xs mt-1 block ${
-                      message.isMe ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'
-                    }`}>
-                      {message.time}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            {/* Message input */}
-            <div className="border-t border-gray-200 dark:border-gray-700 pt-3 pb-1">
-              <div className="flex items-end space-x-2">
-                <div className="flex space-x-2">
-                  <Button variant="ghost" size="icon" className="text-gray-500 dark:text-gray-400">
-                    <Image className="h-5 w-5" />
-                  </Button>
-                  <Button variant="ghost" size="icon" className="text-gray-500 dark:text-gray-400">
-                    <Paperclip className="h-5 w-5" />
-                  </Button>
-                </div>
-                
-                <Textarea 
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Type a message..."
-                  className="flex-1 min-h-[50px] resize-none dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                />
-                
-                <Button 
-                  onClick={handleSendMessage}
-                  disabled={!newMessage.trim()}
-                  className={isAthlete ? "bg-athlete hover:bg-athlete/90" : "bg-scout hover:bg-scout/90"}
-                >
-                  <Send className="h-5 w-5" />
+        <>
+          <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-border shadow-sm">
+            <div className="container px-4 h-16 flex items-center justify-between">
+              <h1 className="text-xl font-bold dark:text-white">Messages</h1>
+              <div className="flex gap-2">
+                <Button variant="ghost" size="icon" onClick={navigateToNotifications}>
+                  <Bell className="h-5 w-5 dark:text-white" />
+                </Button>
+                <Button variant="ghost" size="icon">
+                  <Edit className="h-5 w-5 dark:text-white" />
                 </Button>
               </div>
             </div>
+          </header>
+          {/* Recent contacts row */}
+          <div className="flex items-center gap-3 px-4 py-3 overflow-x-auto bg-white dark:bg-gray-900 border-b border-border">
+            {recentContacts.map((contact) => (
+              <div key={contact.id} className="flex flex-col items-center">
+                <Avatar className="h-10 w-10 mb-1 ring-2 ring-blue-400">
+                  <AvatarImage src={contact.avatar} alt={contact.name} />
+                  <AvatarFallback>{contact.name[0]}</AvatarFallback>
+                </Avatar>
+                <span className="text-xs text-gray-700 dark:text-gray-300 truncate w-12 text-center">{contact.name.split(" ")[0]}</span>
+              </div>
+            ))}
           </div>
-        )}
-      </main>
-      
-      {/* Bottom navigation */}
+          {/* Tabs */}
+          <div className="flex justify-between px-4 py-2 bg-white dark:bg-gray-900 border-b border-border">
+            {TABS.map(tab => (
+              <button
+                key={tab}
+                className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${activeTab === tab ? "bg-blue-500 text-white" : "text-gray-600 dark:text-gray-300"}`}
+                onClick={() => setActiveTab(tab)}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+          {/* Conversation List */}
+          <div className="divide-y divide-gray-200 dark:divide-gray-800">
+            {conversations.map((convo) => (
+              <div
+                key={convo.id}
+                className="flex items-center px-4 py-4 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer relative group"
+                onClick={() => setActiveConversation(convo)}
+              >
+                <Avatar className="h-12 w-12 mr-3">
+                  <AvatarImage src={convo.avatar} alt={convo.name} />
+                  <AvatarFallback>{convo.name[0]}</AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-center">
+                    <span className="font-semibold text-gray-900 dark:text-white truncate">{convo.name}</span>
+                    <span className="text-xs text-gray-500 ml-2">{convo.time}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className={`truncate text-sm ${convo.unread ? "font-bold text-blue-600" : "text-gray-600 dark:text-gray-300"}`}>{convo.lastMessage}</span>
+                    {convo.unread && <span className="ml-2 w-2 h-2 rounded-full bg-blue-500 inline-block" />}
+                  </div>
+                </div>
+                {/* Swipe/hover actions */}
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden group-hover:flex gap-2">
+                  <Button size="icon" variant="ghost" className="hover:bg-gray-200 dark:hover:bg-gray-700"><span className="text-xs">Pin</span></Button>
+                  <Button size="icon" variant="ghost" className="hover:bg-gray-200 dark:hover:bg-gray-700"><span className="text-xs">Mute</span></Button>
+                  <Button size="icon" variant="destructive" className="hover:bg-red-100 dark:hover:bg-red-900"><span className="text-xs">Delete</span></Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Chat Header */}
+          <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-border shadow-sm">
+            <div className="container px-4 h-16 flex items-center">
+              <Button variant="ghost" size="icon" onClick={() => setActiveConversation(null)} className="mr-2">
+                <ArrowLeft className="h-5 w-5 dark:text-white" />
+              </Button>
+              <Avatar className="h-8 w-8 mr-3">
+                <AvatarImage src={activeConversation.avatar} alt={activeConversation.name} />
+                <AvatarFallback>{activeConversation.name[0]}</AvatarFallback>
+              </Avatar>
+              <span className="font-semibold text-gray-900 dark:text-white flex-1">{activeConversation.name}</span>
+              <Button variant="ghost" size="icon"><Bell className="h-5 w-5 dark:text-white" /></Button>
+              <Button variant="ghost" size="icon"><Edit className="h-5 w-5 dark:text-white" /></Button>
+            </div>
+          </header>
+          {/* Chat Messages */}
+          <div className="flex flex-col px-4 py-4 space-y-2 overflow-y-auto" style={{ height: "calc(100vh - 200px)" }}>
+            {activeConversation.messages.map((msg) => (
+              <div key={msg.id} className={`flex ${msg.isMe ? "justify-end" : "justify-start"}`}>
+                <div className={`rounded-2xl px-4 py-2 max-w-xs ${msg.isMe ? "bg-blue-500 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"}`}>
+                  {msg.text}
+                  <div className="text-xs text-right mt-1 opacity-70">{msg.time}</div>
+                </div>
+              </div>
+            ))}
+            <div ref={messagesEndRef} />
+          </div>
+          {/* Message Input Bar */}
+          <div className="sticky bottom-0 left-0 w-full bg-white dark:bg-gray-900 border-t border-border px-4 py-3 flex items-center gap-2">
+            <Button variant="ghost" size="icon"><Image className="h-5 w-5" /></Button>
+            <Button variant="ghost" size="icon"><Paperclip className="h-5 w-5" /></Button>
+            <Input
+              className="flex-1 rounded-full px-4 py-2 bg-gray-100 dark:bg-gray-800 border-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Type a message..."
+              value={newMessage}
+              onChange={e => setNewMessage(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter") handleSendMessage(); }}
+            />
+            <Button
+              className="rounded-full bg-blue-500 hover:bg-blue-600 text-white font-bold px-4 py-2"
+              onClick={handleSendMessage}
+              disabled={!newMessage.trim()}
+            >
+              <Send className="h-5 w-5" />
+            </Button>
+          </div>
+        </>
+      )}
       <BottomNavigation />
     </div>
   );
