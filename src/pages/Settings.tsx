@@ -126,7 +126,7 @@ const Settings = () => {
                       <button
                         key={opt.value}
                         className={`w-full text-left px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 ${language === opt.value ? 'font-bold text-primary' : ''}`}
-                        onClick={() => handleLanguageChange(opt.value as "en" | "sv")}
+                        onClick={() => { handleLanguageChange(opt.value as "en" | "sv"); setShowLanguageMenu(false); }}
                       >
                         {opt.label}
                       </button>
