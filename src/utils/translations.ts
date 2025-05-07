@@ -117,6 +117,26 @@ const translations = {
     "menu.notifications": "Notifications",
     "menu.settings": "Settings",
     "menu.help": "Help & Support",
+    
+    // Subscriptions
+    "subscriptions.title": "Subscriptions",
+    "subscriptions.choosePlan": "Choose Your Plan",
+    "subscriptions.choosePlanDesc": "Select the plan that fits your needs",
+    "subscriptions.standard": "Standard",
+    "subscriptions.standardDesc": "Basic features for casual users",
+    "subscriptions.pro": "Pro",
+    "subscriptions.proDesc": "Enhanced features for active users",
+    "subscriptions.premium": "Premium",
+    "subscriptions.premiumDesc": "Full access to all features",
+    "subscriptions.feature1": "Basic profile access",
+    "subscriptions.feature2": "View public content",
+    "subscriptions.feature3": "Connect with others",
+    "subscriptions.feature4": "Advanced statistics",
+    "subscriptions.feature5": "Priority support",
+    "subscriptions.feature6": "Exclusive content access",
+    "subscriptions.active": "Selected",
+    "subscriptions.continue": "Continue",
+    "subscriptions.complimentary": "Free"
   },
   sv: {
     // Navigation
@@ -235,6 +255,26 @@ const translations = {
     "menu.notifications": "Aviseringar",
     "menu.settings": "Inställningar",
     "menu.help": "Hjälp & Support",
+    
+    // Subscriptions
+    "subscriptions.title": "Prenumerationer",
+    "subscriptions.choosePlan": "Välj Din Plan",
+    "subscriptions.choosePlanDesc": "Välj den plan som passar dina behov",
+    "subscriptions.standard": "Standard",
+    "subscriptions.standardDesc": "Grundläggande funktioner för sporadiska användare",
+    "subscriptions.pro": "Pro",
+    "subscriptions.proDesc": "Utökade funktioner för aktiva användare",
+    "subscriptions.premium": "Premium",
+    "subscriptions.premiumDesc": "Full tillgång till alla funktioner",
+    "subscriptions.feature1": "Grundläggande profilåtkomst",
+    "subscriptions.feature2": "Se offentligt innehåll",
+    "subscriptions.feature3": "Anslut till andra",
+    "subscriptions.feature4": "Avancerad statistik",
+    "subscriptions.feature5": "Prioriterad support",
+    "subscriptions.feature6": "Exklusiv innehållsåtkomst",
+    "subscriptions.active": "Vald",
+    "subscriptions.continue": "Fortsätt",
+    "subscriptions.complimentary": "Gratis"
   }
 };
 
