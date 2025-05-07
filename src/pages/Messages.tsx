@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,8 @@ import BottomNavigation from "@/components/BottomNavigation";
 import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useMessageRequests } from "@/hooks/useMessageRequests";
+import { supabase } from "@/integrations/supabase/client";
 
 // Mock data for conversations
 const mockConversations = [
@@ -138,6 +139,7 @@ const Messages = () => {
   const recentContacts = mockConversations.slice(0, 5);
   const [activeTab, setActiveTab] = useState("All");
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
+  const { pendingRequests, sentRequests, loading, error, sendMessageRequest, respondToRequest } = useMessageRequests();
 
   React.useEffect(() => {
     if (messagesEndRef.current) {
@@ -145,30 +147,55 @@ const Messages = () => {
     }
   }, [activeConversation, conversations]);
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!newMessage.trim() || !activeConversation) return;
-    const updatedConversations = conversations.map(convo => {
-      if (convo.id === activeConversation.id) {
-        const newMsg = {
-          id: `msg-${Date.now()}`,
-          sender: "Me",
-          text: newMessage,
-          time: "Just now",
-          isMe: true
-        };
-        return {
-          ...convo,
-          lastMessage: newMessage,
-          time: "Just now",
-          messages: [...convo.messages, newMsg]
-        };
+
+    try {
+      // Check if there's a pending message request
+      const { data: request, error: requestError } = await supabase
+        .from('message_requests')
+        .select('*')
+        .or(`sender_id.eq.${user?.id},receiver_id.eq.${user?.id}`)
+        .eq('status', 'pending')
+        .single();
+
+      if (requestError && requestError.code !== 'PGRST116') {
+        throw requestError;
       }
-      return convo;
-    });
-    setConversations(updatedConversations);
-    const updatedActive = updatedConversations.find(c => c.id === activeConversation.id);
-    setActiveConversation(updatedActive);
-    setNewMessage("");
+
+      if (request) {
+        // If there's a pending request, try to send a message request first
+        await sendMessageRequest(activeConversation.id);
+        return;
+      }
+
+      // If no pending request or request is accepted, send the message
+      const updatedConversations = conversations.map(convo => {
+        if (convo.id === activeConversation.id) {
+          const newMsg = {
+            id: `msg-${Date.now()}`,
+            sender: "Me",
+            text: newMessage,
+            time: "Just now",
+            isMe: true
+          };
+          return {
+            ...convo,
+            lastMessage: newMessage,
+            time: "Just now",
+            messages: [...convo.messages, newMsg]
+          };
+        }
+        return convo;
+      });
+      setConversations(updatedConversations);
+      const updatedActive = updatedConversations.find(c => c.id === activeConversation.id);
+      setActiveConversation(updatedActive);
+      setNewMessage("");
+    } catch (err) {
+      console.error('Error sending message:', err);
+      // Handle error appropriately
+    }
   };
 
   const navigateToNotifications = () => {
@@ -219,67 +246,140 @@ const Messages = () => {
                 onClick={() => setActiveTab(tab)}
               >
                 {tab}
+                {tab === "Requests" && pendingRequests.length > 0 && (
+                  <span className="ml-1 bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                    {pendingRequests.length}
+                  </span>
+                )}
               </button>
             ))}
           </div>
-          {/* Conversation List */}
-          <div className="divide-y divide-gray-200 dark:divide-gray-800">
-            {conversations.map((convo) => {
-              const isSwipedConvo = swipedConvoId === convo.id;
-              
-              const handleTouchStart = (e) => {
-                if (!isMobileDevice) return;
-                touchStartX.current = e.touches[0].clientX;
-              };
-              
-              const handleTouchMove = (e) => {
-                if (!isMobileDevice) return;
-                touchEndX.current = e.touches[0].clientX;
-              };
-              
-              const handleTouchEnd = () => {
-                if (!isMobileDevice) return;
-                if (touchStartX.current - touchEndX.current > 60) {
-                  handleSwipe(convo.id);
-                } else if (touchEndX.current - touchStartX.current > 60) {
-                  handleSwipe(null);
-                }
-              };
-              
-              return (
-                <div
-                  key={convo.id}
-                  className={`flex items-center px-4 py-4 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer relative group transition-transform duration-200 ${isSwipedConvo ? 'translate-x-[-120px]' : ''}`}
-                  onClick={() => !isSwipedConvo && setActiveConversation(convo)}
-                  onTouchStart={handleTouchStart}
-                  onTouchMove={handleTouchMove}
-                  onTouchEnd={handleTouchEnd}
-                >
-                  <Avatar className="h-12 w-12 mr-3">
-                    <AvatarImage src={convo.avatar} alt={convo.name} />
-                    <AvatarFallback>{convo.name[0]}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-center">
-                      <span className="font-semibold text-gray-900 dark:text-white truncate">{convo.name}</span>
-                      <span className="text-xs text-gray-500 ml-2">{convo.time}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className={`truncate text-sm ${convo.unread ? "font-bold text-blue-600" : "text-gray-600 dark:text-gray-300"}`}>{convo.lastMessage}</span>
-                      {convo.unread && <span className="ml-2 w-2 h-2 rounded-full bg-blue-500 inline-block" />}
-                    </div>
-                  </div>
-                  {(isSwipedConvo || !isMobileDevice) && (
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-2 bg-white dark:bg-gray-900 p-1 rounded-xl shadow-lg z-10">
-                      <Button size="icon" variant="ghost" className="hover:bg-gray-200 dark:hover:bg-gray-700"><span className="text-xs">Pin</span></Button>
-                      <Button size="icon" variant="ghost" className="hover:bg-gray-200 dark:hover:bg-gray-700"><span className="text-xs">Mute</span></Button>
-                      <Button size="icon" variant="destructive" className="hover:bg-red-100 dark:hover:bg-red-900"><span className="text-xs">Delete</span></Button>
+          {/* Content based on active tab */}
+          {activeTab === "Requests" ? (
+            <div className="divide-y divide-gray-200 dark:divide-gray-800">
+              {loading ? (
+                <div className="p-4 text-center">Loading...</div>
+              ) : error ? (
+                <div className="p-4 text-center text-red-500">{error}</div>
+              ) : (
+                <>
+                  {pendingRequests.length > 0 && (
+                    <div className="p-4">
+                      <h3 className="font-semibold mb-2">Pending Requests</h3>
+                      {pendingRequests.map(request => (
+                        <div key={request.id} className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded-lg mb-2">
+                          <div className="flex items-center">
+                            <Avatar className="h-10 w-10 mr-3">
+                              <AvatarFallback>U</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">User {request.sender_id}</p>
+                              <p className="text-sm text-gray-500">Wants to message you</p>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => respondToRequest(request.id, false)}
+                            >
+                              Decline
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => respondToRequest(request.id, true)}
+                            >
+                              Accept
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   )}
-                </div>
-              );
-            })}
-          </div>
+                  {sentRequests.length > 0 && (
+                    <div className="p-4">
+                      <h3 className="font-semibold mb-2">Sent Requests</h3>
+                      {sentRequests.map(request => (
+                        <div key={request.id} className="flex items-center p-2 bg-gray-50 dark:bg-gray-800 rounded-lg mb-2">
+                          <Avatar className="h-10 w-10 mr-3">
+                            <AvatarFallback>U</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">User {request.receiver_id}</p>
+                            <p className="text-sm text-gray-500">Request pending</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {pendingRequests.length === 0 && sentRequests.length === 0 && (
+                    <div className="p-4 text-center text-gray-500">
+                      No message requests
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          ) : (
+            // Conversation List
+            <div className="divide-y divide-gray-200 dark:divide-gray-800">
+              {conversations.map((convo) => {
+                const isSwipedConvo = swipedConvoId === convo.id;
+                
+                const handleTouchStart = (e) => {
+                  if (!isMobileDevice) return;
+                  touchStartX.current = e.touches[0].clientX;
+                };
+                
+                const handleTouchMove = (e) => {
+                  if (!isMobileDevice) return;
+                  touchEndX.current = e.touches[0].clientX;
+                };
+                
+                const handleTouchEnd = () => {
+                  if (!isMobileDevice) return;
+                  if (touchStartX.current - touchEndX.current > 60) {
+                    handleSwipe(convo.id);
+                  } else if (touchEndX.current - touchStartX.current > 60) {
+                    handleSwipe(null);
+                  }
+                };
+                
+                return (
+                  <div
+                    key={convo.id}
+                    className={`flex items-center px-4 py-4 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer relative group transition-transform duration-200 ${isSwipedConvo ? 'translate-x-[-120px]' : ''}`}
+                    onClick={() => !isSwipedConvo && setActiveConversation(convo)}
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                  >
+                    <Avatar className="h-12 w-12 mr-3">
+                      <AvatarImage src={convo.avatar} alt={convo.name} />
+                      <AvatarFallback>{convo.name[0]}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-center">
+                        <span className="font-semibold text-gray-900 dark:text-white truncate">{convo.name}</span>
+                        <span className="text-xs text-gray-500 ml-2">{convo.time}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className={`truncate text-sm ${convo.unread ? "font-bold text-blue-600" : "text-gray-600 dark:text-gray-300"}`}>{convo.lastMessage}</span>
+                        {convo.unread && <span className="ml-2 w-2 h-2 rounded-full bg-blue-500 inline-block" />}
+                      </div>
+                    </div>
+                    {(isSwipedConvo || !isMobileDevice) && (
+                      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-2 bg-white dark:bg-gray-900 p-1 rounded-xl shadow-lg z-10">
+                        <Button size="icon" variant="ghost" className="hover:bg-gray-200 dark:hover:bg-gray-700"><span className="text-xs">Pin</span></Button>
+                        <Button size="icon" variant="ghost" className="hover:bg-gray-200 dark:hover:bg-gray-700"><span className="text-xs">Mute</span></Button>
+                        <Button size="icon" variant="destructive" className="hover:bg-red-100 dark:hover:bg-red-900"><span className="text-xs">Delete</span></Button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </>
       ) : (
         <>
