@@ -16,29 +16,38 @@ const ProfilePostGrid: React.FC<ProfilePostGridProps> = ({ userId }) => {
     const fetchPosts = async () => {
       setLoading(true);
       try {
-        const { data, error } = await supabase
+        const { data: postsData, error: postsError } = await supabase
           .from("posts")
-          .select("*, profiles:profiles(*), likes(count), comments(count), bookmarks(count)")
+          .select("*")
           .eq("user_id", userId)
           .order("created_at", { ascending: false });
-        if (error) throw error;
-        // Map stats for modal
-        const mapped = (data || []).map((post: any) => ({
-          ...post,
-          user: {
-            id: post.profiles?.id || post.user_id,
-            name: post.profiles?.full_name || post.profiles?.username || 'Unknown User',
-            role: post.profiles?.role || 'athlete',
-            profilePic: post.profiles?.avatar_url,
-          },
-          stats: {
-            likes: post.likes?.[0]?.count ?? 0,
-            comments: post.comments?.[0]?.count ?? 0,
-            bookmarks: post.bookmarks?.[0]?.count ?? 0,
-            shares: post.shares ?? 0,
-          },
-        }));
-        setPosts(mapped);
+        if (postsError) throw postsError;
+        // For each post, fetch the profile
+        const postsWithUser = await Promise.all(
+          (postsData || []).map(async (post: any) => {
+            const { data: profileData, error: profileError } = await supabase
+              .from("profiles")
+              .select("*")
+              .eq("id", post.user_id)
+              .maybeSingle();
+            return {
+              ...post,
+              user: {
+                id: post.user_id,
+                name: profileData?.full_name || profileData?.username || 'Unknown User',
+                role: profileData?.role || 'athlete',
+                profilePic: profileData?.avatar_url,
+              },
+              stats: {
+                likes: post.likes_count || 0,
+                comments: post.comments_count || 0,
+                bookmarks: post.bookmarks_count || 0,
+                shares: post.shares || 0,
+              },
+            };
+          })
+        );
+        setPosts(postsWithUser);
       } catch (err) {
         setPosts([]);
       } finally {
