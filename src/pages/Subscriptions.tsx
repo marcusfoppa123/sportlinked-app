@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -13,59 +12,47 @@ import { toast } from "sonner";
 const PLANS = [
   {
     id: "free",
-    name: "Free",
-    price: 0,
-    yearlyPrice: 0,
-    description: "Basic features for athletes and scouts",
+    name: t("subscriptions.standard"),
+    priceSEK: 0,
+    priceUSD: 0,
+    description: t("subscriptions.standardDesc"),
     features: [
-      "Create profile",
-      "View limited athlete profiles",
-      "Post updates (limited)",
-      "Basic messaging"
-    ],
-    notIncluded: [
-      "Advanced search filters",
-      "Unlimited messages",
-      "Analytics",
-      "Priority support"
+      t("subscriptions.feature1"),
+      t("subscriptions.feature2"),
+      t("subscriptions.feature3"),
     ],
     color: "bg-gray-200 dark:bg-gray-700"
   },
   {
     id: "pro",
-    name: "Pro",
-    price: 9.99,
-    yearlyPrice: 99.99,
-    description: "Enhanced features for serious users",
+    name: t("subscriptions.pro"),
+    priceSEK: 89,
+    priceUSD: 8.5,
+    description: t("subscriptions.proDesc"),
     features: [
-      "All Free features",
-      "Advanced search filters",
-      "Unlimited posts and messages",
-      "Analytics dashboard",
-      "Export data"
-    ],
-    notIncluded: [
-      "Priority placement in search",
-      "24/7 support"
+      t("subscriptions.feature1"),
+      t("subscriptions.feature2"),
+      t("subscriptions.feature3"),
+      t("subscriptions.feature4"),
+      t("subscriptions.feature5"),
     ],
     color: "bg-blue-100 dark:bg-blue-900"
   },
   {
     id: "premium",
-    name: "Premium",
-    price: 19.99,
-    yearlyPrice: 199.99,
-    description: "Maximum exposure and opportunities",
+    name: t("subscriptions.premium"),
+    priceSEK: 249,
+    priceUSD: 24,
+    description: t("subscriptions.premiumDesc"),
     features: [
-      "All Pro features",
-      "Priority placement in search",
-      "Video analysis tools",
-      "Direct connection with scouts/teams",
-      "24/7 priority support",
-      "Exclusive events access"
+      t("subscriptions.feature1"),
+      t("subscriptions.feature2"),
+      t("subscriptions.feature3"),
+      t("subscriptions.feature4"),
+      t("subscriptions.feature5"),
+      t("subscriptions.feature6"),
     ],
-    notIncluded: [],
-    color: "bg-purple-100 dark:bg-purple-900"
+    color: "bg-yellow-100 dark:bg-yellow-900"
   }
 ];
 
@@ -75,7 +62,6 @@ const Subscriptions = () => {
   const isAthlete = user?.role === "athlete";
   
   const [selectedPlan, setSelectedPlan] = useState("free");
-  const [billingCycle, setBillingCycle] = useState<"monthly" | "yearly">("monthly");
   
   const handleSelectPlan = (planId: string) => {
     setSelectedPlan(planId);
@@ -90,133 +76,61 @@ const Subscriptions = () => {
     }
   };
   
-  const toggleBillingCycle = () => {
-    setBillingCycle(billingCycle === "monthly" ? "yearly" : "monthly");
-  };
-  
-  const getDiscountPercent = () => {
-    return 17; // 17% discount for yearly billing
-  };
-  
   return (
     <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"} dark:bg-gray-900`}>
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-border shadow-sm">
         <div className="container px-4 h-16 flex items-center justify-between">
-          <h1 className="text-xl font-bold dark:text-white">Subscriptions</h1>
+          <h1 className="text-xl font-bold dark:text-white">{t("subscriptions.title")}</h1>
         </div>
       </header>
 
       {/* Main content */}
       <main className="container px-4 py-6">
-        <div className="max-w-3xl mx-auto">
+        <div className="max-w-lg mx-auto">
           <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold mb-2 dark:text-white">Choose Your Plan</h2>
-            <p className="text-gray-600 dark:text-gray-300">
-              Select the plan that best fits your needs and unlock premium features
-            </p>
-            
-            {/* Billing cycle toggle */}
-            <div className="mt-6 p-1 inline-flex items-center gap-2 bg-gray-100 dark:bg-gray-800 rounded-full">
-              <button 
-                className={`px-4 py-2 rounded-full text-sm ${
-                  billingCycle === "monthly" 
-                    ? `${isAthlete ? "bg-athlete text-white" : "bg-scout text-white"}` 
-                    : "text-gray-600 dark:text-gray-300"
-                }`}
-                onClick={() => setBillingCycle("monthly")}
-              >
-                Monthly
-              </button>
-              
-              <button 
-                className={`px-4 py-2 rounded-full text-sm ${
-                  billingCycle === "yearly" 
-                    ? `${isAthlete ? "bg-athlete text-white" : "bg-scout text-white"}` 
-                    : "text-gray-600 dark:text-gray-300"
-                }`}
-                onClick={() => setBillingCycle("yearly")}
-              >
-                Yearly <span className="text-xs font-bold">Save {getDiscountPercent()}%</span>
-              </button>
-            </div>
+            <h2 className="text-2xl font-bold mb-2 dark:text-white">{t("subscriptions.choosePlan")}</h2>
+            <p className="text-gray-600 dark:text-gray-300">{t("subscriptions.choosePlanDesc")}</p>
           </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="space-y-6">
             {PLANS.map((plan) => (
-              <motion.div 
+              <div
                 key={plan.id}
-                whileHover={{ scale: 1.03 }}
-                className="flex"
+                className={`rounded-2xl shadow-md border-2 transition-all duration-200 ${selectedPlan === plan.id ? "border-blue-500 bg-white dark:bg-gray-800" : "border-transparent bg-gray-50 dark:bg-gray-900"}`}
+                onClick={() => setSelectedPlan(plan.id)}
+                style={{ cursor: "pointer" }}
               >
-                <Card 
-                  className={`flex flex-col w-full border-2 dark:bg-gray-800 ${
-                    selectedPlan === plan.id 
-                      ? `border-athlete dark:border-athlete` 
-                      : "border-transparent"
-                  }`}
-                >
-                  <CardHeader className={`${plan.color} bg-opacity-30 text-center rounded-t-lg`}>
-                    <CardTitle className="dark:text-white">
-                      {plan.name}
-                      {plan.id === "pro" && (
-                        <Badge className="ml-2 bg-athlete text-white">Popular</Badge>
-                      )}
-                    </CardTitle>
-                    <div className="mt-2">
-                      <span className="text-3xl font-bold dark:text-white">
-                        ${billingCycle === "monthly" ? plan.price : plan.yearlyPrice}
-                      </span>
-                      {plan.price > 0 && (
-                        <span className="text-sm text-gray-600 dark:text-gray-300 ml-1">
-                          /{billingCycle === "monthly" ? "month" : "year"}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">{plan.description}</p>
-                  </CardHeader>
-                  
-                  <CardContent className="flex-grow">
-                    <div className="space-y-3 mt-2">
-                      {plan.features.map((feature, index) => (
-                        <div key={index} className="flex items-start">
-                          <div className="flex-shrink-0 h-5 w-5 text-green-500">
-                            <Check className="h-5 w-5" />
-                          </div>
-                          <p className="ml-2 text-sm dark:text-gray-300">{feature}</p>
-                        </div>
-                      ))}
-                      
-                      {plan.notIncluded.map((feature, index) => (
-                        <div key={index} className="flex items-start opacity-50">
-                          <div className="flex-shrink-0 h-5 w-5 text-gray-400">
-                            <Check className="h-5 w-5" />
-                          </div>
-                          <p className="ml-2 text-sm line-through dark:text-gray-400">{feature}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                  
-                  <CardFooter>
-                    <Button 
-                      className={`w-full ${
-                        plan.id === "free" 
-                          ? "bg-gray-500 hover:bg-gray-600" 
-                          : `${isAthlete ? "bg-athlete hover:bg-athlete/90" : "bg-scout hover:bg-scout/90"}`
-                      }`}
-                      onClick={() => handleSubscribe(plan.id)}
-                    >
-                      {plan.id === "free" ? "Current Plan" : `Subscribe to ${plan.name}`}
+                <div className="flex flex-col p-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-lg font-bold dark:text-white">{plan.name}</span>
+                    {selectedPlan === plan.id && (
+                      <span className="text-xs px-2 py-1 rounded bg-blue-500 text-white">{t("subscriptions.active")}</span>
+                    )}
+                  </div>
+                  <div className="mb-2">
+                    {plan.priceSEK === 0 ? (
+                      <span className="text-xl font-bold text-gray-700 dark:text-white">{t("subscriptions.complimentary")}</span>
+                    ) : (
+                      <span className="text-2xl font-bold text-blue-600 dark:text-blue-400">{plan.priceSEK} SEK</span>
+                    )}
+                  </div>
+                  <div className="mb-4 text-gray-600 dark:text-gray-300 text-sm">{plan.description}</div>
+                  <ul className="mb-4 space-y-2">
+                    {plan.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-center gap-2">
+                        <Check className="h-5 w-5 text-green-500" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  {selectedPlan === plan.id && (
+                    <Button className="w-full mt-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-xl py-3 shadow-md border-none" onClick={() => handleSubscribe(plan.id)}>
+                      {t("subscriptions.continue")}
                     </Button>
-                  </CardFooter>
-                </Card>
-              </motion.div>
+                  )}
+                </div>
+              </div>
             ))}
-          </div>
-          
-          <div className="mt-8 text-center text-sm text-gray-600 dark:text-gray-400">
-            <p>All plans include a 7-day money-back guarantee. No contracts, cancel anytime.</p>
           </div>
         </div>
       </main>
