@@ -139,6 +139,7 @@ const Messages = () => {
   const [activeTab, setActiveTab] = useState("All");
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const { pendingRequests, sentRequests, loading, error, sendMessageRequest, respondToRequest } = useMessageRequests();
+  const [mutedConversations, setMutedConversations] = useState<string[]>([]);
 
   React.useEffect(() => {
     if (messagesEndRef.current) {
@@ -204,6 +205,31 @@ const Messages = () => {
   // Handle swipe functionality
   const handleSwipe = (convoId) => {
     setSwipedConvoId(swipedConvoId === convoId ? null : convoId);
+  };
+
+  const handlePin = (convoId: string) => {
+    setConversations(prev => {
+      const idx = prev.findIndex(c => c.id === convoId);
+      if (idx === -1) return prev;
+      const pinned = prev[idx];
+      const rest = prev.filter((_, i) => i !== idx);
+      return [pinned, ...rest];
+    });
+    setSwipedConvoId(null);
+  };
+
+  const handleMute = (convoId: string) => {
+    setMutedConversations(prev =>
+      prev.includes(convoId)
+        ? prev.filter(id => id !== convoId)
+        : [...prev, convoId]
+    );
+    setSwipedConvoId(null);
+  };
+
+  const handleDelete = (convoId: string) => {
+    setConversations(prev => prev.filter(c => c.id !== convoId));
+    setSwipedConvoId(null);
   };
 
   return (
@@ -336,6 +362,7 @@ const Messages = () => {
                   <div
                     key={convo.id}
                     className={`flex items-center px-4 py-4 hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer relative group transition-transform duration-200 ${isSwipedConvo ? 'translate-x-[-120px]' : ''}`}
+                    style={isSwipedConvo && isMobileDevice ? { zIndex: 2 } : {}}
                     onClick={() => !isSwipedConvo && setActiveConversation(convo)}
                     onTouchStart={handleTouchStart}
                     onTouchMove={handleTouchMove}
@@ -356,10 +383,13 @@ const Messages = () => {
                       </div>
                     </div>
                     {(isSwipedConvo || !isMobileDevice) && (
-                      <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-2 bg-white dark:bg-gray-900 p-1 rounded-xl shadow-lg z-10">
-                        <Button size="icon" variant="ghost" className="hover:bg-gray-200 dark:hover:bg-gray-700"><span className="text-xs">Pin</span></Button>
-                        <Button size="icon" variant="ghost" className="hover:bg-gray-200 dark:hover:bg-gray-700"><span className="text-xs">Mute</span></Button>
-                        <Button size="icon" variant="destructive" className="hover:bg-red-100 dark:hover:bg-red-900"><span className="text-xs">Delete</span></Button>
+                      <div
+                        className={`absolute top-0 right-0 h-full flex gap-2 p-1 z-20 transition-all duration-200 ${isMobileDevice ? 'bg-white dark:bg-gray-900 rounded-l-xl shadow-lg' : ''}`}
+                        style={isMobileDevice ? { width: 120, justifyContent: 'flex-end', alignItems: 'center' } : {}}
+                      >
+                        <Button size="icon" variant="ghost" className="hover:bg-gray-200 dark:hover:bg-gray-700" onClick={e => { e.stopPropagation(); handlePin(convo.id); }}><span className="text-xs">Pin</span></Button>
+                        <Button size="icon" variant="ghost" className="hover:bg-gray-200 dark:hover:bg-gray-700" onClick={e => { e.stopPropagation(); handleMute(convo.id); }}><span className="text-xs">{mutedConversations.includes(convo.id) ? 'Unmute' : 'Mute'}</span></Button>
+                        <Button size="icon" variant="destructive" className="hover:bg-red-100 dark:hover:bg-red-900" onClick={e => { e.stopPropagation(); handleDelete(convo.id); }}><span className="text-xs">Delete</span></Button>
                       </div>
                     )}
                   </div>
