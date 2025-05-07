@@ -6,30 +6,48 @@ import { useNavigate } from "react-router-dom";
 const notifications = [
   {
     id: 1,
-    section: "Today",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/5/5e/Klarna_Payment_Badge.png",
-    title: "Search, compare and shop.",
-    date: "Yesterday",
-    description: "Search for products, compare prices, and pay now, later, or over time—right in the Klarna app."
+    section: "Most recent",
+    avatar: "",
+    title: "Coach Wilson accepted your connection request.",
+    date: "Just now",
+    description: "You are now connected with Coach Wilson. Start a conversation!"
   },
   {
     id: 2,
-    section: "Today",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/5/5e/Klarna_Payment_Badge.png",
-    title: "Pay later. Anywhere. Any...",
-    date: "Yesterday",
-    description: "Heard of a little thing called a One-time card? Yes? No? Click to find out more."
+    section: "Most recent",
+    avatar: "",
+    title: "Alex Thompson mentioned you in a comment.",
+    date: "5m ago",
+    description: '"@you Great game last night!"'
   },
   {
     id: 3,
-    section: "Most recent",
-    avatar: "https://upload.wikimedia.org/wikipedia/commons/5/5e/Klarna_Payment_Badge.png",
-    title: "Fancy $200?",
-    date: "Yesterday",
-    description: "Refer friends and earn up to $200 in Amazon.com Gift Cards. Tap for details."
+    section: "Today",
+    avatar: "",
+    title: "Michigan State liked your highlight video.",
+    date: "2h ago",
+    description: "Your highlight video is getting noticed!"
+  },
+  {
+    id: 4,
+    section: "Today",
+    avatar: "",
+    title: "Sarah Williams viewed your profile.",
+    date: "3h ago",
+    description: "A scout is interested in your profile."
+  },
+  {
+    id: 5,
+    section: "Earlier",
+    avatar: "",
+    title: "Welcome to SportLinked!",
+    date: "1d ago",
+    description: "Complete your profile to get noticed by scouts and teams."
   }
 ];
 
+// Order sections: Most recent, Today, Earlier, ...
+const sectionOrder = ["Most recent", "Today", "Earlier"];
 const grouped = notifications.reduce((acc, n) => {
   acc[n.section] = acc[n.section] || [];
   acc[n.section].push(n);
@@ -53,16 +71,16 @@ const Notifications = () => {
         </div>
         {/* Notifications */}
         <div className="divide-y divide-gray-200 flex-1 flex flex-col">
-          {Object.entries(grouped).map(([section, items]) => (
+          {sectionOrder.filter(section => grouped[section]).map(section => (
             <div key={section}>
               <div className="bg-white px-4 pt-6 pb-2 text-gray-500 font-semibold text-sm">
                 {section}
               </div>
-              {items.map((n, idx) => (
+              {grouped[section].map((n, idx) => (
                 <div key={n.id} className="flex items-start px-4 py-4 bg-white">
                   <Avatar className="h-10 w-10 mr-4">
                     <AvatarImage src={n.avatar} alt={n.title} />
-                    <AvatarFallback>K</AvatarFallback>
+                    <AvatarFallback>{n.title[0]}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center">
