@@ -344,7 +344,7 @@ const Messages = () => {
             </div>
           ) : (
             // Conversation List
-            <div className="divide-y divide-gray-200 dark:divide-gray-800">
+            <div className="flex flex-col flex-1 min-h-[60vh] divide-y divide-gray-200 dark:divide-gray-800">
               {conversations.map((convo) => {
                 const isSwipedConvo = swipedConvoId === convo.id;
                 
