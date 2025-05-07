@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 const PostPage: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
   const [searchParams] = useSearchParams();
-  const userId = searchParams.get("userId");
+  let userId = searchParams.get("userId");
   const navigate = useNavigate();
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -17,6 +17,18 @@ const PostPage: React.FC = () => {
     const fetchPosts = async () => {
       setLoading(true);
       try {
+        // If userId is missing, fetch the post by postId to get userId
+        if (!userId && postId) {
+          const { data: post, error: postError } = await supabase
+            .from("posts")
+            .select("*")
+            .eq("id", postId)
+            .maybeSingle();
+          if (postError || !post) throw postError || new Error("Post not found");
+          userId = post.user_id;
+        }
+        if (!userId) throw new Error("No userId found");
+        // Now fetch all posts for the user
         const { data: postsData, error: postsError } = await supabase
           .from("posts")
           .select("*")
@@ -58,12 +70,15 @@ const PostPage: React.FC = () => {
         }, 100);
       } catch (err) {
         setPosts([]);
+        // Optionally log error for debugging
+        console.error("PostPage error:", err);
       } finally {
         setLoading(false);
       }
     };
-    if (userId) fetchPosts();
-  }, [userId, postId]);
+    fetchPosts();
+    // eslint-disable-next-line
+  }, [postId]);
 
   if (loading) {
     return <div className="text-center py-8 text-gray-500">Loading...</div>;
