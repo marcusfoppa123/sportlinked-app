@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -9,59 +10,60 @@ import BottomNavigation from "@/components/BottomNavigation";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 
-const PLANS = [
-  {
-    id: "free",
-    name: t("subscriptions.standard"),
-    priceSEK: 0,
-    priceUSD: 0,
-    description: t("subscriptions.standardDesc"),
-    features: [
-      t("subscriptions.feature1"),
-      t("subscriptions.feature2"),
-      t("subscriptions.feature3"),
-    ],
-    color: "bg-gray-200 dark:bg-gray-700"
-  },
-  {
-    id: "pro",
-    name: t("subscriptions.pro"),
-    priceSEK: 89,
-    priceUSD: 8.5,
-    description: t("subscriptions.proDesc"),
-    features: [
-      t("subscriptions.feature1"),
-      t("subscriptions.feature2"),
-      t("subscriptions.feature3"),
-      t("subscriptions.feature4"),
-      t("subscriptions.feature5"),
-    ],
-    color: "bg-blue-100 dark:bg-blue-900"
-  },
-  {
-    id: "premium",
-    name: t("subscriptions.premium"),
-    priceSEK: 249,
-    priceUSD: 24,
-    description: t("subscriptions.premiumDesc"),
-    features: [
-      t("subscriptions.feature1"),
-      t("subscriptions.feature2"),
-      t("subscriptions.feature3"),
-      t("subscriptions.feature4"),
-      t("subscriptions.feature5"),
-      t("subscriptions.feature6"),
-    ],
-    color: "bg-yellow-100 dark:bg-yellow-900"
-  }
-];
-
 const Subscriptions = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const isAthlete = user?.role === "athlete";
   
   const [selectedPlan, setSelectedPlan] = useState("free");
+  
+  // Define PLANS after we have access to the translation function
+  const PLANS = [
+    {
+      id: "free",
+      name: t("subscriptions.standard"),
+      priceSEK: 0,
+      priceUSD: 0,
+      description: t("subscriptions.standardDesc"),
+      features: [
+        t("subscriptions.feature1"),
+        t("subscriptions.feature2"),
+        t("subscriptions.feature3"),
+      ],
+      color: "bg-gray-200 dark:bg-gray-700"
+    },
+    {
+      id: "pro",
+      name: t("subscriptions.pro"),
+      priceSEK: 89,
+      priceUSD: 8.5,
+      description: t("subscriptions.proDesc"),
+      features: [
+        t("subscriptions.feature1"),
+        t("subscriptions.feature2"),
+        t("subscriptions.feature3"),
+        t("subscriptions.feature4"),
+        t("subscriptions.feature5"),
+      ],
+      color: "bg-blue-100 dark:bg-blue-900"
+    },
+    {
+      id: "premium",
+      name: t("subscriptions.premium"),
+      priceSEK: 249,
+      priceUSD: 24,
+      description: t("subscriptions.premiumDesc"),
+      features: [
+        t("subscriptions.feature1"),
+        t("subscriptions.feature2"),
+        t("subscriptions.feature3"),
+        t("subscriptions.feature4"),
+        t("subscriptions.feature5"),
+        t("subscriptions.feature6"),
+      ],
+      color: "bg-yellow-100 dark:bg-yellow-900"
+    }
+  ];
   
   const handleSelectPlan = (planId: string) => {
     setSelectedPlan(planId);
