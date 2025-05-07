@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import ContentFeedCard from "./ContentFeedCard";
 import PostModal from "./PostModal";
 
 interface ProfilePostGridProps {
@@ -25,7 +24,7 @@ const ProfilePostGrid: React.FC<ProfilePostGridProps> = ({ userId }) => {
         // For each post, fetch the profile
         const postsWithUser = await Promise.all(
           (postsData || []).map(async (post: any) => {
-            const { data: profileData, error: profileError } = await supabase
+            const { data: profileData } = await supabase
               .from("profiles")
               .select("*")
               .eq("id", post.user_id)
@@ -67,19 +66,28 @@ const ProfilePostGrid: React.FC<ProfilePostGridProps> = ({ userId }) => {
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-2">
+      <div className="grid grid-cols-2 gap-1 md:gap-2">
         {posts.map((post) => (
-          <div key={post.id} onClick={() => setModalPost(post)} className="cursor-pointer">
-            <ContentFeedCard
-              id={post.id}
-              user={post.user}
-              timestamp={new Date(post.created_at)}
-              content={{ text: post.content, image: post.image_url, video: post.video_url }}
-              stats={post.stats}
-              userLiked={post.userLiked}
-              userBookmarked={post.userBookmarked}
-            />
-          </div>
+          <button
+            key={post.id}
+            className="aspect-square w-full overflow-hidden bg-gray-100 focus:outline-none"
+            onClick={() => setModalPost(post)}
+          >
+            {post.image_url ? (
+              <img
+                src={post.image_url}
+                alt="Post"
+                className="object-cover w-full h-full"
+              />
+            ) : post.video_url ? (
+              <video
+                src={post.video_url}
+                className="object-cover w-full h-full"
+                controls={false}
+                muted
+              />
+            ) : null}
+          </button>
         ))}
       </div>
       <PostModal open={!!modalPost} onClose={() => setModalPost(null)} post={modalPost} />
