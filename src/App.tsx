@@ -21,6 +21,7 @@ import Athletes from "./pages/Athletes";
 import CreatePost from "./pages/CreatePost";
 import Subscriptions from "./pages/Subscriptions";
 import SavedItems from "./pages/SavedItems";
+import PostPage from "./pages/PostPage";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const AppRoutes = () => (
     <Route path="/create-post" element={<CreatePost />} />
     <Route path="/subscriptions" element={<Subscriptions />} />
     <Route path="/saved" element={<SavedItems />} />
+    <Route path="/post/:postId" element={<PostPage />} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import PostModal from "./PostModal";
+import { useNavigate } from "react-router-dom";
 
 interface ProfilePostGridProps {
   userId: string;
@@ -9,7 +9,7 @@ interface ProfilePostGridProps {
 const ProfilePostGrid: React.FC<ProfilePostGridProps> = ({ userId }) => {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modalPost, setModalPost] = useState<any | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -21,7 +21,6 @@ const ProfilePostGrid: React.FC<ProfilePostGridProps> = ({ userId }) => {
           .eq("user_id", userId)
           .order("created_at", { ascending: false });
         if (postsError) throw postsError;
-        // For each post, fetch the profile
         const postsWithUser = await Promise.all(
           (postsData || []).map(async (post: any) => {
             const { data: profileData } = await supabase
@@ -65,33 +64,30 @@ const ProfilePostGrid: React.FC<ProfilePostGridProps> = ({ userId }) => {
   }
 
   return (
-    <>
-      <div className="grid grid-cols-2 gap-1 md:gap-2">
-        {posts.map((post) => (
-          <button
-            key={post.id}
-            className="aspect-square w-full overflow-hidden bg-gray-100 focus:outline-none"
-            onClick={() => setModalPost(post)}
-          >
-            {post.image_url ? (
-              <img
-                src={post.image_url}
-                alt="Post"
-                className="object-cover w-full h-full"
-              />
-            ) : post.video_url ? (
-              <video
-                src={post.video_url}
-                className="object-cover w-full h-full"
-                controls={false}
-                muted
-              />
-            ) : null}
-          </button>
-        ))}
-      </div>
-      <PostModal open={!!modalPost} onClose={() => setModalPost(null)} post={modalPost} />
-    </>
+    <div className="grid grid-cols-2 gap-1 md:gap-2">
+      {posts.map((post) => (
+        <button
+          key={post.id}
+          className="aspect-square w-full overflow-hidden bg-gray-100 focus:outline-none"
+          onClick={() => navigate(`/post/${post.id}?userId=${userId}`)}
+        >
+          {post.image_url ? (
+            <img
+              src={post.image_url}
+              alt="Post"
+              className="object-cover w-full h-full"
+            />
+          ) : post.video_url ? (
+            <video
+              src={post.video_url}
+              className="object-cover w-full h-full"
+              controls={false}
+              muted
+            />
+          ) : null}
+        </button>
+      ))}
+    </div>
   );
 };
 
