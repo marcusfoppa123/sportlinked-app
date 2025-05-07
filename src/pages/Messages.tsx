@@ -135,8 +135,7 @@ const Messages = () => {
   const [newMessage, setNewMessage] = useState("");
   const [conversations, setConversations] = useState(mockConversations);
   const [swipedConvoId, setSwipedConvoId] = useState(null);
-  const TABS = ["All", "Messages", "Channels", "Requests"];
-  const recentContacts = mockConversations.slice(0, 5);
+  const TABS = ["All", "Messages", "Requests"];
   const [activeTab, setActiveTab] = useState("All");
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const { pendingRequests, sentRequests, loading, error, sendMessageRequest, respondToRequest } = useMessageRequests();
@@ -225,18 +224,6 @@ const Messages = () => {
               </div>
             </div>
           </header>
-          {/* Recent contacts row */}
-          <div className="flex items-center gap-3 px-4 py-3 overflow-x-auto bg-white dark:bg-gray-900 border-b border-border">
-            {recentContacts.map((contact) => (
-              <div key={contact.id} className="flex flex-col items-center">
-                <Avatar className="h-10 w-10 mb-1 ring-2 ring-blue-400">
-                  <AvatarImage src={contact.avatar} alt={contact.name} />
-                  <AvatarFallback>{contact.name[0]}</AvatarFallback>
-                </Avatar>
-                <span className="text-xs text-gray-700 dark:text-gray-300 truncate w-12 text-center">{contact.name.split(" ")[0]}</span>
-              </div>
-            ))}
-          </div>
           {/* Tabs */}
           <div className="flex justify-between px-4 py-2 bg-white dark:bg-gray-900 border-b border-border">
             {TABS.map(tab => (
