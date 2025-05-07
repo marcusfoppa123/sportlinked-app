@@ -57,6 +57,8 @@ const Profile = () => {
   const [editingAthleteStat, setEditingAthleteStat] = useState<string | null>(null);
   const [athleteStatValue, setAthleteStatValue] = useState<number>(0);
   
+  const [postCount, setPostCount] = useState(0);
+  
   const getInitials = (name?: string) => {
     if (!name) return "U";
     return name
@@ -136,7 +138,7 @@ const Profile = () => {
         
         <div className="flex justify-around mt-6 mb-2">
           <div className="text-center">
-            <span className="font-bold text-lg">{stats.posts}</span>
+            <span className="font-bold text-lg">{postCount}</span>
             <div className="text-xs text-gray-500">Posts</div>
           </div>
           <div className="text-center">
@@ -163,29 +165,11 @@ const Profile = () => {
           </TabsList>
           
           <TabsContent value="posts" className="space-y-4">
-            {isAthlete && (
-              <Card className="dark:bg-gray-800 dark:border-gray-700">
-                <CardContent className="p-4">
-                  <p className="text-center text-gray-500 dark:text-gray-400">
-                    Share your highlights and achievements with scouts!
-                  </p>
-                  <Button 
-                    className={`mt-2 w-full ${isAthlete ? "bg-athlete hover:bg-athlete/90" : "bg-scout hover:bg-scout/90"}`}
-                    onClick={() => navigate("/create-post")}
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Create Post
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-            
-            <div className="grid grid-cols-2 gap-2">
-              <ContentFeed 
-                userId={user?.id} 
-                showAllPosts={false}
-              />
-            </div>
+            <ContentFeed 
+              userId={user?.id} 
+              showAllPosts={false}
+              onPostCount={setPostCount}
+            />
           </TabsContent>
           
           <TabsContent value="stats" className="space-y-4">

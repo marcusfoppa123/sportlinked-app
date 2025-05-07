@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -10,12 +9,14 @@ interface AthleteContentProps {
   filterSport?: string;
   contentType?: "posts" | "profiles";
   userId?: string;
+  onPostCount?: (count: number) => void;
 }
 
 const AthleteContent = ({ 
   filterSport, 
   contentType = "posts",
-  userId 
+  userId,
+  onPostCount
 }: AthleteContentProps) => {
   const { user } = useAuth();
   const [posts, setPosts] = useState<any[]>([]);
@@ -112,6 +113,7 @@ const AthleteContent = ({
           );
           
           setPosts(postsWithStats);
+          if (onPostCount) onPostCount(postsWithStats.length);
         }
       } catch (error) {
         console.error('Error fetching posts:', error);
@@ -145,7 +147,7 @@ const AthleteContent = ({
   }
   
   return (
-    <div className="space-y-4">
+    <>
       {posts.length === 0 ? (
         <div className="text-center py-8 text-gray-500 dark:text-gray-400">
           {filterSport 
@@ -153,20 +155,22 @@ const AthleteContent = ({
             : 'No content found. Follow athletes or teams to see their updates here.'}
         </div>
       ) : (
-        posts.map((post) => (
-          <ContentFeedCard
-            key={post.id}
-            id={post.id}
-            user={post.user}
-            timestamp={new Date(post.created_at)}
-            content={post.content}
-            stats={post.stats}
-            userLiked={post.userLiked}
-            userBookmarked={post.userBookmarked}
-          />
-        ))
+        <div className="grid grid-cols-2 gap-2">
+          {posts.map((post) => (
+            <ContentFeedCard
+              key={post.id}
+              id={post.id}
+              user={post.user}
+              timestamp={new Date(post.created_at)}
+              content={post.content}
+              stats={post.stats}
+              userLiked={post.userLiked}
+              userBookmarked={post.userBookmarked}
+            />
+          ))}
+        </div>
       )}
-    </div>
+    </>
   );
 };
 
