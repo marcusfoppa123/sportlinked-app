@@ -32,6 +32,9 @@ export interface User {
   rpg?: number;
   games?: number;
   winPercentage?: number;
+  // Social
+  followers?: number;
+  following?: number;
 }
 
 interface AuthContextType {
@@ -150,7 +153,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           apg: data.apg,
           rpg: data.rpg,
           games: data.games,
-          winPercentage: data.win_percentage
+          winPercentage: data.win_percentage,
+          followers: data.followers || 0,
+          following: data.following || 0,
         });
       }
     } catch (error) {

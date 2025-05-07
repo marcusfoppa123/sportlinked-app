@@ -125,7 +125,6 @@ const Profile = () => {
                 <span className="text-xl font-bold mr-2">{user?.name || "User Name"}</span>
                 <CheckCircle2 className="text-blue-500 h-5 w-5" />
               </div>
-              <span className="text-gray-500 text-sm">@{user?.username || "username"}</span>
               <div className="flex mt-2 space-x-2">
                 <Button className="bg-gray-200 text-black px-4 py-1 rounded-full text-sm" onClick={handleEditProfile}>
                   Edit Profile
@@ -141,11 +140,11 @@ const Profile = () => {
             <div className="text-xs text-gray-500">Posts</div>
           </div>
           <div className="text-center">
-            <span className="font-bold text-lg">7.5M</span>
+            <span className="font-bold text-lg">{user?.followers ?? 0}</span>
             <div className="text-xs text-gray-500">Followers</div>
           </div>
           <div className="text-center">
-            <span className="font-bold text-lg">{user?.following || 0}</span>
+            <span className="font-bold text-lg">{user?.following ?? 0}</span>
             <div className="text-xs text-gray-500">Following</div>
           </div>
         </div>
@@ -181,11 +180,12 @@ const Profile = () => {
               </Card>
             )}
             
-            <ContentFeed 
-              userId={user?.id} 
-              showAllPosts={false}
-              grid
-            />
+            <div className="grid grid-cols-2 gap-2">
+              <ContentFeed 
+                userId={user?.id} 
+                showAllPosts={false}
+              />
+            </div>
           </TabsContent>
           
           <TabsContent value="stats" className="space-y-4">
