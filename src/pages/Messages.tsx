@@ -179,28 +179,28 @@ const Messages = () => {
         return;
       }
       // If request is accepted or not needed, send the message
-      const updatedConversations = conversations.map(convo => {
-        if (convo.id === activeConversation.id) {
-          const newMsg = {
-            id: `msg-${Date.now()}`,
-            sender: "Me",
-            text: newMessage,
-            time: "Just now",
-            isMe: true
-          };
-          return {
-            ...convo,
-            lastMessage: newMessage,
-            time: "Just now",
-            messages: [...convo.messages, newMsg]
-          };
-        }
-        return convo;
-      });
-      setConversations(updatedConversations);
-      const updatedActive = updatedConversations.find(c => c.id === activeConversation.id);
-      setActiveConversation(updatedActive);
-      setNewMessage("");
+    const updatedConversations = conversations.map(convo => {
+      if (convo.id === activeConversation.id) {
+        const newMsg = {
+          id: `msg-${Date.now()}`,
+          sender: "Me",
+          text: newMessage,
+          time: "Just now",
+          isMe: true
+        };
+        return {
+          ...convo,
+          lastMessage: newMessage,
+          time: "Just now",
+          messages: [...convo.messages, newMsg]
+        };
+      }
+      return convo;
+    });
+    setConversations(updatedConversations);
+    const updatedActive = updatedConversations.find(c => c.id === activeConversation.id);
+    setActiveConversation(updatedActive);
+    setNewMessage("");
     } catch (err) {
       console.error('Error sending message:', err);
       // Handle error appropriately
@@ -278,7 +278,7 @@ const Messages = () => {
           </div>
           {/* Content based on active tab */}
           {activeTab === "Requests" ? (
-            <div className="divide-y divide-gray-200 dark:divide-gray-800">
+          <div className="divide-y divide-gray-200 dark:divide-gray-800">
               {loading ? (
                 <div className="p-4 text-center">Loading...</div>
               ) : error ? (
@@ -345,31 +345,31 @@ const Messages = () => {
           ) : (
             // Conversation List
             <div className="flex flex-col flex-1 min-h-[60vh] divide-y divide-gray-200 dark:divide-gray-800">
-              {conversations.map((convo) => {
-                const isSwipedConvo = swipedConvoId === convo.id;
-                
-                const handleTouchStart = (e) => {
-                  if (!isMobileDevice) return;
-                  touchStartX.current = e.touches[0].clientX;
-                };
-                
-                const handleTouchMove = (e) => {
-                  if (!isMobileDevice) return;
-                  touchEndX.current = e.touches[0].clientX;
-                };
-                
-                const handleTouchEnd = () => {
-                  if (!isMobileDevice) return;
-                  if (touchStartX.current - touchEndX.current > 60) {
-                    handleSwipe(convo.id);
-                  } else if (touchEndX.current - touchStartX.current > 60) {
-                    handleSwipe(null);
-                  }
-                };
-                
-                return (
-                  <div
-                    key={convo.id}
+            {conversations.map((convo) => {
+              const isSwipedConvo = swipedConvoId === convo.id;
+              
+              const handleTouchStart = (e) => {
+                if (!isMobileDevice) return;
+                touchStartX.current = e.touches[0].clientX;
+              };
+              
+              const handleTouchMove = (e) => {
+                if (!isMobileDevice) return;
+                touchEndX.current = e.touches[0].clientX;
+              };
+              
+              const handleTouchEnd = () => {
+                if (!isMobileDevice) return;
+                if (touchStartX.current - touchEndX.current > 60) {
+                  handleSwipe(convo.id);
+                } else if (touchEndX.current - touchStartX.current > 60) {
+                  handleSwipe(null);
+                }
+              };
+              
+              return (
+                <div
+                  key={convo.id}
                     className="relative"
                     style={{ height: '72px' }} // match your row height
                   >
@@ -392,17 +392,17 @@ const Messages = () => {
                           ? { transform: `translateX(-${ACTION_WIDTH}px)`, zIndex: 2, background: 'inherit' }
                           : { background: 'inherit' }
                       }
-                      onClick={() => !isSwipedConvo && setActiveConversation(convo)}
-                      onTouchStart={handleTouchStart}
-                      onTouchMove={handleTouchMove}
-                      onTouchEnd={handleTouchEnd}
-                    >
-                      <Avatar className="h-12 w-12 mr-3">
-                        <AvatarImage src={convo.avatar} alt={convo.name} />
-                        <AvatarFallback>{convo.name[0]}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex justify-between items-center">
+                  onClick={() => !isSwipedConvo && setActiveConversation(convo)}
+                  onTouchStart={handleTouchStart}
+                  onTouchMove={handleTouchMove}
+                  onTouchEnd={handleTouchEnd}
+                >
+                  <Avatar className="h-12 w-12 mr-3">
+                    <AvatarImage src={convo.avatar} alt={convo.name} />
+                    <AvatarFallback>{convo.name[0]}</AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex justify-between items-center">
                           <span className="font-semibold text-gray-900 dark:text-white truncate flex items-center">
                             {convo.name}
                             {mutedConversations.includes(convo.id) && (
@@ -411,32 +411,32 @@ const Messages = () => {
                               </span>
                             )}
                           </span>
-                          <span className="text-xs text-gray-500 ml-2">{convo.time}</span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className={`truncate text-sm ${convo.unread ? "font-bold text-blue-600" : "text-gray-600 dark:text-gray-300"}`}>{convo.lastMessage}</span>
-                          {convo.unread && <span className="ml-2 w-2 h-2 rounded-full bg-blue-500 inline-block" />}
-                        </div>
-                      </div>
+                      <span className="text-xs text-gray-500 ml-2">{convo.time}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className={`truncate text-sm ${convo.unread ? "font-bold text-blue-600" : "text-gray-600 dark:text-gray-300"}`}>{convo.lastMessage}</span>
+                      {convo.unread && <span className="ml-2 w-2 h-2 rounded-full bg-blue-500 inline-block" />}
+                    </div>
+                  </div>
                       {/* On desktop, show action buttons inline as before */}
                       {!isMobileDevice && (
-                        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-2 bg-white dark:bg-gray-900 p-1 rounded-xl shadow-lg z-10">
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 flex gap-2 bg-white dark:bg-gray-900 p-1 rounded-xl shadow-lg z-10">
                           <Button size="icon" variant="ghost" className="hover:bg-gray-200 dark:hover:bg-gray-700" onClick={e => { e.stopPropagation(); handlePin(convo.id); }}><span className="text-xs">Pin</span></Button>
                           <Button size="icon" variant="ghost" className="hover:bg-gray-200 dark:hover:bg-gray-700" onClick={e => { e.stopPropagation(); handleMute(convo.id); }}><span className="text-xs">{mutedConversations.includes(convo.id) ? 'Unmute' : 'Mute'}</span></Button>
                           <Button size="icon" variant="destructive" className="hover:bg-red-100 dark:hover:bg-red-900" onClick={e => { e.stopPropagation(); handleDelete(convo.id); }}><span className="text-xs">Delete</span></Button>
-                        </div>
-                      )}
                     </div>
-                  </div>
-                );
-              })}
+                  )}
+                    </div>
+                </div>
+              );
+            })}
               {/* Encouragement message for empty space */}
               <div className="flex-1 flex flex-col justify-center items-center">
                 <span className="text-gray-400 text-sm text-center">
                   Add more friends and start new conversations to grow your network!
                 </span>
               </div>
-            </div>
+          </div>
           )}
         </>
       ) : (

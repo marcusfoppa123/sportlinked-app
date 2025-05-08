@@ -1,241 +1,301 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { useLanguage } from "@/context/LanguageContext";
-import { usePosts } from "@/context/PostContext";
+import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import AthleteContent from "@/components/AthleteContent";
+import { Edit, Settings, Share2, Plus, CheckCircle2 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Edit2, Settings } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import UploadButton from "@/components/UploadButton";
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import SideMenu from "@/components/SideMenu";
+import { useIsMobile } from "@/hooks/use-mobile";
+import ContentFeed from "@/components/ContentFeed";
+import ProfilePostGrid from "@/components/ProfilePostGrid";
+
+const highlightData = [
+  { label: "Before/After", icon: <span className="text-xl">🛠️</span> },
+  { label: "Quiz", icon: <span className="text-xl">❓</span> },
+  { label: "Architecture", icon: <span className="text-xl">🏛️</span> },
+];
 
 const Profile = () => {
-  const { user } = useAuth();
-  const { t } = useLanguage();
-  const [searchParams] = useSearchParams();
-  const userId = searchParams.get("userId");
-  const [profile, setProfile] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [postCount, setPostCount] = useState(0);
+  const { user, updateUserProfile } = useAuth();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        setLoading(true);
-        const targetUserId = userId || user?.id;
-        
-        console.log('Fetching profile for user:', targetUserId);
-        console.log('Current user:', user);
-        
-        if (!targetUserId) {
-          console.error('No user ID available');
-          toast.error('Please sign in to view profiles');
-          setLoading(false);
-          return;
-        }
-
-        // First check if the user exists in auth
-        const { data: authData, error: authError } = await supabase.auth.getUser();
-        if (authError) {
-          console.error('Auth error:', authError);
-          toast.error('Authentication error');
-          setLoading(false);
-          return;
-        }
-
-        console.log('Auth user:', authData);
-
-        // Then fetch the profile
-        const { data, error } = await supabase
-          .from('profiles')
-          .select(`
-            *,
-            followers:profile_followers(count),
-            following:profile_following(count)
-          `)
-          .eq('id', targetUserId)
-          .single();
-
-        console.log('Profile fetch result:', { data, error });
-
-        if (error) {
-          console.error('Error fetching profile:', error);
-          toast.error('Failed to load profile');
-          setLoading(false);
-          return;
-        }
-
-        if (!data) {
-          console.error('No profile data found');
-          toast.error('Profile not found');
-          setLoading(false);
-          return;
-        }
-
-        setProfile(data);
-      } catch (error) {
-        console.error('Error in fetchProfile:', error);
-        toast.error('Failed to load profile');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (user) {
-      fetchProfile();
-    } else {
-      setLoading(false);
-      toast.error('Please sign in to view profiles');
-    }
-  }, [userId, user]);
-
+  const isAthlete = user?.role === "athlete";
+  const isMobile = useIsMobile();
+  
+  const [sideMenuOpen, setSideMenuOpen] = useState(false);
+  
+  const [stats, setStats] = useState({
+    connections: user?.connections || 0,
+    posts: user?.posts || 0,
+    offers: isAthlete ? (user?.offers || 0) : 0
+  });
+  
+  const [editingStat, setEditingStat] = useState<string | null>(null);
+  const [statValue, setStatValue] = useState<number>(0);
+  
+  const [athleteStats, setAthleteStats] = useState({
+    ppg: user?.ppg || 18.7,
+    apg: user?.apg || 7.2,
+    rpg: user?.rpg || 4.1,
+    games: user?.games || 128,
+    winPercentage: user?.winPercentage || 58
+  });
+  
+  const [editingAthleteStat, setEditingAthleteStat] = useState<string | null>(null);
+  const [athleteStatValue, setAthleteStatValue] = useState<number>(0);
+  
+  const getInitials = (name?: string) => {
+    if (!name) return "U";
+    return name
+      .split(" ")
+      .map(n => n[0])
+      .join("")
+      .toUpperCase();
+  };
+  
   const handleEditProfile = () => {
-    navigate('/edit-profile');
+    navigate("/edit-profile");
   };
-
-  const handleSettings = () => {
-    navigate('/settings');
+  
+  const handleSettingsClick = () => {
+    navigate("/settings");
   };
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="container px-4 py-8">
-          <div className="text-center py-8 text-gray-500">
-            Please sign in to view profiles
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="container px-4 py-8">
-          <div className="text-center py-8 text-gray-500">Loading profile...</div>
-        </div>
-      </div>
-    );
-  }
-
-  if (!profile) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="container px-4 py-8">
-          <div className="text-center py-8 text-gray-500">
-            Profile not found. Please try again later.
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const isOwnProfile = !userId || userId === user?.id;
+  
+  const handleCreatePost = () => {
+    navigate("/create-post");
+  };
+  
+  const openStatEditor = (stat: string, value: number) => {
+    // Stats are now read-only
+  };
+  
+  const saveStatChange = () => {
+    // Stats are now read-only
+  };
+  
+  const openAthleteStatEditor = (stat: string, value: number) => {
+    setEditingAthleteStat(stat);
+    setAthleteStatValue(value);
+  };
+  
+  const saveAthleteStatChange = () => {
+    if (editingAthleteStat) {
+      const newStats = { ...athleteStats, [editingAthleteStat]: athleteStatValue };
+      setAthleteStats(newStats);
+      
+      if (updateUserProfile) {
+        updateUserProfile({ [editingAthleteStat]: athleteStatValue });
+      }
+      
+      setEditingAthleteStat(null);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
-        <div className="container px-4 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {t('profile')}
-            </h1>
-            {isOwnProfile && (
-              <div className="flex gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleEditProfile}
-                >
-                  <Edit2 className="h-5 w-5" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleSettings}
-                >
-                  <Settings className="h-5 w-5" />
-                </Button>
+    <div className="min-h-screen pb-16 bg-white dark:bg-gray-900">
+      <SideMenu isOpen={sideMenuOpen} onClose={() => setSideMenuOpen(false)} />
+      
+      <div className="w-full px-4 pt-8 pb-4 flex flex-col border-b bg-white dark:bg-gray-900 relative">
+        <button className="absolute top-4 right-4 bg-gray-200 p-2 rounded-full" onClick={handleSettingsClick}>
+          <Settings className="h-5 w-5 text-gray-700" />
+        </button>
+        <div className="flex items-center w-full justify-between">
+          <div className="flex items-center">
+            <Avatar className="h-20 w-20 border-2 border-gray-200">
+              <AvatarImage src={user?.profilePic} />
+              <AvatarFallback className="text-2xl bg-gray-100">
+                {getInitials(user?.name)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="ml-4 flex flex-col">
+              <div className="flex items-center">
+                <span className="text-xl font-bold mr-2">{user?.name || "User Name"}</span>
+                <CheckCircle2 className="text-blue-500 h-5 w-5" />
               </div>
-            )}
-          </div>
-        </div>
-      </header>
-
-      <main className="container px-4 py-4">
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            <div className="flex flex-col items-center text-center">
-              <Avatar className="h-24 w-24 mb-4">
-                <AvatarImage src={profile.avatar_url} />
-                <AvatarFallback>{profile.full_name?.[0] || 'U'}</AvatarFallback>
-              </Avatar>
-              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">
-                {profile.full_name}
-              </h2>
-              <p className="text-gray-500 dark:text-gray-400 mb-4">
-                {profile.role}
-              </p>
-              <div className="flex justify-center gap-8 text-center">
-                <div>
-                  <div className="text-xl font-semibold text-gray-900 dark:text-white">
-                    {postCount}
-                  </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {t('posts')}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xl font-semibold text-gray-900 dark:text-white">
-                    {profile.followers?.[0]?.count || 0}
-                  </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {t('followers')}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xl font-semibold text-gray-900 dark:text-white">
-                    {profile.following?.[0]?.count || 0}
-                  </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {t('following')}
-                  </div>
-                </div>
+              <div className="flex mt-2 space-x-2">
+                <Button className="bg-gray-200 text-black px-4 py-1 rounded-full text-sm" onClick={handleEditProfile}>
+                  Edit Profile
+                </Button>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+        
+        <div className="flex justify-around mt-6 mb-2">
+          <div className="text-center">
+            <span className="font-bold text-lg">{user?.posts ?? 0}</span>
+            <div className="text-xs text-gray-500">Posts</div>
+          </div>
+          <div className="text-center">
+            <span className="font-bold text-lg">{user?.followers ?? 0}</span>
+            <div className="text-xs text-gray-500">Followers</div>
+          </div>
+          <div className="text-center">
+            <span className="font-bold text-lg">{user?.following ?? 0}</span>
+            <div className="text-xs text-gray-500">Following</div>
+          </div>
+        </div>
+        
+        <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+          <div className="font-semibold break-words whitespace-pre-line">{user?.bio || "The best Architecture & Design platform."}</div>
+        </div>
+      </div>
 
+      <main className="px-0 py-4">
         <Tabs defaultValue="posts" className="w-full">
-          <TabsList className="w-full">
-            <TabsTrigger value="posts" className="flex-1">
-              {t('posts')}
-            </TabsTrigger>
-            <TabsTrigger value="saved" className="flex-1">
-              {t('saved')}
-            </TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 mb-4 dark:bg-gray-800">
+            <TabsTrigger value="posts" className="dark:text-gray-300 dark:data-[state=active]:text-white">Posts</TabsTrigger>
+            <TabsTrigger value="stats" className="dark:text-gray-300 dark:data-[state=active]:text-white">Stats</TabsTrigger>
+            <TabsTrigger value="about" className="dark:text-gray-300 dark:data-[state=active]:text-white">About</TabsTrigger>
           </TabsList>
-          <TabsContent value="posts">
-            <AthleteContent
-              userId={userId || user?.id}
-              onPostCount={setPostCount}
-            />
+          
+          <TabsContent value="posts" className="space-y-4">
+            {user?.id && <ProfilePostGrid userId={user.id} />}
           </TabsContent>
-          <TabsContent value="saved">
-            <AthleteContent
-              userId={userId || user?.id}
-              contentType="profiles"
-            />
+          
+          <TabsContent value="stats" className="space-y-4">
+            {isAthlete ? (
+              <div className="grid grid-cols-2 gap-4">
+                <Card className="dark:bg-gray-800 dark:border-gray-700">
+                  <CardContent className="p-4">
+                    <h3 className="font-medium mb-2 dark:text-white">Season Averages</h3>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div 
+                        className="text-center p-2 bg-gray-50 rounded-md dark:bg-gray-700 cursor-pointer" 
+                        onClick={() => openAthleteStatEditor('ppg', athleteStats.ppg)}
+                      >
+                        <p className="text-xs text-gray-500 dark:text-gray-300">PPG</p>
+                        <p className="font-semibold dark:text-white">{athleteStats.ppg}</p>
+                      </div>
+                      <div 
+                        className="text-center p-2 bg-gray-50 rounded-md dark:bg-gray-700 cursor-pointer"
+                        onClick={() => openAthleteStatEditor('apg', athleteStats.apg)}
+                      >
+                        <p className="text-xs text-gray-500 dark:text-gray-300">APG</p>
+                        <p className="font-semibold dark:text-white">{athleteStats.apg}</p>
+                      </div>
+                      <div 
+                        className="text-center p-2 bg-gray-50 rounded-md dark:bg-gray-700 cursor-pointer"
+                        onClick={() => openAthleteStatEditor('rpg', athleteStats.rpg)}
+                      >
+                        <p className="text-xs text-gray-500 dark:text-gray-300">RPG</p>
+                        <p className="font-semibold dark:text-white">{athleteStats.rpg}</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card className="dark:bg-gray-800 dark:border-gray-700">
+                  <CardContent className="p-4">
+                    <h3 className="font-medium mb-2 dark:text-white">Career Stats</h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div 
+                        className="text-center p-2 bg-gray-50 rounded-md dark:bg-gray-700 cursor-pointer"
+                        onClick={() => openAthleteStatEditor('games', athleteStats.games)}
+                      >
+                        <p className="text-xs text-gray-500 dark:text-gray-300">Games</p>
+                        <p className="font-semibold dark:text-white">{athleteStats.games}</p>
+                      </div>
+                      <div 
+                        className="text-center p-2 bg-gray-50 rounded-md dark:bg-gray-700 cursor-pointer"
+                        onClick={() => openAthleteStatEditor('winPercentage', athleteStats.winPercentage)}
+                      >
+                        <p className="text-xs text-gray-500 dark:text-gray-300">Win %</p>
+                        <p className="font-semibold dark:text-white">{athleteStats.winPercentage}%</p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              <Card className="dark:bg-gray-800 dark:border-gray-700">
+                <CardContent className="p-6 text-center">
+                  <p className="text-gray-500 dark:text-gray-400">Stats are only available for athletes</p>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="about" className="space-y-4">
+            <Card className="dark:bg-gray-800 dark:border-gray-700">
+              <CardContent className="p-4">
+                <h3 className="font-medium mb-2 dark:text-white">Personal Information</h3>
+                <div className="space-y-2">
+                  <div className="grid grid-cols-2">
+                    <span className="text-gray-500 dark:text-gray-400">Name</span>
+                    <span className="dark:text-white">{user?.name}</span>
+                  </div>
+                  <div className="grid grid-cols-2">
+                    <span className="text-gray-500 dark:text-gray-400">Location</span>
+                    <span className="dark:text-white">{user?.location || "New York, NY"}</span>
+                  </div>
+                  {isAthlete && (
+                    <>
+                      <div className="grid grid-cols-2">
+                        <span className="text-gray-500 dark:text-gray-400">Sport</span>
+                        <span className="dark:text-white">{user?.sport || "Basketball"}</span>
+                      </div>
+                      <div className="grid grid-cols-2">
+                        <span className="text-gray-500 dark:text-gray-400">Position</span>
+                        <span className="dark:text-white">{user?.position || "Point Guard"}</span>
+                      </div>
+                      <div className="grid grid-cols-2">
+                        <span className="text-gray-500 dark:text-gray-400">Experience</span>
+                        <span className="dark:text-white">{user?.experience || "College"}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </main>
 
+      <Dialog open={!!editingAthleteStat} onOpenChange={(open) => !open && setEditingAthleteStat(null)}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit {editingAthleteStat}</DialogTitle>
+            <DialogDescription>
+              Update your {editingAthleteStat} statistic
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="athlete-stat-value" className="text-right">
+                Value
+              </Label>
+              <Input
+                id="athlete-stat-value"
+                type="number"
+                step="0.1"
+                value={athleteStatValue}
+                onChange={(e) => setAthleteStatValue(Number(e.target.value))}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="submit" onClick={saveAthleteStatChange}>Save changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {isAthlete && <UploadButton />}
+      
       <BottomNavigation />
     </div>
   );
