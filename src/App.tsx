@@ -24,7 +24,14 @@ import Subscriptions from "./pages/Subscriptions";
 import SavedItems from "./pages/SavedItems";
 import PostPage from "./pages/PostPage";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 const AppRoutes = () => (
   <Routes>

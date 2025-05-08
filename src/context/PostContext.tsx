@@ -48,6 +48,8 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const { user } = useAuth();
 
   const fetchPosts = useCallback(async (userId?: string, sport?: string) => {
+    if (!user?.id) return;
+    
     try {
       setLoading(true);
       let query = supabase
@@ -58,8 +60,8 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
           likes:post_likes(count),
           comments:post_comments(count),
           shares:post_shares(count),
-          user_likes:post_likes!inner(user_id),
-          user_bookmarks:post_bookmarks!inner(user_id)
+          user_likes:post_likes(user_id),
+          user_bookmarks:post_bookmarks(user_id)
         `)
         .order('created_at', { ascending: false });
 
@@ -95,8 +97,8 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
           comments: post.comments?.[0]?.count || 0,
           shares: post.shares?.[0]?.count || 0
         },
-        userLiked: post.user_likes?.length > 0,
-        userBookmarked: post.user_bookmarks?.length > 0
+        userLiked: post.user_likes?.some((like: any) => like.user_id === user.id) || false,
+        userBookmarked: post.user_bookmarks?.some((bookmark: any) => bookmark.user_id === user.id) || false
       }));
 
       setPosts(formattedPosts);
@@ -106,9 +108,11 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.id]);
 
   const fetchSavedPosts = useCallback(async (userId?: string) => {
+    if (!user?.id) return;
+    
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -120,11 +124,11 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
             likes:post_likes(count),
             comments:post_comments(count),
             shares:post_shares(count),
-            user_likes:post_likes!inner(user_id),
-            user_bookmarks:post_bookmarks!inner(user_id)
+            user_likes:post_likes(user_id),
+            user_bookmarks:post_bookmarks(user_id)
           )
         `)
-        .eq('user_id', userId || user?.id)
+        .eq('user_id', userId || user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -149,8 +153,8 @@ export const PostProvider: React.FC<{ children: React.ReactNode }> = ({ children
           comments: bookmark.post.comments?.[0]?.count || 0,
           shares: bookmark.post.shares?.[0]?.count || 0
         },
-        userLiked: bookmark.post.user_likes?.length > 0,
-        userBookmarked: bookmark.post.user_bookmarks?.length > 0
+        userLiked: bookmark.post.user_likes?.some((like: any) => like.user_id === user.id) || false,
+        userBookmarked: bookmark.post.user_bookmarks?.some((bookmark: any) => bookmark.user_id === user.id) || false
       }));
 
       setPosts(formattedPosts);
