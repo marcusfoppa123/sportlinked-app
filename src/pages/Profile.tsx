@@ -27,6 +27,30 @@ const Profile = () => {
     const fetchProfile = async () => {
       try {
         setLoading(true);
+        const targetUserId = userId || user?.id;
+        
+        console.log('Fetching profile for user:', targetUserId);
+        console.log('Current user:', user);
+        
+        if (!targetUserId) {
+          console.error('No user ID available');
+          toast.error('Please sign in to view profiles');
+          setLoading(false);
+          return;
+        }
+
+        // First check if the user exists in auth
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) {
+          console.error('Auth error:', authError);
+          toast.error('Authentication error');
+          setLoading(false);
+          return;
+        }
+
+        console.log('Auth user:', authData);
+
+        // Then fetch the profile
         const { data, error } = await supabase
           .from('profiles')
           .select(`
@@ -34,23 +58,41 @@ const Profile = () => {
             followers:profile_followers(count),
             following:profile_following(count)
           `)
-          .eq('id', userId || user?.id)
+          .eq('id', targetUserId)
           .single();
 
-        if (error) throw error;
+        console.log('Profile fetch result:', { data, error });
+
+        if (error) {
+          console.error('Error fetching profile:', error);
+          toast.error('Failed to load profile');
+          setLoading(false);
+          return;
+        }
+
+        if (!data) {
+          console.error('No profile data found');
+          toast.error('Profile not found');
+          setLoading(false);
+          return;
+        }
+
         setProfile(data);
       } catch (error) {
-        console.error('Error fetching profile:', error);
+        console.error('Error in fetchProfile:', error);
         toast.error('Failed to load profile');
       } finally {
         setLoading(false);
       }
     };
 
-    if (userId || user?.id) {
+    if (user) {
       fetchProfile();
+    } else {
+      setLoading(false);
+      toast.error('Please sign in to view profiles');
     }
-  }, [userId, user?.id]);
+  }, [userId, user]);
 
   const handleEditProfile = () => {
     navigate('/edit-profile');
@@ -60,12 +102,38 @@ const Profile = () => {
     navigate('/settings');
   };
 
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="container px-4 py-8">
+          <div className="text-center py-8 text-gray-500">
+            Please sign in to view profiles
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
-    return <div className="text-center py-8 text-gray-500">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="container px-4 py-8">
+          <div className="text-center py-8 text-gray-500">Loading profile...</div>
+        </div>
+      </div>
+    );
   }
 
   if (!profile) {
-    return <div className="text-center py-8 text-gray-500">Profile not found</div>;
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="container px-4 py-8">
+          <div className="text-center py-8 text-gray-500">
+            Profile not found. Please try again later.
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const isOwnProfile = !userId || userId === user?.id;
