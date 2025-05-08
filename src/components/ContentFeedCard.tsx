@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/context/LanguageContext";
@@ -7,10 +6,9 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, ThumbsUp, Share2, Bookmark } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import CommentSection from "./CommentSection";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import PostInteractions from "./PostInteractions";
 
 interface ContentFeedCardProps {
   id: string;
@@ -33,6 +31,7 @@ interface ContentFeedCardProps {
   };
   userLiked: boolean;
   userBookmarked: boolean;
+  onDelete?: () => void;
 }
 
 const ContentFeedCard = ({
@@ -42,14 +41,12 @@ const ContentFeedCard = ({
   content,
   stats,
   userLiked,
-  userBookmarked
+  userBookmarked,
+  onDelete
 }: ContentFeedCardProps) => {
   const { t } = useLanguage();
   const { user: currentUser } = useAuth();
   const navigate = useNavigate();
-  const [isLiked, setIsLiked] = useState(userLiked);
-  const [likeCount, setLikeCount] = useState(stats.likes);
-  const [isBookmarked, setIsBookmarked] = useState(userBookmarked);
   const [commentsOpen, setCommentsOpen] = useState(false);
   
   // Get initials for avatar fallback
@@ -68,98 +65,7 @@ const ContentFeedCard = ({
       navigate("/profile");
     }
   };
-  
-  const handleLike = async () => {
-    if (!currentUser) {
-      toast.error("Please sign in to like posts");
-      return;
-    }
-    
-    try {
-      if (!isLiked) {
-        // Add like
-        const { error } = await supabase
-          .from('likes')
-          .insert({
-            user_id: currentUser.id,
-            post_id: id
-          });
-        
-        if (error) {
-          if (error.code === '23505') { // Unique violation
-            // Like already exists, ignore
-            console.log('Like already exists');
-          } else {
-            throw error;
-          }
-        }
-      } else {
-        // Remove like
-        const { error } = await supabase
-          .from('likes')
-          .delete()
-          .eq('user_id', currentUser.id)
-          .eq('post_id', id);
-        
-        if (error) throw error;
-      }
-      
-      // Update state
-      setIsLiked(!isLiked);
-      setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
-    } catch (error) {
-      console.error('Error updating like:', error);
-      toast.error('Failed to update like');
-    }
-  };
-  
-  const handleBookmark = async () => {
-    if (!currentUser) {
-      toast.error("Please sign in to bookmark posts");
-      return;
-    }
-    
-    try {
-      if (!isBookmarked) {
-        // Add bookmark
-        const { error } = await supabase
-          .from('bookmarks')
-          .insert({
-            user_id: currentUser.id,
-            post_id: id
-          });
-        
-        if (error) {
-          if (error.code === '23505') { // Unique violation
-            // Bookmark already exists, ignore
-            console.log('Bookmark already exists');
-          } else {
-            throw error;
-          }
-        }
-        
-        toast.success("Post saved to your bookmarks");
-      } else {
-        // Remove bookmark
-        const { error } = await supabase
-          .from('bookmarks')
-          .delete()
-          .eq('user_id', currentUser.id)
-          .eq('post_id', id);
-        
-        if (error) throw error;
-        
-        toast.success("Post removed from your bookmarks");
-      }
-      
-      // Update state
-      setIsBookmarked(!isBookmarked);
-    } catch (error) {
-      console.error('Error updating bookmark:', error);
-      toast.error('Failed to update bookmark');
-    }
-  };
-  
+
   const formatTimestamp = (date: Date) => {
     const now = new Date();
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
@@ -174,122 +80,68 @@ const ContentFeedCard = ({
   };
 
   return (
-    <>
-      <Card className="mb-4 dark:bg-gray-800 dark:border-gray-700">
-        <CardHeader className="p-4 pb-3 flex flex-row items-center space-y-0 gap-3">
-          <Avatar 
-            className="h-10 w-10 cursor-pointer" 
-            onClick={handleProfileClick}
-          >
-            <AvatarImage src={user.profilePic} />
-            <AvatarFallback className={
-              user.role === "athlete" ? "bg-blue-100 text-blue-800" : 
-              user.role === "team" ? "bg-yellow-100 text-yellow-800" : 
-              "bg-green-100 text-green-800"
-            }>
-              {getInitials(user.name)}
-            </AvatarFallback>
-          </Avatar>
-          
-          <div className="flex-1">
-            <div className="flex items-center">
-              <div 
-                className="font-medium cursor-pointer hover:underline dark:text-white" 
-                onClick={handleProfileClick}
-              >
-                {user.name}
-              </div>
-              <Badge variant="outline" className="ml-2 h-5 dark:border-gray-600 dark:text-gray-300">
-                {user.role}
-              </Badge>
-            </div>
-            <div className="text-xs text-muted-foreground dark:text-gray-400">
-              {formatTimestamp(timestamp)}
-            </div>
+    <Card className="w-full max-w-2xl mx-auto mb-4">
+      <CardHeader className="flex flex-row items-center gap-4 p-4">
+        <Avatar
+          className="h-10 w-10 cursor-pointer"
+          onClick={handleProfileClick}
+        >
+          <AvatarImage src={user.profilePic} />
+          <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
+        </Avatar>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <span
+              className="font-semibold cursor-pointer hover:underline"
+              onClick={handleProfileClick}
+            >
+              {user.name}
+            </span>
+            <Badge variant="outline">{user.role}</Badge>
           </div>
-        </CardHeader>
-        
-        <CardContent className="p-4 pt-0 space-y-3">
-          {content.text && (
-            <div className="text-sm dark:text-gray-200">{content.text}</div>
-          )}
-          
-          {content.image && (
-            <div className="rounded-lg overflow-hidden">
-              <img 
-                src={content.image} 
-                alt="Post content" 
-                className="w-full h-auto object-cover"
-              />
-            </div>
-          )}
-          
-          {content.video && (
-            <div className="rounded-lg overflow-hidden">
-              <video 
-                src={content.video} 
-                controls 
-                className="w-full h-auto"
-              />
-            </div>
-          )}
-        </CardContent>
-        
-        <CardFooter className="px-4 pt-0 pb-3 flex justify-between">
-          <div className="flex space-x-4">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={handleLike}
-              className={`px-2 dark:hover:bg-gray-700 ${
-                isLiked ? "text-blue-500 dark:text-blue-400" : "dark:text-gray-300"
-              }`}
-            >
-              <ThumbsUp className={`h-4 w-4 mr-1 ${isLiked ? "fill-current" : ""}`} />
-              <span className="text-xs">{likeCount}</span>
-            </Button>
-            
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setCommentsOpen(true)}
-              className="px-2 dark:text-gray-300 dark:hover:bg-gray-700"
-            >
-              <MessageSquare className="h-4 w-4 mr-1" />
-              <span className="text-xs">{stats.comments}</span>
-            </Button>
-            
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="px-2 dark:text-gray-300 dark:hover:bg-gray-700"
-            >
-              <Share2 className="h-4 w-4 mr-1" />
-              <span className="text-xs">{stats.shares}</span>
-            </Button>
-          </div>
-          
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={handleBookmark}
-            className={`px-2 dark:hover:bg-gray-700 ${
-              isBookmarked ? "text-blue-500 dark:text-blue-400" : "dark:text-gray-300"
-            }`}
-            aria-label={isBookmarked ? "Remove from saved items" : "Save to your items"}
-          >
-            <Bookmark className={`h-4 w-4 ${isBookmarked ? "fill-current" : ""}`} />
-          </Button>
-        </CardFooter>
-      </Card>
-      
-      {/* Comment Section Dialog */}
-      <CommentSection 
-        isOpen={commentsOpen} 
-        onClose={() => setCommentsOpen(false)} 
+          <span className="text-sm text-gray-500">{formatTimestamp(timestamp)}</span>
+        </div>
+      </CardHeader>
+
+      <CardContent className="p-0">
+        {content.text && (
+          <p className="px-4 py-2 whitespace-pre-line break-words">{content.text}</p>
+        )}
+        {content.image && (
+          <img
+            src={content.image}
+            alt="Post content"
+            className="w-full object-contain"
+          />
+        )}
+        {content.video && (
+          <video
+            src={content.video}
+            controls
+            className="w-full"
+          />
+        )}
+      </CardContent>
+
+      <CardFooter className="p-0">
+        <PostInteractions
+          postId={id}
+          initialLikes={stats.likes}
+          initialComments={stats.comments}
+          initialBookmarks={stats.shares}
+          initialUserLiked={userLiked}
+          initialUserBookmarked={userBookmarked}
+          onDelete={onDelete}
+          isOwner={currentUser?.id === user.id}
+        />
+      </CardFooter>
+
+      <CommentSection
+        isOpen={commentsOpen}
+        onClose={() => setCommentsOpen(false)}
         postId={id}
       />
-    </>
+    </Card>
   );
 };
 
