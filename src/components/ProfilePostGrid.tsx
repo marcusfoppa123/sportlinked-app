@@ -111,9 +111,11 @@ const ProfilePostGrid: React.FC<ProfilePostGridProps> = ({ userId, onPostDeleted
   const handlePostDelete = async (postId: string) => {
     try {
       // Delete associated likes, comments, and bookmarks first
-      await supabase.from('likes').delete().eq('post_id', postId);
-      await supabase.from('comments').delete().eq('post_id', postId);
-      await supabase.from('bookmarks').delete().eq('post_id', postId);
+      await Promise.all([
+        supabase.from('likes').delete().eq('post_id', postId),
+        supabase.from('comments').delete().eq('post_id', postId),
+        supabase.from('bookmarks').delete().eq('post_id', postId)
+      ]);
 
       // Delete the post
       const { error } = await supabase
@@ -122,8 +124,12 @@ const ProfilePostGrid: React.FC<ProfilePostGridProps> = ({ userId, onPostDeleted
         .eq('id', postId)
         .eq('user_id', currentUser?.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error deleting post:', error);
+        throw new Error('Failed to delete post');
+      }
 
+      // Update local state
       setPosts(posts.filter(post => post.id !== postId));
       if (onPostDeleted) onPostDeleted();
     } catch (error) {
@@ -141,19 +147,20 @@ const ProfilePostGrid: React.FC<ProfilePostGridProps> = ({ userId, onPostDeleted
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-7xl mx-auto">
       {posts.map((post) => (
-        <ContentFeedCard
-          key={post.id}
-          id={post.id}
-          user={post.user}
-          timestamp={new Date(post.created_at)}
-          content={post.content}
-          stats={post.stats}
-          userLiked={post.userLiked}
-          userBookmarked={post.userBookmarked}
-          onDelete={() => handlePostDelete(post.id)}
-        />
+        <div key={post.id} className="w-full">
+          <ContentFeedCard
+            id={post.id}
+            user={post.user}
+            timestamp={new Date(post.created_at)}
+            content={post.content}
+            stats={post.stats}
+            userLiked={post.userLiked}
+            userBookmarked={post.userBookmarked}
+            onDelete={() => handlePostDelete(post.id)}
+          />
+        </div>
       ))}
     </div>
   );

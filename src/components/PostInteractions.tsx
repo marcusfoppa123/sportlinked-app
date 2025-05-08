@@ -142,16 +142,21 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
   };
 
   const handleDelete = async () => {
-    if (!currentUser || !isOwner) return;
+    if (!currentUser || !isOwner) {
+      toast.error("You don't have permission to delete this post");
+      return;
+    }
 
     try {
       if (onDelete) {
         await onDelete();
         setShowDeleteDialog(false);
+        toast.success("Post deleted successfully");
       }
     } catch (error) {
       console.error('Error deleting post:', error);
-      toast.error('Failed to delete post');
+      toast.error('Failed to delete post. Please try again.');
+      setShowDeleteDialog(false);
     }
   };
 
