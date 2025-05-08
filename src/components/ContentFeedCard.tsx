@@ -133,6 +133,7 @@ const ContentFeedCard = ({
           initialUserBookmarked={userBookmarked}
           onDelete={onDelete}
           isOwner={currentUser?.id === user.id}
+          onCommentClick={() => setCommentsOpen(true)}
         />
       </CardFooter>
 

@@ -109,8 +109,27 @@ const ProfilePostGrid: React.FC<ProfilePostGridProps> = ({ userId, onPostDeleted
   }, [userId, currentUser?.id]);
 
   const handlePostDelete = async (postId: string) => {
-    setPosts(posts.filter(post => post.id !== postId));
-    if (onPostDeleted) onPostDeleted();
+    try {
+      // Delete associated likes, comments, and bookmarks first
+      await supabase.from('likes').delete().eq('post_id', postId);
+      await supabase.from('comments').delete().eq('post_id', postId);
+      await supabase.from('bookmarks').delete().eq('post_id', postId);
+
+      // Delete the post
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postId)
+        .eq('user_id', currentUser?.id);
+
+      if (error) throw error;
+
+      setPosts(posts.filter(post => post.id !== postId));
+      if (onPostDeleted) onPostDeleted();
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      throw error; // Let the PostInteractions component handle the error
+    }
   };
 
   if (loading) {
@@ -122,7 +141,7 @@ const ProfilePostGrid: React.FC<ProfilePostGridProps> = ({ userId, onPostDeleted
   }
 
   return (
-    <div className="space-y-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {posts.map((post) => (
         <ContentFeedCard
           key={post.id}

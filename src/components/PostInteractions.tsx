@@ -23,6 +23,7 @@ interface PostInteractionsProps {
   initialUserBookmarked: boolean;
   onDelete?: () => void;
   isOwner?: boolean;
+  onCommentClick?: () => void;
 }
 
 const PostInteractions: React.FC<PostInteractionsProps> = ({
@@ -34,6 +35,7 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
   initialUserBookmarked,
   onDelete,
   isOwner = false,
+  onCommentClick,
 }) => {
   const { user: currentUser } = useAuth();
   const [isLiked, setIsLiked] = useState(initialUserLiked);
@@ -143,22 +145,10 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
     if (!currentUser || !isOwner) return;
 
     try {
-      // Delete associated likes, comments, and bookmarks first
-      await supabase.from('likes').delete().eq('post_id', postId);
-      await supabase.from('comments').delete().eq('post_id', postId);
-      await supabase.from('bookmarks').delete().eq('post_id', postId);
-
-      // Delete the post
-      const { error } = await supabase
-        .from('posts')
-        .delete()
-        .eq('id', postId)
-        .eq('user_id', currentUser.id);
-
-      if (error) throw error;
-
-      toast.success("Post deleted successfully");
-      if (onDelete) onDelete();
+      if (onDelete) {
+        await onDelete();
+        setShowDeleteDialog(false);
+      }
     } catch (error) {
       console.error('Error deleting post:', error);
       toast.error('Failed to delete post');
@@ -176,7 +166,10 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
           <span className="ml-1 text-sm">{likeCount}</span>
         </button>
 
-        <button className="flex items-center text-gray-600">
+        <button 
+          className="flex items-center text-gray-600"
+          onClick={onCommentClick}
+        >
           <MessageCircle className="h-6 w-6" />
           <span className="ml-1 text-sm">{initialComments}</span>
         </button>
