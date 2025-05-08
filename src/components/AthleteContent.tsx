@@ -26,17 +26,25 @@ const AthleteContent = ({
       try {
         const targetUserId = userId || user?.id;
         
+        console.log('Loading posts for user:', targetUserId);
+        console.log('Content type:', contentType);
+        console.log('Current user:', user);
+        
         if (!targetUserId) {
-          console.error('No user ID provided');
+          console.error('No user ID available for loading posts');
           return;
         }
 
         if (contentType === "profiles") {
+          console.log('Fetching saved posts...');
           await fetchSavedPosts(targetUserId);
         } else {
+          console.log('Fetching regular posts...');
           await fetchPosts(targetUserId, filterSport);
         }
 
+        console.log('Posts loaded:', posts);
+        
         if (onPostCount) {
           onPostCount(posts.length);
         }
@@ -46,9 +54,19 @@ const AthleteContent = ({
       }
     };
     
-    loadPosts();
-  }, [filterSport, userId, user?.id, contentType, fetchPosts, fetchSavedPosts, onPostCount, posts.length]);
+    if (user) {
+      loadPosts();
+    }
+  }, [filterSport, userId, user, contentType, fetchPosts, fetchSavedPosts, onPostCount, posts.length]);
   
+  if (!user) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        Please sign in to view posts
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="space-y-6">

@@ -29,12 +29,28 @@ const Profile = () => {
         setLoading(true);
         const targetUserId = userId || user?.id;
         
+        console.log('Fetching profile for user:', targetUserId);
+        console.log('Current user:', user);
+        
         if (!targetUserId) {
-          toast.error('User not found');
+          console.error('No user ID available');
+          toast.error('Please sign in to view profiles');
           setLoading(false);
           return;
         }
 
+        // First check if the user exists in auth
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) {
+          console.error('Auth error:', authError);
+          toast.error('Authentication error');
+          setLoading(false);
+          return;
+        }
+
+        console.log('Auth user:', authData);
+
+        // Then fetch the profile
         const { data, error } = await supabase
           .from('profiles')
           .select(`
@@ -45,6 +61,8 @@ const Profile = () => {
           .eq('id', targetUserId)
           .single();
 
+        console.log('Profile fetch result:', { data, error });
+
         if (error) {
           console.error('Error fetching profile:', error);
           toast.error('Failed to load profile');
@@ -53,6 +71,7 @@ const Profile = () => {
         }
 
         if (!data) {
+          console.error('No profile data found');
           toast.error('Profile not found');
           setLoading(false);
           return;
@@ -60,15 +79,20 @@ const Profile = () => {
 
         setProfile(data);
       } catch (error) {
-        console.error('Error fetching profile:', error);
+        console.error('Error in fetchProfile:', error);
         toast.error('Failed to load profile');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProfile();
-  }, [userId, user?.id]);
+    if (user) {
+      fetchProfile();
+    } else {
+      setLoading(false);
+      toast.error('Please sign in to view profiles');
+    }
+  }, [userId, user]);
 
   const handleEditProfile = () => {
     navigate('/edit-profile');
@@ -77,6 +101,18 @@ const Profile = () => {
   const handleSettings = () => {
     navigate('/settings');
   };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="container px-4 py-8">
+          <div className="text-center py-8 text-gray-500">
+            Please sign in to view profiles
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
