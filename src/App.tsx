@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { LanguageProvider } from "@/context/LanguageContext";
-import { PostProvider } from "@/context/PostContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -53,19 +52,17 @@ const App = () => {
       <AuthProvider>
         <ThemeProvider>
           <LanguageProvider>
-            <PostProvider>
-              <TooltipProvider>
-                <Toaster />
-                <Sonner />
-                <BrowserRouter>
-                  {showSplash ? (
-                    <SplashScreen onComplete={handleSplashComplete} />
-                  ) : (
-                    <AppRoutes />
-                  )}
-                </BrowserRouter>
-              </TooltipProvider>
-            </PostProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                {showSplash ? (
+                  <SplashScreen onComplete={handleSplashComplete} />
+                ) : (
+                  <AppRoutes />
+                )}
+              </BrowserRouter>
+            </TooltipProvider>
           </LanguageProvider>
         </ThemeProvider>
       </AuthProvider>

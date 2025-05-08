@@ -1,84 +1,35 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useAuth } from "@/context/AuthContext";
-import { usePosts } from "@/context/PostContext";
-import ContentFeedCard from "./ContentFeedCard";
-import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
+import AthleteContent from "./AthleteContent";
 
 interface ContentFeedProps {
-  userId?: string;
-  showAllPosts?: boolean;
-  contentType?: "posts" | "saved";
   filterSport?: string;
+  contentType?: "posts" | "profiles";
+  userId?: string; // Add userId prop
+  showAllPosts?: boolean; // Add new prop to show all posts or just the user's
+  onPostCount?: (count: number) => void;
 }
 
-const ContentFeed = ({
+const ContentFeed = ({ 
+  filterSport, 
+  contentType = "posts", 
   userId,
-  showAllPosts = true,
-  contentType = "posts",
-  filterSport
+  showAllPosts = true,  // Default to showing all posts
+  onPostCount
 }: ContentFeedProps) => {
-  const { user } = useAuth();
-  const { posts, fetchPosts, fetchSavedPosts } = usePosts();
-
-  useEffect(() => {
-    const loadPosts = async () => {
-      try {
-        if (contentType === "saved") {
-          await fetchSavedPosts(userId);
-        } else {
-          await fetchPosts(userId, filterSport);
-        }
-      } catch (error) {
-        console.error('Error loading posts:', error);
-        toast.error('Failed to load posts');
-      }
-    };
-
-    loadPosts();
-  }, [userId, contentType, filterSport, fetchPosts, fetchSavedPosts]);
-
-  if (!posts.length) {
-    return (
-      <div className="space-y-6">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="space-y-3 rounded-lg border p-4 dark:border-gray-700">
-            <div className="flex items-center gap-3">
-              <Skeleton className="h-10 w-10 rounded-full" />
-              <div className="space-y-1 flex-1">
-                <Skeleton className="h-4 w-1/3" />
-                <Skeleton className="h-3 w-1/4" />
-              </div>
-            </div>
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-64 w-full rounded-md" />
-          </div>
-        ))}
-      </div>
-    );
-  }
-
+  const { user, supabaseUser } = useAuth();
+  
+  // If userId was explicitly passed, use it - otherwise use the logged-in user's ID
+  const effectiveUserId = userId || (user?.id || supabaseUser?.id);
+  
+  // All users see athlete content
   return (
-    <div className="space-y-6">
-      {posts.map((post) => (
-        <ContentFeedCard
-          key={post.id}
-          id={post.id}
-          content={{
-            text: post.content,
-            image: post.image_url,
-            video: post.video_url
-          }}
-          user={post.user}
-          timestamp={new Date(post.created_at)}
-          stats={post.stats}
-          userLiked={post.userLiked}
-          userBookmarked={post.userBookmarked}
-          sport={post.sport}
-          hashtags={post.hashtags}
-        />
-      ))}
-    </div>
+    <AthleteContent 
+      filterSport={filterSport} 
+      contentType={contentType} 
+      userId={showAllPosts ? undefined : effectiveUserId} 
+      onPostCount={onPostCount}
+    />
   );
 };
 
