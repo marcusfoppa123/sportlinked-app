@@ -24,11 +24,19 @@ const AthleteContent = ({
   useEffect(() => {
     const loadPosts = async () => {
       try {
-        if (contentType === "profiles") {
-          await fetchSavedPosts(userId);
-        } else {
-          await fetchPosts(userId, filterSport);
+        const targetUserId = userId || user?.id;
+        
+        if (!targetUserId) {
+          console.error('No user ID provided');
+          return;
         }
+
+        if (contentType === "profiles") {
+          await fetchSavedPosts(targetUserId);
+        } else {
+          await fetchPosts(targetUserId, filterSport);
+        }
+
         if (onPostCount) {
           onPostCount(posts.length);
         }
@@ -39,7 +47,7 @@ const AthleteContent = ({
     };
     
     loadPosts();
-  }, [filterSport, userId, contentType, fetchPosts, fetchSavedPosts, onPostCount]);
+  }, [filterSport, userId, user?.id, contentType, fetchPosts, fetchSavedPosts, onPostCount, posts.length]);
   
   if (loading) {
     return (

@@ -27,6 +27,14 @@ const Profile = () => {
     const fetchProfile = async () => {
       try {
         setLoading(true);
+        const targetUserId = userId || user?.id;
+        
+        if (!targetUserId) {
+          toast.error('User not found');
+          setLoading(false);
+          return;
+        }
+
         const { data, error } = await supabase
           .from('profiles')
           .select(`
@@ -34,10 +42,22 @@ const Profile = () => {
             followers:profile_followers(count),
             following:profile_following(count)
           `)
-          .eq('id', userId || user?.id)
+          .eq('id', targetUserId)
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching profile:', error);
+          toast.error('Failed to load profile');
+          setLoading(false);
+          return;
+        }
+
+        if (!data) {
+          toast.error('Profile not found');
+          setLoading(false);
+          return;
+        }
+
         setProfile(data);
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -47,9 +67,7 @@ const Profile = () => {
       }
     };
 
-    if (userId || user?.id) {
-      fetchProfile();
-    }
+    fetchProfile();
   }, [userId, user?.id]);
 
   const handleEditProfile = () => {
@@ -61,11 +79,25 @@ const Profile = () => {
   };
 
   if (loading) {
-    return <div className="text-center py-8 text-gray-500">Loading...</div>;
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="container px-4 py-8">
+          <div className="text-center py-8 text-gray-500">Loading profile...</div>
+        </div>
+      </div>
+    );
   }
 
   if (!profile) {
-    return <div className="text-center py-8 text-gray-500">Profile not found</div>;
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="container px-4 py-8">
+          <div className="text-center py-8 text-gray-500">
+            Profile not found. Please try again later.
+          </div>
+        </div>
+      </div>
+    );
   }
 
   const isOwnProfile = !userId || userId === user?.id;
