@@ -5,7 +5,7 @@ import { usePosts } from "@/context/PostContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import ContentFeed from "@/components/ContentFeed";
+import AthleteContent from "@/components/AthleteContent";
 import BottomNavigation from "@/components/BottomNavigation";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -20,8 +20,8 @@ const Profile = () => {
   const userId = searchParams.get("userId");
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [postCount, setPostCount] = useState(0);
   const navigate = useNavigate();
-  const { refreshPosts } = usePosts();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -29,7 +29,11 @@ const Profile = () => {
         setLoading(true);
         const { data, error } = await supabase
           .from('profiles')
-          .select('*')
+          .select(`
+            *,
+            followers:profile_followers(count),
+            following:profile_following(count)
+          `)
           .eq('id', userId || user?.id)
           .single();
 
@@ -99,18 +103,42 @@ const Profile = () => {
       <main className="container px-4 py-4">
         <Card className="mb-6">
           <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <Avatar className="h-20 w-20">
+            <div className="flex flex-col items-center text-center">
+              <Avatar className="h-24 w-24 mb-4">
                 <AvatarImage src={profile.avatar_url} />
                 <AvatarFallback>{profile.full_name?.[0] || 'U'}</AvatarFallback>
               </Avatar>
-              <div>
-                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                  {profile.full_name}
-                </h2>
-                <p className="text-gray-500 dark:text-gray-400">
-                  {profile.role}
-                </p>
+              <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-1">
+                {profile.full_name}
+              </h2>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
+                {profile.role}
+              </p>
+              <div className="flex justify-center gap-8 text-center">
+                <div>
+                  <div className="text-xl font-semibold text-gray-900 dark:text-white">
+                    {postCount}
+                  </div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    {t('posts')}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xl font-semibold text-gray-900 dark:text-white">
+                    {profile.followers?.[0]?.count || 0}
+                  </div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    {t('followers')}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xl font-semibold text-gray-900 dark:text-white">
+                    {profile.following?.[0]?.count || 0}
+                  </div>
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                    {t('following')}
+                  </div>
+                </div>
               </div>
             </div>
           </CardContent>
@@ -126,16 +154,15 @@ const Profile = () => {
             </TabsTrigger>
           </TabsList>
           <TabsContent value="posts">
-            <ContentFeed
+            <AthleteContent
               userId={userId || user?.id}
-              showAllPosts={false}
+              onPostCount={setPostCount}
             />
           </TabsContent>
           <TabsContent value="saved">
-            <ContentFeed
+            <AthleteContent
               userId={userId || user?.id}
-              showAllPosts={false}
-              contentType="saved"
+              contentType="profiles"
             />
           </TabsContent>
         </Tabs>

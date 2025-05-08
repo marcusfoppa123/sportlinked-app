@@ -19,12 +19,16 @@ const AthleteContent = ({
   onPostCount
 }: AthleteContentProps) => {
   const { user } = useAuth();
-  const { posts, fetchPosts } = usePosts();
+  const { posts, loading, fetchPosts, fetchSavedPosts } = usePosts();
   
   useEffect(() => {
     const loadPosts = async () => {
       try {
-        await fetchPosts(userId, filterSport);
+        if (contentType === "profiles") {
+          await fetchSavedPosts(userId);
+        } else {
+          await fetchPosts(userId, filterSport);
+        }
         if (onPostCount) {
           onPostCount(posts.length);
         }
@@ -35,9 +39,9 @@ const AthleteContent = ({
     };
     
     loadPosts();
-  }, [filterSport, userId, user?.id, fetchPosts, posts.length, onPostCount]);
+  }, [filterSport, userId, contentType, fetchPosts, fetchSavedPosts, onPostCount]);
   
-  if (!posts.length) {
+  if (loading) {
     return (
       <div className="space-y-6">
         {[1, 2, 3].map((i) => (
@@ -53,6 +57,14 @@ const AthleteContent = ({
             <Skeleton className="h-64 w-full rounded-md" />
           </div>
         ))}
+      </div>
+    );
+  }
+
+  if (!posts.length) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        {contentType === "profiles" ? "No saved posts" : "No posts yet"}
       </div>
     );
   }
