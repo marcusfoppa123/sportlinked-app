@@ -1,31 +1,47 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/context/LanguageContext";
 import { useAuth } from "@/context/AuthContext";
+import { usePosts } from "@/context/PostContext";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, ThumbsUp, Share2, Bookmark } from "lucide-react";
+import { MessageSquare, ThumbsUp, Share2, Bookmark, Trash2, MoreVertical } from "lucide-react";
 import CommentSection from "./CommentSection";
-import { supabase } from "@/integrations/supabase/client";
+import { formatDistanceToNow } from "date-fns";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ContentFeedCardProps {
   id: string;
+  content: {
+    text: string;
+    image?: string | null;
+    video?: string | null;
+  };
   user: {
     id: string;
     name: string;
+    avatar_url: string | null;
     role: string;
-    profilePic?: string;
   };
   timestamp: Date;
-  content: {
-    text?: string;
-    image?: string;
-    video?: string;
-  };
   stats: {
     likes: number;
     comments: number;
@@ -33,144 +49,85 @@ interface ContentFeedCardProps {
   };
   userLiked: boolean;
   userBookmarked: boolean;
+  sport?: string | null;
+  hashtags?: string[];
 }
 
 const ContentFeedCard = ({
   id,
+  content,
   user,
   timestamp,
-  content,
   stats,
   userLiked,
-  userBookmarked
+  userBookmarked,
+  sport,
+  hashtags
 }: ContentFeedCardProps) => {
+  const navigate = useNavigate();
   const { t } = useLanguage();
   const { user: currentUser } = useAuth();
-  const navigate = useNavigate();
+  const { likePost, unlikePost, bookmarkPost, unbookmarkPost, deletePost } = usePosts();
   const [isLiked, setIsLiked] = useState(userLiked);
-  const [likeCount, setLikeCount] = useState(stats.likes);
   const [isBookmarked, setIsBookmarked] = useState(userBookmarked);
+  const [likeCount, setLikeCount] = useState(stats.likes);
   const [commentsOpen, setCommentsOpen] = useState(false);
-  
-  // Get initials for avatar fallback
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map(n => n[0])
-      .join("")
-      .toUpperCase();
-  };
-  
-  const handleProfileClick = () => {
-    if (user.role === "team") {
-      navigate("/team-profile");
-    } else {
-      navigate("/profile");
-    }
-  };
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
   const handleLike = async () => {
     if (!currentUser) {
-      toast.error("Please sign in to like posts");
+      toast.error(t('pleaseSignIn'));
       return;
     }
-    
+
     try {
-      if (!isLiked) {
-        // Add like
-        const { error } = await supabase
-          .from('likes')
-          .insert({
-            user_id: currentUser.id,
-            post_id: id
-          });
-        
-        if (error) {
-          if (error.code === '23505') { // Unique violation
-            // Like already exists, ignore
-            console.log('Like already exists');
-          } else {
-            throw error;
-          }
-        }
+      if (isLiked) {
+        await unlikePost(id);
+        setLikeCount(prev => Math.max(0, prev - 1));
       } else {
-        // Remove like
-        const { error } = await supabase
-          .from('likes')
-          .delete()
-          .eq('user_id', currentUser.id)
-          .eq('post_id', id);
-        
-        if (error) throw error;
+        await likePost(id);
+        setLikeCount(prev => prev + 1);
       }
-      
-      // Update state
       setIsLiked(!isLiked);
-      setLikeCount(isLiked ? likeCount - 1 : likeCount + 1);
     } catch (error) {
       console.error('Error updating like:', error);
-      toast.error('Failed to update like');
     }
   };
-  
+
   const handleBookmark = async () => {
     if (!currentUser) {
-      toast.error("Please sign in to bookmark posts");
+      toast.error(t('pleaseSignIn'));
       return;
     }
-    
+
     try {
-      if (!isBookmarked) {
-        // Add bookmark
-        const { error } = await supabase
-          .from('bookmarks')
-          .insert({
-            user_id: currentUser.id,
-            post_id: id
-          });
-        
-        if (error) {
-          if (error.code === '23505') { // Unique violation
-            // Bookmark already exists, ignore
-            console.log('Bookmark already exists');
-          } else {
-            throw error;
-          }
-        }
-        
-        toast.success("Post saved to your bookmarks");
+      if (isBookmarked) {
+        await unbookmarkPost(id);
       } else {
-        // Remove bookmark
-        const { error } = await supabase
-          .from('bookmarks')
-          .delete()
-          .eq('user_id', currentUser.id)
-          .eq('post_id', id);
-        
-        if (error) throw error;
-        
-        toast.success("Post removed from your bookmarks");
+        await bookmarkPost(id);
       }
-      
-      // Update state
       setIsBookmarked(!isBookmarked);
     } catch (error) {
       console.error('Error updating bookmark:', error);
-      toast.error('Failed to update bookmark');
     }
   };
-  
-  const formatTimestamp = (date: Date) => {
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) {
-      return "Just now";
-    } else if (diffInHours < 24) {
-      return `${diffInHours}h ago`;
-    } else {
-      return `${Math.floor(diffInHours / 24)}d ago`;
+
+  const handleDelete = async () => {
+    if (!currentUser) return;
+
+    try {
+      await deletePost(id);
+    } catch (error) {
+      console.error('Error deleting post:', error);
     }
+  };
+
+  const handleComment = () => {
+    navigate(`/post/${id}`);
+  };
+
+  const handleProfileClick = () => {
+    navigate(`/profile?userId=${user.id}`);
   };
 
   return (
@@ -181,14 +138,8 @@ const ContentFeedCard = ({
             className="h-10 w-10 cursor-pointer" 
             onClick={handleProfileClick}
           >
-            <AvatarImage src={user.profilePic} />
-            <AvatarFallback className={
-              user.role === "athlete" ? "bg-blue-100 text-blue-800" : 
-              user.role === "team" ? "bg-yellow-100 text-yellow-800" : 
-              "bg-green-100 text-green-800"
-            }>
-              {getInitials(user.name)}
-            </AvatarFallback>
+            <AvatarImage src={user.avatar_url || undefined} />
+            <AvatarFallback>{user.name[0]}</AvatarFallback>
           </Avatar>
           
           <div className="flex-1">
@@ -204,9 +155,27 @@ const ContentFeedCard = ({
               </Badge>
             </div>
             <div className="text-xs text-muted-foreground dark:text-gray-400">
-              {formatTimestamp(timestamp)}
+              {formatDistanceToNow(timestamp, { addSuffix: true })}
             </div>
           </div>
+          {currentUser?.id === user.id && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  className="text-red-600"
+                  onClick={() => setShowDeleteDialog(true)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  {t('delete')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </CardHeader>
         
         <CardContent className="p-4 pt-0 space-y-3">
@@ -231,6 +200,25 @@ const ContentFeedCard = ({
                 controls 
                 className="w-full h-auto"
               />
+            </div>
+          )}
+          
+          {sport && (
+            <span className="inline-block bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-full text-sm mt-2">
+              {sport}
+            </span>
+          )}
+          
+          {hashtags && hashtags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {hashtags.map((tag, index) => (
+                <span
+                  key={index}
+                  className="text-blue-500 dark:text-blue-400 text-sm"
+                >
+                  #{tag}
+                </span>
+              ))}
             </div>
           )}
         </CardContent>
@@ -289,6 +277,26 @@ const ContentFeedCard = ({
         onClose={() => setCommentsOpen(false)} 
         postId={id}
       />
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Post</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this post? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 };
