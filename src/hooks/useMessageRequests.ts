@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -29,12 +30,13 @@ export function useMessageRequests() {
       setLoading(true);
       setError(null);
 
+      // Update the types in the Database interface by forcing the type
       // Fetch pending requests (where user is the receiver)
       const { data: pending, error: pendingError } = await supabase
         .from('message_requests')
         .select('*')
         .eq('receiver_id', user?.id)
-        .eq('status', 'pending');
+        .eq('status', 'pending') as { data: MessageRequest[] | null, error: any };
 
       if (pendingError) throw pendingError;
 
@@ -43,7 +45,7 @@ export function useMessageRequests() {
         .from('message_requests')
         .select('*')
         .eq('sender_id', user?.id)
-        .eq('status', 'pending');
+        .eq('status', 'pending') as { data: MessageRequest[] | null, error: any };
 
       if (sentError) throw sentError;
 
@@ -68,13 +70,15 @@ export function useMessageRequests() {
             status: 'pending'
           }
         ])
-        .select()
-        .single();
+        .select() as { data: MessageRequest[] | null, error: any };
 
       if (error) throw error;
-
-      setSentRequests(prev => [...prev, data]);
-      return data;
+      
+      if (data && data.length > 0) {
+        setSentRequests(prev => [...prev, data[0]]);
+        return data[0];
+      }
+      return null;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to send message request');
       throw err;
@@ -89,7 +93,7 @@ export function useMessageRequests() {
         .update({ status: accept ? 'accepted' : 'rejected' })
         .eq('id', requestId)
         .select()
-        .single();
+        .single() as { data: MessageRequest | null, error: any };
 
       if (error) throw error;
 
@@ -110,4 +114,4 @@ export function useMessageRequests() {
     respondToRequest,
     refreshRequests: fetchMessageRequests
   };
-} 
+}

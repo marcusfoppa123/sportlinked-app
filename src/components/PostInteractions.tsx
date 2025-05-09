@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Heart, MessageCircle, Bookmark, Share2, Trash2 } from "lucide-react";
@@ -126,10 +127,26 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
 
   const handleShare = async () => {
     try {
-      await supabase
+      // First, get the current share count
+      const { data, error: fetchError } = await supabase
         .from('posts')
-        .update({ shares: (initialBookmarks || 0) + 1 })
+        .select('shares')
+        .eq('id', postId)
+        .single();
+      
+      if (fetchError) throw fetchError;
+      
+      // Calculate the new share count
+      const currentShares = data?.shares || 0;
+      const newShareCount = currentShares + 1;
+      
+      // Update with the new count
+      const { error } = await supabase
+        .from('posts')
+        .update({ shares: newShareCount })
         .eq('id', postId);
+        
+      if (error) throw error;
 
       // Copy post URL to clipboard
       const postUrl = `${window.location.origin}/post/${postId}`;
@@ -223,4 +240,4 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
   );
 };
 
-export default PostInteractions; 
+export default PostInteractions;
