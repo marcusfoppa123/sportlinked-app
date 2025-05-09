@@ -176,7 +176,28 @@ const PostPage: React.FC = () => {
         .eq('id', postToDelete)
         .eq('user_id', currentUser?.id);
       if (error) throw error;
-      setPosts((prev) => prev.filter((p) => p.id !== postToDelete));
+      // Refetch posts after deletion
+      const { data: currentPost, error: postError } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("id", postId)
+        .maybeSingle();
+      if (postError || !currentPost) {
+        // If the deleted post was the last one, redirect to profile
+        setPosts((prev) => prev.filter((p) => p.id !== postToDelete));
+        setShowDeleteDialog(false);
+        setPostToDelete(null);
+        navigate("/profile");
+        return;
+      }
+      // Otherwise, refetch all posts for the user
+      const userId = currentPost.user_id;
+      const { data: postsData } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+      setPosts(postsData || []);
       setShowDeleteDialog(false);
       setPostToDelete(null);
     } catch (error) {
