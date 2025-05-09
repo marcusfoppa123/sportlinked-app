@@ -1,10 +1,20 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Heart, MessageCircle, Bookmark, Share2, ArrowLeft } from "lucide-react";
+import { Heart, MessageCircle, Bookmark, Share2, ArrowLeft, MoreHorizontal } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/context/AuthContext";
 import CommentSection from "@/components/CommentSection";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const PostPage: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -13,6 +23,8 @@ const PostPage: React.FC = () => {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [postToDelete, setPostToDelete] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -147,6 +159,34 @@ const PostPage: React.FC = () => {
     setPosts((prev) => prev.map((p, i) => i === idx ? { ...p, stats: { ...p.stats, shares: p.stats.shares + 1 } } : p));
   };
 
+  // Delete post handler
+  const handleDeletePost = async () => {
+    if (!postToDelete) return;
+    try {
+      // Delete associated likes, comments, and bookmarks first
+      await Promise.all([
+        supabase.from('likes').delete().eq('post_id', postToDelete),
+        supabase.from('comments').delete().eq('post_id', postToDelete),
+        supabase.from('bookmarks').delete().eq('post_id', postToDelete)
+      ]);
+      // Delete the post
+      const { error } = await supabase
+        .from('posts')
+        .delete()
+        .eq('id', postToDelete)
+        .eq('user_id', currentUser?.id);
+      if (error) throw error;
+      setPosts((prev) => prev.filter((p) => p.id !== postToDelete));
+      setShowDeleteDialog(false);
+      setPostToDelete(null);
+    } catch (error) {
+      console.error('Error deleting post:', error);
+      setShowDeleteDialog(false);
+      setPostToDelete(null);
+      // Optionally show a toast error here
+    }
+  };
+
   if (loading) {
     return <div className="text-center py-8 text-gray-500">Loading...</div>;
   }
@@ -173,13 +213,22 @@ const PostPage: React.FC = () => {
             key={post.id}
             className={`w-full flex flex-col items-center justify-start snap-start bg-white dark:bg-black ${idx !== 0 ? 'border-t border-gray-200 dark:border-gray-800' : ''}`}
           >
-            {/* Profile picture and name */}
-            <div className="flex items-center gap-2 pt-4 pb-2 w-full px-4">
+            {/* Profile picture, name, and three dots menu */}
+            <div className="flex items-center gap-2 pt-4 pb-2 w-full px-4 relative">
               <Avatar className="h-10 w-10">
                 <AvatarImage src={post.user?.profilePic} />
                 <AvatarFallback>{post.user?.name?.[0] || "U"}</AvatarFallback>
               </Avatar>
               <span className="font-semibold text-lg text-black dark:text-white">{post.user?.name || "User"}</span>
+              {/* Three dots menu for post owner */}
+              {currentUser?.id === post.user.id && (
+                <button
+                  className="absolute right-2 top-1 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
+                  onClick={() => { setShowDeleteDialog(true); setPostToDelete(post.id); }}
+                >
+                  <MoreHorizontal className="h-6 w-6 text-black dark:text-white" />
+                </button>
+              )}
             </div>
             {/* Image/video */}
             <div className="w-full flex items-center justify-center bg-white dark:bg-black aspect-square">
@@ -230,6 +279,23 @@ const PostPage: React.FC = () => {
           </section>
         ))}
       </div>
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Post</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this post? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeletePost} className="bg-red-500 hover:bg-red-600">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
