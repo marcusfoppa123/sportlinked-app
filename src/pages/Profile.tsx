@@ -106,7 +106,7 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen pb-16 bg-white dark:bg-gray-900">
+    <div className="min-h-screen pb-16 bg-white dark:bg-gray-900 relative">
       <SideMenu isOpen={sideMenuOpen} onClose={() => setSideMenuOpen(false)} />
       
       <div className="w-full px-4 pt-8 pb-4 flex flex-col border-b bg-white dark:bg-gray-900 relative">
@@ -295,6 +295,14 @@ const Profile = () => {
       </Dialog>
 
       {isAthlete && <UploadButton />}
+      
+      <button
+        onClick={handleCreatePost}
+        className="fixed bottom-20 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg p-4 flex items-center justify-center"
+        aria-label="Create Post"
+      >
+        <Plus className="h-7 w-7" />
+      </button>
       
       <BottomNavigation />
     </div>

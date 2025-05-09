@@ -45,7 +45,7 @@ const CreatePost = () => {
   };
   
   const handleBack = () => {
-    navigate(-1);
+    navigate('/profile');
   };
   
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
