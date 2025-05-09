@@ -127,10 +127,23 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
 
   const handleShare = async () => {
     try {
-      // Update the shares count in the posts table
+      // First, get the current share count
+      const { data, error: fetchError } = await supabase
+        .from('posts')
+        .select('shares')
+        .eq('id', postId)
+        .single();
+      
+      if (fetchError) throw fetchError;
+      
+      // Calculate the new share count
+      const currentShares = data?.shares || 0;
+      const newShareCount = currentShares + 1;
+      
+      // Update with the new count
       const { error } = await supabase
         .from('posts')
-        .update({ shares: (shareCount) => shareCount + 1 })
+        .update({ shares: newShareCount })
         .eq('id', postId);
         
       if (error) throw error;
