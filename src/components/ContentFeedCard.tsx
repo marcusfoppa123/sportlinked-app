@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { MessageSquare } from "lucide-react";
 import CommentSection from "./CommentSection";
 import PostInteractions from "./PostInteractions";
+import TikTokVideo from "@/components/TikTokVideo";
 
 interface ContentFeedCardProps {
   id: string;
@@ -115,10 +116,9 @@ const ContentFeedCard = ({
           />
         )}
         {content.video && (
-          <video
+          <TikTokVideo
             src={content.video}
-            controls
-            className="w-full"
+            className="w-full object-contain rounded-xl"
           />
         )}
       </CardContent>

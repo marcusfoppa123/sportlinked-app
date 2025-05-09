@@ -1,6 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Heart, Video, Image as ImageIcon } from "lucide-react";
+import TikTokVideo from "@/components/TikTokVideo";
 
 interface ProfilePostThumbnailProps {
   postId: string;
@@ -26,12 +27,9 @@ const ProfilePostThumbnail: React.FC<ProfilePostThumbnailProps> = ({ postId, ima
           className="object-cover w-full h-full"
         />
       ) : video ? (
-        <video
+        <TikTokVideo
           src={video}
           className="object-cover w-full h-full"
-          muted
-          playsInline
-          preload="metadata"
         />
       ) : (
         <div className="w-full h-full flex items-center justify-center text-gray-400">No Media</div>

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import TikTokVideo from "@/components/TikTokVideo";
 
 const PostPage: React.FC = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -284,7 +284,7 @@ const PostPage: React.FC = () => {
               {post.image_url ? (
                 <img src={post.image_url} alt="Post" className="object-contain max-h-[60vh] max-w-full mx-auto" />
               ) : post.video_url ? (
-                <video src={post.video_url} className="object-contain max-h-[60vh] max-w-full mx-auto" controls autoPlay />
+                <TikTokVideo src={post.video_url} className="object-contain max-h-[60vh] max-w-full mx-auto rounded-xl" />
               ) : null}
             </div>
             {/* Icons row */}
