@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import logo from "@/assets/SportsLinked in app.png";
+import logo from "@/assets/sportslinked-logo.png";
 
 interface LoadingScreenProps {
   fullScreen?: boolean;

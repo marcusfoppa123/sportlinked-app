@@ -4,7 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import RoleSelection from "@/components/RoleSelection";
 import Login from "@/components/Login";
 import BottomNavigation from "@/components/BottomNavigation";
-import logo from "@/assets/@SportsLinkedinapp.png";
+import logo from "@/assets/sportslinked-logo.png";
 import { useIsMobile } from "@/hooks/use-mobile";
 import AnimatedLoadingScreen from "@/components/AnimatedLoadingScreen";
 

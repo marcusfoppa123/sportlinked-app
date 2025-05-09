@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -12,7 +11,7 @@ import SideMenu from "@/components/SideMenu";
 import SearchDialog from "@/components/SearchDialog";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
-import logo from "@/assets/SportsLinked in app.png";
+import logo from "@/assets/sportslinked-logo.png";
 
 const ForYou = () => {
   const { user } = useAuth();
@@ -70,7 +69,8 @@ const ForYou = () => {
               <img 
                 src={logo} 
                 alt="SportsLinked Logo" 
-                className="h-12 w-auto mr-2"
+                className="h-12 object-contain" 
+                style={{ width: '100%', maxWidth: '220px' }}
               />
             </div>
           </div>
