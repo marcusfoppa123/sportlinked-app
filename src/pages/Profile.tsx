@@ -22,6 +22,7 @@ import SideMenu from "@/components/SideMenu";
 import { useIsMobile } from "@/hooks/use-mobile";
 import ContentFeed from "@/components/ContentFeed";
 import ProfilePostGrid from "@/components/ProfilePostGrid";
+import { supabase } from "@/integrations/supabase/client";
 
 const highlightData = [
   { label: "Before/After", icon: <span className="text-xl">🛠️</span> },
@@ -56,6 +57,8 @@ const Profile = () => {
   
   const [editingAthleteStat, setEditingAthleteStat] = useState<string | null>(null);
   const [athleteStatValue, setAthleteStatValue] = useState<number>(0);
+  
+  const [realPostCount, setRealPostCount] = useState<number>(0);
   
   const getInitials = (name?: string) => {
     if (!name) return "U";
@@ -104,6 +107,18 @@ const Profile = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchPostCount = async () => {
+      if (!user?.id) return;
+      const { count } = await supabase
+        .from('posts')
+        .select('id', { count: 'exact' })
+        .eq('user_id', user.id);
+      setRealPostCount(count || 0);
+    };
+    fetchPostCount();
+  }, [user?.id]);
+
   return (
     <div className="min-h-screen pb-16 bg-white dark:bg-gray-900 relative">
       <SideMenu isOpen={sideMenuOpen} onClose={() => setSideMenuOpen(false)} />
@@ -136,7 +151,7 @@ const Profile = () => {
         
         <div className="flex justify-around mt-6 mb-2">
           <div className="text-center">
-            <span className="font-bold text-lg">{user?.posts ?? 0}</span>
+            <span className="font-bold text-lg">{realPostCount}</span>
             <div className="text-xs text-gray-500">Posts</div>
           </div>
           <div className="text-center">

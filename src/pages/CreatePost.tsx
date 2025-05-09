@@ -210,9 +210,9 @@ const CreatePost = () => {
   };
   
   return (
-    <div className={`min-h-screen ${isAthlete ? "athlete-theme" : "scout-theme"} dark:bg-gray-900`}>
+    <div className={`min-h-screen ${isAthlete ? "athlete-theme" : "scout-theme"} dark:bg-gray-900 flex flex-col items-center`}>
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-border shadow-sm">
+      <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-border shadow-sm w-full">
         <div className="container px-4 h-16 flex items-center justify-between">
           <Button 
             variant="ghost" 
@@ -233,190 +233,175 @@ const CreatePost = () => {
           </Button>
         </div>
       </header>
-      
-      {/* Main content - Make it scrollable */}
-      <ScrollArea className="container h-[calc(100vh-4rem)] px-4 py-4">
-        <Card className="dark:bg-gray-800 dark:border-gray-700">
-          <CardHeader className="flex-row items-center space-y-0 gap-3">
-            <Avatar>
-              <AvatarImage src={user?.profilePic} />
-              <AvatarFallback className={
-                user?.role === "athlete" ? "bg-blue-100 text-blue-800" : 
-                user?.role === "team" ? "bg-yellow-100 text-yellow-800" : 
-                "bg-green-100 text-green-800"
-              }>
-                {getInitials(user?.name)}
-              </AvatarFallback>
-            </Avatar>
-            
-            <div>
-              <div className="font-medium dark:text-white">{user?.name}</div>
-              <div className="flex items-center">
-                <Badge variant="outline" className="h-5 dark:border-gray-600 dark:text-gray-300">
-                  {user?.role}
-                </Badge>
-                {user?.sport && (
-                  <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
-                    {user.sport} • {user.position || "Player"}
-                  </span>
-                )}
-              </div>
-            </div>
-          </CardHeader>
-          
-          <CardContent className="space-y-4">
-            <Textarea
-              placeholder="What's on your mind?"
-              className="border-none shadow-none resize-none min-h-[120px] focus-visible:ring-0 p-0 text-lg dark:bg-gray-800 dark:text-white"
-              value={postText}
-              onChange={(e) => setPostText(e.target.value)}
-            />
-            
-            {/* Sport selection - FIX HERE: Adding non-empty value to SelectItem */}
-            <div className="flex items-center gap-2">
-              <Label className="text-gray-500 dark:text-gray-400">Sport:</Label>
-              <Select
-                value={selectedSport}
-                onValueChange={setSelectedSport}
-              >
-                <SelectTrigger className="w-32 h-8 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
-                  <SelectItem value="none">None</SelectItem>
-                  <SelectItem value="basketball">Basketball</SelectItem>
-                  <SelectItem value="football">Football</SelectItem>
-                  <SelectItem value="soccer">Soccer</SelectItem>
-                  <SelectItem value="baseball">Baseball</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            {/* Preview images */}
-            {previewImages.length > 0 && (
-              <div className="grid grid-cols-2 gap-2">
-                {previewImages.map((img, index) => (
-                  <div key={index} className="relative rounded-md overflow-hidden">
-                    <img src={img} alt="Preview" className="w-full h-48 object-cover" />
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2 h-6 w-6 rounded-full opacity-80"
-                      onClick={() => handleRemoveImage(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            )}
-            
-            {/* Preview video */}
-            {previewVideo && (
-              <div className="relative rounded-md overflow-hidden">
-                <video src={previewVideo} controls className="w-full h-auto" />
+      {/* Main content - Modern Instagram-like style */}
+      <div className="w-full flex-1 flex flex-col items-center justify-start px-0 py-4">
+        <div className="w-full max-w-md mx-auto">
+          {/* Media upload area */}
+          <div className="mb-4">
+            <div className="relative w-full aspect-square bg-gray-100 dark:bg-gray-800 rounded-xl shadow overflow-hidden flex items-center justify-center">
+              {/* Show preview image or video, or upload prompt */}
+              {previewImages.length > 0 ? (
+                <img src={previewImages[0]} alt="Preview" className="object-cover w-full h-full" />
+              ) : previewVideo ? (
+                <video src={previewVideo} controls className="object-cover w-full h-full" />
+              ) : (
+                <div className="flex flex-col items-center justify-center w-full h-full text-gray-400">
+                  <Image className="h-12 w-12 mb-2" />
+                  <span className="text-base">Add Photo or Video</span>
+                </div>
+              )}
+              {/* Remove media button */}
+              {(previewImages.length > 0 || previewVideo) && (
                 <Button
                   variant="destructive"
                   size="icon"
-                  className="absolute top-2 right-2 h-6 w-6 rounded-full opacity-80"
-                  onClick={handleRemoveVideo}
+                  className="absolute top-2 right-2 h-8 w-8 rounded-full opacity-80"
+                  onClick={previewImages.length > 0 ? () => handleRemoveImage(0) : handleRemoveVideo}
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-5 w-5" />
+                </Button>
+              )}
+              {/* Upload buttons overlay */}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-2">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  className="hidden"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageUpload}
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="bg-white/80 hover:bg-white text-blue-600 border border-blue-200 shadow"
+                >
+                  <Image className="h-5 w-5" />
+                </Button>
+                <input
+                  type="file"
+                  ref={videoInputRef}
+                  className="hidden"
+                  accept="video/*"
+                  onChange={handleVideoUpload}
+                />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => videoInputRef.current?.click()}
+                  disabled={!!previewVideo}
+                  className="bg-white/80 hover:bg-white text-blue-600 border border-blue-200 shadow"
+                >
+                  <Video className="h-5 w-5" />
                 </Button>
               </div>
-            )}
-            
-            {/* Hashtags */}
-            {hashtags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {hashtags.map((hashtag) => (
-                  <Badge 
-                    key={hashtag} 
-                    variant="secondary"
-                    className="flex items-center gap-1 px-3 py-1 dark:bg-gray-700 dark:text-white"
-                  >
-                    #{hashtag}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-4 w-4 p-0 ml-1"
-                      onClick={() => handleRemoveHashtag(hashtag)}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
+            </div>
+          </div>
+          {/* Card for post details */}
+          <Card className="dark:bg-gray-800 dark:border-gray-700 rounded-xl shadow">
+            <CardHeader className="flex-row items-center space-y-0 gap-3">
+              <Avatar>
+                <AvatarImage src={user?.profilePic} />
+                <AvatarFallback className={
+                  user?.role === "athlete" ? "bg-blue-100 text-blue-800" : 
+                  user?.role === "team" ? "bg-yellow-100 text-yellow-800" : 
+                  "bg-green-100 text-green-800"
+                }>
+                  {getInitials(user?.name)}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <div className="font-medium dark:text-white">{user?.name}</div>
+                <div className="flex items-center">
+                  <Badge variant="outline" className="h-5 dark:border-gray-600 dark:text-gray-300">
+                    {user?.role}
                   </Badge>
-                ))}
+                  {user?.sport && (
+                    <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">
+                      {user.sport} • {user.position || "Player"}
+                    </span>
+                  )}
+                </div>
               </div>
-            )}
-            
-            {/* Hashtag input */}
-            <div className="flex items-center gap-2">
-              <Hash className="h-5 w-5 text-gray-400" />
-              <Input
-                placeholder="Add hashtag..."
-                className="flex-1 border-none shadow-none focus-visible:ring-0 dark:bg-gray-800 dark:text-white"
-                value={hashtagInput}
-                onChange={(e) => setHashtagInput(e.target.value.replace(/\s+/g, ""))}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleAddHashtag();
-                  }
-                }}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Textarea
+                placeholder="Write a caption..."
+                className="border-none shadow-none resize-none min-h-[80px] focus-visible:ring-0 p-0 text-lg dark:bg-gray-800 dark:text-white"
+                value={postText}
+                onChange={(e) => setPostText(e.target.value)}
               />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleAddHashtag}
-                disabled={!hashtagInput.trim()}
-                className="dark:border-gray-600 dark:text-gray-300"
-              >
-                Add
-              </Button>
-            </div>
-          </CardContent>
-          
-          <CardFooter className="flex justify-between border-t dark:border-gray-700 pt-4">
-            <div className="flex gap-2">
-              <input
-                type="file"
-                ref={fileInputRef}
-                className="hidden"
-                accept="image/*"
-                multiple
-                onChange={handleImageUpload}
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                className="dark:border-gray-600 dark:text-gray-300"
-              >
-                <Image className="h-4 w-4 mr-2" />
-                Photo
-              </Button>
-              
-              <input
-                type="file"
-                ref={videoInputRef}
-                className="hidden"
-                accept="video/*"
-                onChange={handleVideoUpload}
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => videoInputRef.current?.click()}
-                disabled={!!previewVideo}
-                className="dark:border-gray-600 dark:text-gray-300"
-              >
-                <Video className="h-4 w-4 mr-2" />
-                Video
-              </Button>
-            </div>
-          </CardFooter>
-        </Card>
-      </ScrollArea>
+              {/* Sport selection */}
+              <div className="flex items-center gap-2">
+                <Label className="text-gray-500 dark:text-gray-400">Sport:</Label>
+                <Select
+                  value={selectedSport}
+                  onValueChange={setSelectedSport}
+                >
+                  <SelectTrigger className="w-32 h-8 dark:bg-gray-800 dark:border-gray-700 dark:text-white">
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent className="dark:bg-gray-800 dark:border-gray-700">
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="basketball">Basketball</SelectItem>
+                    <SelectItem value="football">Football</SelectItem>
+                    <SelectItem value="soccer">Soccer</SelectItem>
+                    <SelectItem value="baseball">Baseball</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {/* Hashtags */}
+              {hashtags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {hashtags.map((hashtag) => (
+                    <Badge 
+                      key={hashtag} 
+                      variant="secondary"
+                      className="flex items-center gap-1 px-3 py-1 dark:bg-gray-700 dark:text-white"
+                    >
+                      #{hashtag}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-4 w-4 p-0 ml-1"
+                        onClick={() => handleRemoveHashtag(hashtag)}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              {/* Hashtag input */}
+              <div className="flex items-center gap-2">
+                <Hash className="h-5 w-5 text-gray-400" />
+                <Input
+                  placeholder="Add hashtag..."
+                  className="flex-1 border-none shadow-none focus-visible:ring-0 dark:bg-gray-800 dark:text-white"
+                  value={hashtagInput}
+                  onChange={(e) => setHashtagInput(e.target.value.replace(/\s+/g, ""))}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddHashtag();
+                    }
+                  }}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleAddHashtag}
+                  disabled={!hashtagInput.trim()}
+                  className="dark:border-gray-600 dark:text-gray-300"
+                >
+                  Add
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };
