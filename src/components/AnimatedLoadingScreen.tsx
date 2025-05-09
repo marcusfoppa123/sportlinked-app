@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import icon from "@/assets/@sportslinked-icon..png";
+import icon from "@/assets/sportslinked-icon.png";
 import nameLogo from "@/assets/sportslinked-logo.png";
 
 const useIsMobile = () => {
