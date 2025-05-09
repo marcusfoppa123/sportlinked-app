@@ -110,7 +110,7 @@ const AnimatedLoadingScreen: React.FC<AnimatedLoadingScreenProps> = ({ isLoading
                 className={`${nameLogoSize} h-auto object-contain`}
                 initial={{ x: -40, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
-                transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
+                transition={{ duration: 1.2, delay: 0.1, ease: "easeInOut" }}
                 style={{ marginRight: 0 }}
               />
               <motion.img
@@ -140,7 +140,7 @@ const AnimatedLoadingScreen: React.FC<AnimatedLoadingScreenProps> = ({ isLoading
                   className={`${nameLogoSize} h-auto object-contain`}
                   initial={{ x: -40, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
-                  transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
+                  transition={{ duration: 1.2, delay: 0.1, ease: "easeInOut" }}
                   style={{ marginRight: 0 }}
                 />
                 <motion.img
