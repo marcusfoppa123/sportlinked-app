@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useLanguage } from "@/context/LanguageContext";
 import { Card, CardContent } from "@/components/ui/card";
@@ -109,7 +110,7 @@ const ScoutContent = () => {
             user={{
               name: "John Davis",
               role: "athlete" as UserRole,
-              id: "athlete-john-davis" // Add unique ID
+              id: "athlete-john-davis"
             }}
             sport="Basketball"
             position="Guard"
@@ -118,7 +119,7 @@ const ScoutContent = () => {
             user={{
               name: "Sarah Johnson",
               role: "athlete" as UserRole,
-              id: "athlete-sarah-johnson" // Add unique ID
+              id: "athlete-sarah-johnson"
             }}
             sport="Soccer"
             position="Forward"
@@ -127,7 +128,7 @@ const ScoutContent = () => {
             user={{
               name: "Emily White",
               role: "athlete" as UserRole,
-              id: "athlete-emily-white" // Add unique ID
+              id: "athlete-emily-white"
             }}
             sport="Tennis"
           />

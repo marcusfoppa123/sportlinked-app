@@ -10,6 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { MessageCircle, UserPlus, Check } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useMessageRequests } from "@/hooks/useMessageRequests";
 
 interface ProfileCardProps {
   user: {
@@ -28,6 +29,7 @@ interface ProfileCardProps {
 const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stats }: ProfileCardProps) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
+  const { sendMessageRequest } = useMessageRequests();
   const [isConnected, setIsConnected] = useState(false);
   const [isPending, setIsPending] = useState(false);
   
@@ -50,37 +52,18 @@ const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stat
       setIsPending(false);
       toast.info("Connection request cancelled");
       
-      // Remove connection request from database
-      const { error } = await supabase
-        .from('connections')
-        .delete()
-        .eq('requester_id', user.id)
-        .eq('receiver_id', user.id);
-        
-      if (error) {
-        console.error('Error cancelling connection:', error);
-      }
+      // TODO: Implement connection request cancellation in the database
+      // This would require a connections table in the database
     } else {
-      // Send connection request
-      setIsPending(true);
-      
-      // Add connection request to database
-      const { error } = await supabase
-        .from('connections')
-        .insert({
-          requester_id: user.id,
-          receiver_id: user.id,
-          status: 'pending'
-        });
-        
-      if (error) {
+      try {
+        // Send message request using the useMessageRequests hook
+        await sendMessageRequest(user.id);
+        setIsPending(true);
+        toast.success("Connection request sent!");
+      } catch (error) {
         console.error('Error sending connection request:', error);
-        setIsPending(false);
         toast.error('Failed to send connection request');
-        return;
       }
-      
-      toast.success("Connection request sent!");
     }
   };
   

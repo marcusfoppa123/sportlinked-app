@@ -128,10 +128,12 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
   const handleShare = async () => {
     try {
       // Update the shares count in the posts table
-      await supabase
+      const { error } = await supabase
         .from('posts')
-        .update({ shares: supabase.rpc('increment', { inc_amount: 1 }) })
+        .update({ shares: (shareCount) => shareCount + 1 })
         .eq('id', postId);
+        
+      if (error) throw error;
 
       // Copy post URL to clipboard
       const postUrl = `${window.location.origin}/post/${postId}`;
