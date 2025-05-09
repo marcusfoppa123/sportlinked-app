@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { UserRole } from "@/context/AuthContext";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -8,7 +9,7 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { MessageCircle, UserPlus, Check } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ProfileCardProps {
   user: {

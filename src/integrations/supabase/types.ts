@@ -102,6 +102,33 @@ export type Database = {
           },
         ]
       }
+      message_requests: {
+        Row: {
+          created_at: string
+          id: string
+          receiver_id: string
+          sender_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          receiver_id: string
+          sender_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          sender_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       posts: {
         Row: {
           content: string | null
@@ -109,6 +136,7 @@ export type Database = {
           hashtags: string[] | null
           id: string
           image_url: string | null
+          shares: number | null
           sport: string | null
           updated_at: string
           user_id: string
@@ -120,6 +148,7 @@ export type Database = {
           hashtags?: string[] | null
           id?: string
           image_url?: string | null
+          shares?: number | null
           sport?: string | null
           updated_at?: string
           user_id: string
@@ -131,6 +160,7 @@ export type Database = {
           hashtags?: string[] | null
           id?: string
           image_url?: string | null
+          shares?: number | null
           sport?: string | null
           updated_at?: string
           user_id?: string
@@ -146,6 +176,8 @@ export type Database = {
           connections: number | null
           created_at: string
           experience: string | null
+          followers: number | null
+          following: number | null
           founded_year: string | null
           full_name: string | null
           games: number | null
@@ -173,6 +205,8 @@ export type Database = {
           connections?: number | null
           created_at?: string
           experience?: string | null
+          followers?: number | null
+          following?: number | null
           founded_year?: string | null
           full_name?: string | null
           games?: number | null
@@ -200,6 +234,8 @@ export type Database = {
           connections?: number | null
           created_at?: string
           experience?: string | null
+          followers?: number | null
+          following?: number | null
           founded_year?: string | null
           full_name?: string | null
           games?: number | null
