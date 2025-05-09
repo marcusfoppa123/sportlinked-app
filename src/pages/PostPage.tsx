@@ -163,6 +163,8 @@ const PostPage: React.FC = () => {
   const handleDeletePost = async () => {
     if (!postToDelete) return;
     try {
+      // Find the post to delete (to get image/video URL)
+      const post = posts.find((p) => p.id === postToDelete);
       // Delete associated likes, comments, and bookmarks first
       await Promise.all([
         supabase.from('likes').delete().eq('post_id', postToDelete),
@@ -176,6 +178,20 @@ const PostPage: React.FC = () => {
         .eq('id', postToDelete)
         .eq('user_id', currentUser?.id);
       if (error) throw error;
+      // Delete image/video from Supabase Storage if present
+      if (post) {
+        const mediaUrl = post.image_url || post.video_url;
+        if (mediaUrl) {
+          // Extract the storage path from the public URL
+          const match = mediaUrl.match(/storage\/v1\/object\/public\/([^?]+)/);
+          if (match && match[1]) {
+            const filePath = match[1];
+            const [bucket, ...pathParts] = filePath.split('/');
+            const path = pathParts.join('/');
+            await supabase.storage.from(bucket).remove([path]);
+          }
+        }
+      }
       // Refetch posts after deletion
       const { data: currentPost, error: postError } = await supabase
         .from("posts")
@@ -183,7 +199,6 @@ const PostPage: React.FC = () => {
         .eq("id", postId)
         .maybeSingle();
       if (postError || !currentPost) {
-        // If the deleted post was the last one, redirect to profile
         setPosts((prev) => prev.filter((p) => p.id !== postToDelete));
         setShowDeleteDialog(false);
         setPostToDelete(null);
@@ -204,7 +219,6 @@ const PostPage: React.FC = () => {
       console.error('Error deleting post:', error);
       setShowDeleteDialog(false);
       setPostToDelete(null);
-      // Optionally show a toast error here
     }
   };
 
