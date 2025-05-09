@@ -8,7 +8,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Edit, Settings, Share2, Plus, CheckCircle2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
-import UploadButton from "@/components/UploadButton";
 import { 
   Dialog,
   DialogContent,
@@ -294,8 +293,6 @@ const Profile = () => {
         </DialogContent>
       </Dialog>
 
-      {isAthlete && <UploadButton />}
-      
       <button
         onClick={handleCreatePost}
         className="fixed bottom-20 right-6 z-50 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg p-4 flex items-center justify-center"
