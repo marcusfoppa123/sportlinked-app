@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import logo from "@/assets/SportsLinked in app.png";
+import logo from "@/assets/@SportsLinkedinapp.png";
 
 interface AnimatedLoadingScreenProps {
   isLoading: boolean;
