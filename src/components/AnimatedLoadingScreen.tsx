@@ -13,8 +13,8 @@ interface AnimatedLoadingScreenProps {
   onComplete?: () => void;
 }
 
-const darkGradient = "linear-gradient(180deg, #2A88B8 0%, #479DC8 100%)";
-const lightGradient = "linear-gradient(180deg, #479DC8 0%, #B3E6FF 100%)";
+const darkGradient = "linear-gradient(180deg, rgba(42,136,184,0.7) 0%, rgba(71,157,200,0.7) 100%)";
+const lightGradient = "linear-gradient(180deg, rgba(71,157,200,0.7) 0%, rgba(179,230,255,0.7) 100%)";
 
 const AnimatedLoadingScreen: React.FC<AnimatedLoadingScreenProps> = ({ isLoading, onComplete }) => {
   const [step, setStep] = useState(0);
@@ -35,7 +35,7 @@ const AnimatedLoadingScreen: React.FC<AnimatedLoadingScreenProps> = ({ isLoading
   const nameLogoSize = isMobile ? 'w-40' : 'w-80';
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center" style={{ background: "#102A37", zIndex: 9999 }}>
+    <div className="fixed inset-0 flex items-center justify-center min-h-screen min-w-full" style={{ background: "#102a37", zIndex: 9999 }}>
       {/* Gradient background transition */}
       <motion.div
         style={{
@@ -49,7 +49,7 @@ const AnimatedLoadingScreen: React.FC<AnimatedLoadingScreenProps> = ({ isLoading
         animate={{ opacity: 0.95 }}
         transition={{ duration: 1.2 }}
       />
-      <div className="relative z-10 flex flex-col items-center w-full h-full">
+      <div className="relative z-10 flex flex-col items-center justify-center w-full h-full min-h-screen">
         <AnimatePresence mode="wait">
           {/* Step 0: Small icon in center */}
           {step === 0 && (
@@ -111,14 +111,14 @@ const AnimatedLoadingScreen: React.FC<AnimatedLoadingScreenProps> = ({ isLoading
                 initial={{ x: -40, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
-                style={{ marginRight: isMobile ? 12 : 32 }}
+                style={{ marginRight: 0 }}
               />
               <motion.img
                 src={icon}
                 alt="SportsLinked Icon"
-                className={`${iconSize} h-auto object-contain`}
+                className={`${iconSize} h-auto object-contain -ml-4`}
                 initial={{ x: 0, scale: 1.2, opacity: 1 }}
-                animate={{ x: isMobile ? 60 : 180, scale: 1.2, opacity: 1 }}
+                animate={{ x: 0, scale: 1.2, opacity: 1 }}
                 transition={{ type: "spring", stiffness: 80, damping: 14, duration: 0.7 }}
               />
             </motion.div>
@@ -141,14 +141,14 @@ const AnimatedLoadingScreen: React.FC<AnimatedLoadingScreenProps> = ({ isLoading
                   initial={{ x: -40, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ duration: 0.7, delay: 0.1, ease: "easeOut" }}
-                  style={{ marginRight: isMobile ? 12 : 32 }}
+                  style={{ marginRight: 0 }}
                 />
                 <motion.img
                   src={icon}
                   alt="SportsLinked Icon"
-                  className={`${iconSize} h-auto object-contain`}
+                  className={`${iconSize} h-auto object-contain -ml-4`}
                   initial={{ x: 0, scale: 1.2, opacity: 1 }}
-                  animate={{ x: isMobile ? 60 : 180, scale: 1.2, opacity: 1 }}
+                  animate={{ x: 0, scale: 1.2, opacity: 1 }}
                   transition={{ type: "spring", stiffness: 80, damping: 14, duration: 0.7 }}
                 />
               </div>
