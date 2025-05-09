@@ -6,6 +6,7 @@ import Login from "@/components/Login";
 import BottomNavigation from "@/components/BottomNavigation";
 import logo from "@/assets/SportsLinked in app.png";
 import { useIsMobile } from "@/hooks/use-mobile";
+import AnimatedLoadingScreen from "@/components/AnimatedLoadingScreen";
 
 const Index = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -39,10 +40,7 @@ const Index = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-        <div className="h-20 sm:h-24 md:h-32 w-auto mb-4 sm:mb-6 md:mb-8 animate-pulse bg-gray-200 rounded-lg"></div>
-        <div className="text-gray-500">Loading...</div>
-      </div>
+      <AnimatedLoadingScreen isLoading={isLoading} onComplete={() => {}} />
     );
   }
 

@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import ProfilePostThumbnail from "./ProfilePostThumbnail";
+import AnimatedLoadingScreen from "./AnimatedLoadingScreen";
 
 interface ProfilePostGridProps {
   userId: string;
@@ -67,7 +68,12 @@ const ProfilePostGrid: React.FC<ProfilePostGridProps> = ({ userId, onPostDeleted
   };
 
   if (loading) {
-    return <div className="text-center py-8 text-gray-500">Loading...</div>;
+    return (
+      <AnimatedLoadingScreen
+        isLoading={loading}
+        onComplete={() => {}}
+      />
+    );
   }
 
   if (!posts.length) {

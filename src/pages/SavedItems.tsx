@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
@@ -10,6 +9,7 @@ import BottomNavigation from "@/components/BottomNavigation";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import AnimatedLoadingScreen from "@/components/AnimatedLoadingScreen";
 
 const SavedItems = () => {
   const { user } = useAuth();
@@ -179,11 +179,7 @@ const SavedItems = () => {
           
           <TabsContent value="posts">
             {loading ? (
-              <div className="grid grid-cols-2 gap-3">
-                {[1, 2, 3, 4].map((i) => (
-                  <Skeleton key={i} className="h-64 rounded-md" />
-                ))}
-              </div>
+              <AnimatedLoadingScreen isLoading={loading} onComplete={() => {}} />
             ) : savedPosts.length > 0 ? (
               <div className="grid grid-cols-2 gap-3">
                 {savedPosts.map(post => renderSavedPostCard(post))}
