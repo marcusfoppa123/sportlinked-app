@@ -326,6 +326,7 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
 
 interface LoginComponentProps {
   initialRole: UserRole;
+  showRegister?: boolean;
 }
 
 const ForgotPasswordDialog = ({ open, onClose }) => {
@@ -374,10 +375,11 @@ const ForgotPasswordDialog = ({ open, onClose }) => {
   );
 };
 
-const Login = ({ initialRole }: LoginComponentProps) => {
+const Login = ({ initialRole, showRegister }: LoginComponentProps) => {
   const { user, supabaseUser } = useAuth();
   const navigate = useNavigate();
   const [forgotOpen, setForgotOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState(showRegister ? 'register' : 'login');
   const showRoleWarning = supabaseUser && user?.role && initialRole !== user.role;
   const handleGoogleLogin = async () => {
     await supabase.auth.signInWithOAuth({
@@ -398,8 +400,28 @@ const Login = ({ initialRole }: LoginComponentProps) => {
           </div>
           <CardDescription className="text-white/80 mt-1">Enter your existing account details below</CardDescription>
         </CardHeader>
-        <CardContent className="pt-6 pb-2 px-6">
-          <LoginForm initialRole={initialRole} onForgotPassword={() => setForgotOpen(true)} />
+        <CardContent className="pt-6 pb-2 px-6 w-full max-w-md mx-auto">
+          <div className="mb-4">
+            <div className="flex w-full mb-4">
+              <button
+                className={`flex-1 py-2 rounded-tl rounded-bl text-lg font-semibold ${activeTab === 'login' ? 'bg-white text-[#1877c0] border-b-2 border-[#1877c0]' : 'bg-gray-100 text-gray-400'}`}
+                onClick={() => setActiveTab('login')}
+              >
+                Log in
+              </button>
+              <button
+                className={`flex-1 py-2 rounded-tr rounded-br text-lg font-semibold ${activeTab === 'register' ? 'bg-white text-[#1877c0] border-b-2 border-[#1877c0]' : 'bg-gray-100 text-gray-400'}`}
+                onClick={() => setActiveTab('register')}
+              >
+                Register
+              </button>
+            </div>
+            {activeTab === 'login' ? (
+              <LoginForm initialRole={initialRole} onForgotPassword={() => setForgotOpen(true)} />
+            ) : (
+              <RegisterForm initialRole={initialRole} />
+            )}
+          </div>
           <div className="flex items-center my-6 w-full">
             <div className="flex-grow h-px bg-gray-200" />
             <span className="mx-3 text-xs text-gray-400">or</span>
@@ -413,8 +435,8 @@ const Login = ({ initialRole }: LoginComponentProps) => {
             Sign in with Google
           </button>
         </CardContent>
-        <CardFooter className="flex flex-col items-center gap-2 border-t pt-4 pb-2 bg-gray-50">
-          <span className="text-sm text-gray-500">Want to join SportsLinked? <button onClick={() => navigate('/register')} className="text-[#1877c0] font-semibold hover:underline">Sign up</button></span>
+        <CardFooter className="flex flex-col items-center gap-2 border-t pt-4 pb-2 bg-gray-50 w-full max-w-md mx-auto">
+           <span className="text-sm text-gray-500">Want to join SportsLinked? <button onClick={() => { setActiveTab('register'); navigate('/register'); }} className="text-[#1877c0] font-semibold hover:underline">Sign up</button></span>
         </CardFooter>
       </Card>
       <ForgotPasswordDialog open={forgotOpen} onClose={() => setForgotOpen(false)} />
