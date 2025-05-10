@@ -9,12 +9,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 import logo from "@/assets/sportslinked-logo.png";
+import { supabase } from "@/integrations/supabase/client";
 
 const LoginForm = ({ initialRole }: { initialRole: UserRole }) => {
   const { login, user, supabaseUser } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  const isEmailValid = email.length > 3 && email.includes("@");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +26,6 @@ const LoginForm = ({ initialRole }: { initialRole: UserRole }) => {
       toast.error("Please fill in all fields");
       return;
     }
-    
     setIsLoading(true);
     try {
       await login(email, password, initialRole);
@@ -36,8 +39,7 @@ const LoginForm = ({ initialRole }: { initialRole: UserRole }) => {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+      <div className="relative">
         <Input
           id="email"
           type="email"
@@ -45,18 +47,39 @@ const LoginForm = ({ initialRole }: { initialRole: UserRole }) => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
+          className="pr-10"
         />
+        {isEmailValid && (
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500">
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeWidth="2" d="M5 13l4 4L19 7"/></svg>
+          </span>
+        )}
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+      <div className="relative">
         <Input
           id="password"
-          type="password"
-          placeholder="••••••••"
+          type={showPassword ? "text" : "password"}
+          placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          className="pr-10"
         />
+        <button
+          type="button"
+          tabIndex={-1}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          onClick={() => setShowPassword((v) => !v)}
+        >
+          {showPassword ? (
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke="currentColor" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          ) : (
+            <svg width="20" height="20" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" strokeWidth="2" d="M17.94 17.94A10.97 10.97 0 0112 19c-4.478 0-8.268-2.943-9.542-7a10.97 10.97 0 013.042-4.418M6.1 6.1A10.97 10.97 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.97 10.97 0 01-1.67 2.64M15 12a3 3 0 01-3 3m0 0a3 3 0 01-3-3m3 3l6.364 6.364M3 3l6.364 6.364"/></svg>
+          )}
+        </button>
+      </div>
+      <div className="flex justify-end">
+        <a href="#" className="text-xs text-purple-600 hover:underline">Forgot password?</a>
       </div>
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? "Logging in..." : "Log in"}
@@ -306,42 +329,38 @@ const Login = ({ initialRole }: LoginComponentProps) => {
   const { user, supabaseUser } = useAuth();
   
   const showRoleWarning = supabaseUser && user?.role && initialRole !== user.role;
-  
+
+  // Google login handler
+  const handleGoogleLogin = async () => {
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin,
+      },
+    });
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center w-full p-4 min-h-screen" style={{ backgroundColor: '#0d1a22' }}>
-      <div className="flex flex-col items-center justify-center py-8 w-full max-w-md rounded-lg shadow-md" style={{ backgroundColor: '#102a37' }}>
-        <img src={logo} alt="SportsLinked Logo" className="h-16 w-auto mb-4 object-contain" />
-        <h2 className="text-white text-2xl font-semibold mb-2">Welcome to SportsLinked</h2>
-        <p className="text-white/80 mb-6">Login or create an account to continue</p>
-      </div>
-      <div className="w-full max-w-md bg-transparent pt-6">
-        {showRoleWarning ? (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4">
-            <p className="text-sm">
-              Your account is registered as a {user?.role}. You cannot login as a {initialRole} with the same account.
-            </p>
-            <p className="text-sm mt-2">
-              Please log out first or use a different email address to create a new account.
-            </p>
-          </div>
-        ) : (
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Register</TabsTrigger>
-            </TabsList>
-            <TabsContent value="login">
-              <LoginForm initialRole={initialRole} />
-            </TabsContent>
-            <TabsContent value="register">
-              <RegisterForm initialRole={initialRole} />
-            </TabsContent>
-          </Tabs>
-        )}
-        <div className="flex-col space-y-2 border-t pt-4 mt-6">
-          <p className="text-xs text-muted-foreground text-center">
-            By continuing, you agree to SportsLinked's Terms of Service and Privacy Policy.
-          </p>
+    <div className="flex flex-col items-center justify-center w-full min-h-screen bg-[#f7f3fa]">
+      <div className="w-full max-w-md mx-auto bg-white rounded-2xl shadow-lg p-8 flex flex-col items-center">
+        <h2 className="text-2xl font-bold text-[#3d246c] mb-1 w-full text-left">Log in to Paired</h2>
+        <p className="text-sm text-gray-500 mb-6 w-full text-left">Enter your existing account details below</p>
+        <LoginForm initialRole={initialRole} />
+        <div className="flex items-center my-6 w-full">
+          <div className="flex-grow h-px bg-gray-200" />
+          <span className="mx-3 text-xs text-gray-400">or</span>
+          <div className="flex-grow h-px bg-gray-200" />
+        </div>
+        <button
+          onClick={handleGoogleLogin}
+          className="w-full flex items-center justify-center gap-2 bg-white text-gray-700 font-semibold py-2 rounded-lg shadow border border-gray-300 hover:bg-gray-100 transition mb-2"
+        >
+          <svg width="20" height="20" viewBox="0 0 48 48"><g><path fill="#4285F4" d="M24 9.5c3.54 0 6.7 1.22 9.19 3.23l6.86-6.86C36.13 2.13 30.45 0 24 0 14.61 0 6.44 5.82 2.69 14.09l7.98 6.2C12.13 13.13 17.61 9.5 24 9.5z"/><path fill="#34A853" d="M46.1 24.5c0-1.64-.15-3.22-.43-4.74H24v9.01h12.42c-.54 2.9-2.18 5.36-4.64 7.01l7.19 5.6C43.56 37.13 46.1 31.36 46.1 24.5z"/><path fill="#FBBC05" d="M10.67 28.29c-.5-1.48-.78-3.05-.78-4.79s.28-3.31.78-4.79l-7.98-6.2C1.13 15.87 0 19.08 0 22.5c0 3.42 1.13 6.63 2.69 9.29l7.98-6.2z"/><path fill="#EA4335" d="M24 44c6.45 0 12.13-2.13 16.05-5.81l-7.19-5.6c-2.01 1.35-4.59 2.16-7.36 2.16-6.39 0-11.87-3.63-13.33-8.71l-7.98 6.2C6.44 42.18 14.61 48 24 48z"/></g></svg>
+          Sign in with Google
+        </button>
+        <div className="mt-6 text-center w-full">
+          <span className="text-sm text-gray-500">Want to join Paired? </span>
+          <a href="#" className="text-purple-600 font-semibold hover:underline">Sign up</a>
         </div>
       </div>
     </div>

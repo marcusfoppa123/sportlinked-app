@@ -13,8 +13,8 @@ interface AnimatedLoadingScreenProps {
   onComplete?: () => void;
 }
 
-const darkGradient = "linear-gradient(180deg, rgba(42,136,184,0.7) 0%, rgba(71,157,200,0.7) 100%)";
-const lightGradient = "linear-gradient(180deg, rgba(71,157,200,0.7) 0%, rgba(179,230,255,0.7) 100%)";
+const darkGradient = "linear-gradient(180deg, rgba(26,78,122,0.7) 0%, rgba(36,159,238,0.6) 60%, rgba(10,34,51,0.7) 100%)";
+const lightGradient = "linear-gradient(180deg, rgba(36,159,238,0.5) 0%, rgba(36,159,238,0.3) 60%, rgba(179,230,255,0.3) 100%)";
 
 const AnimatedLoadingScreen: React.FC<AnimatedLoadingScreenProps> = ({ isLoading, onComplete }) => {
   const [step, setStep] = useState(0);
@@ -47,7 +47,7 @@ const AnimatedLoadingScreen: React.FC<AnimatedLoadingScreenProps> = ({ isLoading
         }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 0.95 }}
-        transition={{ duration: 1.2 }}
+        transition={{ duration: 1.8, ease: "easeInOut", delay: 1 }}
       />
       <div className="relative z-10 flex flex-col items-center justify-center w-full h-full min-h-screen">
         <AnimatePresence mode="wait">
@@ -98,10 +98,10 @@ const AnimatedLoadingScreen: React.FC<AnimatedLoadingScreenProps> = ({ isLoading
             <motion.div
               key="name-and-icon"
               className="flex items-center justify-center w-full"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 1 }}
-              transition={{ duration: 0.7, ease: "easeInOut" }}
+              transition={{ duration: 1.2, ease: "easeInOut" }}
               style={{ minHeight: isMobile ? 120 : 180 }}
             >
               <motion.img
@@ -117,9 +117,9 @@ const AnimatedLoadingScreen: React.FC<AnimatedLoadingScreenProps> = ({ isLoading
                 src={icon}
                 alt="SportsLinked Icon"
                 className={`${iconSize} h-auto object-contain -ml-4`}
-                initial={{ x: 0, scale: 1.2, opacity: 1 }}
+                initial={{ x: 0, scale: 1.2, opacity: 0 }}
                 animate={{ x: 0, scale: 1.2, opacity: 1 }}
-                transition={{ type: "spring", stiffness: 80, damping: 14, duration: 0.7 }}
+                transition={{ duration: 1.2, delay: 0.1, ease: "easeInOut" }}
               />
             </motion.div>
           )}
