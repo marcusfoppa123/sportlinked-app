@@ -146,14 +146,14 @@ const Settings = () => {
           <div className="px-4 pt-4 pb-2">
             <div className="text-xs uppercase text-gray-400 font-semibold mb-2 tracking-wider">Legal</div>
             <div className="flex flex-col">
-              <button className="flex items-center justify-between py-3 w-full focus:outline-none">
+              <button className="flex items-center justify-between py-3 w-full focus:outline-none" onClick={() => navigate('/terms')}>
                 <span className="flex items-center gap-3 w-full">
                   <InfoIcon className={`h-5 w-5 ${iconColor}`} />
                   <span className="text-gray-900 dark:text-white w-full text-left">Terms of Service</span>
                 </span>
                 <ChevronRight className="h-5 w-5 text-gray-300" />
               </button>
-              <button className="flex items-center justify-between py-3 w-full focus:outline-none">
+              <button className="flex items-center justify-between py-3 w-full focus:outline-none" onClick={() => navigate('/privacy')}>
                 <span className="flex items-center gap-3 w-full">
                   <InfoIcon className={`h-5 w-5 ${iconColor}`} />
                   <span className="text-gray-900 dark:text-white w-full text-left">Privacy Policy</span>
