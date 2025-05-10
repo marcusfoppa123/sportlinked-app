@@ -85,7 +85,7 @@ const LoginForm = ({ initialRole, onForgotPassword }: { initialRole: UserRole, o
       <div className="flex justify-end">
         <button type="button" className="text-xs text-[#1877c0] hover:underline" onClick={onForgotPassword}>Forgot password?</button>
       </div>
-      <Button type="submit" className="w-full bg-[#102a37] text-white" disabled={isLoading}>
+      <Button type="submit" className="w-full bg-[#249FEE] text-white rounded-lg font-semibold hover:bg-[#1877c0] transition" disabled={isLoading}>
         {isLoading ? "Logging in..." : "Log in"}
       </Button>
     </form>
@@ -402,15 +402,15 @@ const Login = ({ initialRole, showRegister }: LoginComponentProps) => {
   return (
     <div className="min-h-screen w-full flex flex-col" style={{ backgroundColor: '#102a37' }}>
       {/* Blue header bar at the top */}
-      <div className="w-full bg-[#1877c0] py-6 px-4 flex items-center gap-3 relative" style={{ minHeight: 80 }}>
+      <div className="w-full bg-[#249FEE] py-6 px-4 flex items-center gap-3 relative" style={{ minHeight: 80 }}>
         <button
           onClick={() => navigate('/')}
-          className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center"
+          className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center z-10"
           aria-label="Back"
         >
           <ArrowLeft size={32} className="text-white" />
         </button>
-        <img src={sportslinkedIcon} alt="SportsLinked Icon" className="h-10 w-10 object-contain rounded-full bg-white p-1 ml-12" />
+        <img src={sportslinkedIcon} alt="SportsLinked Icon" className="h-10 w-10 object-contain ml-16" />
         <div>
           <h1 className="text-white text-2xl font-bold leading-tight">Log in to SportsLinked</h1>
           <p className="text-white/80 text-base">Enter your existing account details below</p>
@@ -451,7 +451,21 @@ const Login = ({ initialRole, showRegister }: LoginComponentProps) => {
             Sign in with Google
           </button>
           <div className="flex flex-col items-center gap-2 border-t pt-4 pb-2 bg-gray-50 mt-6">
-            <span className="text-sm text-gray-500">Want to join SportsLinked? <button onClick={() => { setActiveTab('register'); navigate('/register'); }} className="text-[#1877c0] font-semibold hover:underline">Sign up</button></span>
+            {activeTab === 'login' ? (
+              <button
+                className="w-full rounded-xl py-3 px-4 mt-2 bg-white text-[#1877c0] font-semibold border border-gray-300 shadow hover:bg-gray-100 transition text-sm"
+                onClick={() => { setActiveTab('register'); navigate('/register'); }}
+              >
+                Want to join SportsLinked? <span className="underline">Sign up</span>
+              </button>
+            ) : (
+              <button
+                className="w-full rounded-xl py-3 px-4 mt-2 bg-white text-[#1877c0] font-semibold border border-gray-300 shadow hover:bg-gray-100 transition text-sm"
+                onClick={() => { setActiveTab('login'); navigate('/'); }}
+              >
+                Already have an account? <span className="underline">Log in</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

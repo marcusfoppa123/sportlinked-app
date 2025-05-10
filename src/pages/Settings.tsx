@@ -44,6 +44,7 @@ const Settings = () => {
   const confirmLogout = async () => {
     await logout();
     navigate("/");
+    window.location.reload();
   };
 
   const handleLanguageChange = (newLang: "en" | "sv") => {
