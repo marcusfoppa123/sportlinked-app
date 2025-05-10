@@ -354,7 +354,7 @@ const ForgotPasswordDialog = ({ open, onClose }) => {
           <DialogTitle>Reset Password</DialogTitle>
         </DialogHeader>
         {sent ? (
-          <div className="text-center text-blue-600">Check your email for a reset link.</div>
+          <div className="text-center text-[#1877c0]">Check your email for a reset link.</div>
         ) : (
           <form onSubmit={handleReset} className="space-y-4">
             <Input
@@ -389,8 +389,8 @@ const Login = ({ initialRole }: LoginComponentProps) => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center w-full min-h-screen" style={{ backgroundColor: '#102a37' }}>
-      <Card className="w-full max-w-md mx-auto rounded-2xl shadow-lg p-0 overflow-hidden border border-gray-800 bg-white">
+    <div className="w-screen h-screen bg-white flex items-center justify-center">
+      <Card className="w-full h-full flex flex-col justify-center items-center rounded-none shadow-none border-none bg-white">
         <CardHeader className="pb-2" style={{ backgroundColor: '#1877c0' }}>
           <div className="flex items-center gap-3">
             <img src={sportslinkedIcon} alt="SportsLinked Icon" className="h-10 w-10 object-contain rounded-full bg-white p-1" />
@@ -407,7 +407,7 @@ const Login = ({ initialRole }: LoginComponentProps) => {
           </div>
           <button
             onClick={handleGoogleLogin}
-            className="w-full flex items-center justify-center gap-2 bg-white text-gray-700 font-semibold py-2 rounded-lg shadow border border-gray-300 hover:bg-gray-100 transition mb-2"
+            className="w-full flex items-center justify-center gap-2 bg-white text-[#1877c0] font-semibold py-2 rounded-lg shadow border border-gray-300 hover:bg-gray-100 transition mb-2"
           >
             <svg width="20" height="20" viewBox="0 0 48 48"><g><path fill="#4285F4" d="M24 9.5c3.54 0 6.7 1.22 9.19 3.23l6.86-6.86C36.13 2.13 30.45 0 24 0 14.61 0 6.44 5.82 2.69 14.09l7.98 6.2C12.13 13.13 17.61 9.5 24 9.5z"/><path fill="#34A853" d="M46.1 24.5c0-1.64-.15-3.22-.43-4.74H24v9.01h12.42c-.54 2.9-2.18 5.36-4.64 7.01l7.19 5.6C43.56 37.13 46.1 31.36 46.1 24.5z"/><path fill="#FBBC05" d="M10.67 28.29c-.5-1.48-.78-3.05-.78-4.79s.28-3.31.78-4.79l-7.98-6.2C1.13 15.87 0 19.08 0 22.5c0 3.42 1.13 6.63 2.69 9.29l7.98-6.2z"/><path fill="#EA4335" d="M24 44c6.45 0 12.13-2.13 16.05-5.81l-7.19-5.6c-2.01 1.35-4.59 2.16-7.36 2.16-6.39 0-11.87-3.63-13.33-8.71l-7.98 6.2C6.44 42.18 14.61 48 24 48z"/></g></svg>
             Sign in with Google
