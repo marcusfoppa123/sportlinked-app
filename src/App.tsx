@@ -25,6 +25,7 @@ import PostPage from "./pages/PostPage";
 import Login from "./components/Login";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import UserProfile from "@/pages/UserProfile";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +44,7 @@ const AppRoutes = () => (
     <Route path="/subscriptions" element={<Subscriptions />} />
     <Route path="/saved" element={<SavedItems />} />
     <Route path="/post/:postId" element={<PostPage />} />
+    <Route path="/user/:userId" element={<UserProfile />} />
     <Route path="/register" element={<Login showRegister={true} initialRole={null} />} />
     <Route path="/terms" element={<TermsOfService />} />
     <Route path="/privacy" element={<PrivacyPolicy />} />

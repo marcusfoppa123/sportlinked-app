@@ -44,6 +44,9 @@ const ProfilePostGrid: React.FC<ProfilePostGridProps> = ({ userId, onPostDeleted
   }, [userId, currentUser?.id]);
 
   const handlePostDelete = async (postId: string) => {
+    // Only allow deletion if the current user is the owner of the profile
+    if (currentUser?.id !== userId) return;
+
     try {
       await Promise.all([
         supabase.from('likes').delete().eq('post_id', postId),
@@ -81,14 +84,13 @@ const ProfilePostGrid: React.FC<ProfilePostGridProps> = ({ userId, onPostDeleted
   }
 
   return (
-    <div className="grid grid-cols-2 gap-1 sm:gap-2 w-full max-w-md mx-auto">
+    <div className="grid grid-cols-3 gap-1">
       {posts.map((post) => (
         <ProfilePostThumbnail
           key={post.id}
-          postId={post.id}
-          image={post.image_url}
-          video={post.video_url}
-          likeCount={post.likeCount}
+          post={post}
+          onDelete={() => handlePostDelete(post.id)}
+          canDelete={currentUser?.id === userId}
         />
       ))}
     </div>

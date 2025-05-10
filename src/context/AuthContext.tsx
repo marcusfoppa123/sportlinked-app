@@ -302,6 +302,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (updatedProfile.rpg !== undefined) dbProfile.rpg = updatedProfile.rpg;
       if (updatedProfile.games !== undefined) dbProfile.games = updatedProfile.games;
       if (updatedProfile.winPercentage !== undefined) dbProfile.win_percentage = updatedProfile.winPercentage;
+      if (updatedProfile.followers !== undefined) dbProfile.followers = updatedProfile.followers;
+      if (updatedProfile.following !== undefined) dbProfile.following = updatedProfile.following;
       
       // Add updated_at timestamp
       dbProfile.updated_at = new Date().toISOString();
@@ -337,10 +339,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Update the local user state
       setUser(prev => prev ? { ...prev, ...updatedProfile } : null);
       toast.success("Profile updated successfully");
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error updating profile:", error);
       toast.error("Failed to update profile");
-      throw error;
     }
   };
 

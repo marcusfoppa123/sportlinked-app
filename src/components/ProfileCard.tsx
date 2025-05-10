@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { UserRole } from "@/context/AuthContext";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -72,9 +71,16 @@ const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stat
     navigate("/messages");
     toast.success(`Started conversation with ${user.name}`);
   };
+
+  const handleProfileClick = () => {
+    navigate(`/user/${user.id}`);
+  };
   
   return (
-    <Card className={`overflow-hidden border ${isAthlete ? "athlete-border" : "scout-border"} dark:bg-gray-800 dark:border-gray-700`}>
+    <Card 
+      className={`overflow-hidden border ${isAthlete ? "athlete-border" : "scout-border"} dark:bg-gray-800 dark:border-gray-700 cursor-pointer`}
+      onClick={handleProfileClick}
+    >
       <div className={`h-16 ${isAthlete ? "bg-athlete" : "bg-scout"}`} />
       
       <CardContent className="pt-0 -mt-10">
@@ -112,44 +118,39 @@ const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stat
         </div>
       </CardContent>
       
-      <CardFooter className="flex justify-between gap-2 pb-4">
+      <CardFooter className="flex justify-center gap-2 pb-4">
         <Button 
-          variant="outline"
+          variant="outline" 
           size="sm"
-          onClick={handleConnect}
-          className={`flex-1 ${
-            isPending 
-              ? "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300" 
-              : isConnected 
-                ? "bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400" 
-                : "dark:bg-gray-700 dark:text-white"
-          }`}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleMessage();
+          }}
         >
-          {isPending ? (
+          <MessageCircle className="h-4 w-4 mr-2" />
+          Message
+        </Button>
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleConnect();
+          }}
+        >
+          {isConnected ? (
             <>
-              <Check className="h-4 w-4 mr-1" />
-              Pending
-            </>
-          ) : isConnected ? (
-            <>
-              <Check className="h-4 w-4 mr-1" />
+              <Check className="h-4 w-4 mr-2" />
               Connected
             </>
+          ) : isPending ? (
+            "Pending"
           ) : (
             <>
-              <UserPlus className="h-4 w-4 mr-1" />
+              <UserPlus className="h-4 w-4 mr-2" />
               Connect
             </>
           )}
-        </Button>
-        
-        <Button 
-          size="sm"
-          className={`flex-1 ${isAthlete ? "bg-athlete hover:bg-athlete/90" : "bg-scout hover:bg-scout/90"}`}
-          onClick={handleMessage}
-        >
-          <MessageCircle className="h-4 w-4 mr-1" />
-          Message
         </Button>
       </CardFooter>
     </Card>

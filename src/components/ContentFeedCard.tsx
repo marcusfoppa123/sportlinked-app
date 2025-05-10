@@ -60,11 +60,7 @@ const ContentFeedCard = ({
   };
   
   const handleProfileClick = () => {
-    if (user.role === "team") {
-      navigate("/team-profile");
-    } else {
-      navigate("/profile");
-    }
+    navigate(`/user/${user.id}`);
   };
 
   const formatTimestamp = (date: Date) => {
