@@ -104,24 +104,52 @@ const UserProfile = () => {
       return;
     }
 
+    if (!userId) {
+      toast.error("Invalid user ID");
+      return;
+    }
+
     try {
       if (isFollowing) {
         // Unfollow
-        const { error } = await supabase
+        const { error: deleteError } = await supabase
           .from('followers')
           .delete()
           .eq('follower_id', currentUser.id)
           .eq('following_id', userId);
 
-        if (error) throw error;
+        if (deleteError) {
+          console.error("Error unfollowing:", deleteError);
+          throw deleteError;
+        }
+
+        // Update profile data
+        const { error: updateProfileError } = await supabase
+          .from('profiles')
+          .update({ followers: (profileData?.followers || 0) - 1 })
+          .eq('id', userId);
+
+        if (updateProfileError) {
+          console.error("Error updating profile followers:", updateProfileError);
+          throw updateProfileError;
+        }
+
+        // Update current user's following count
+        const { error: updateCurrentUserError } = await supabase
+          .from('profiles')
+          .update({ following: (currentUser.following || 0) - 1 })
+          .eq('id', currentUser.id);
+
+        if (updateCurrentUserError) {
+          console.error("Error updating current user following:", updateCurrentUserError);
+          throw updateCurrentUserError;
+        }
 
         setIsFollowing(false);
-        // Update profile data
         setProfileData(prev => prev ? {
           ...prev,
-          followers: prev.followers - 1
+          followers: (prev.followers || 0) - 1
         } : null);
-        // Update current user's following count
         updateUserProfile({
           ...currentUser,
           following: (currentUser.following || 0) - 1
@@ -129,22 +157,45 @@ const UserProfile = () => {
         toast.success("Unfollowed successfully");
       } else {
         // Follow
-        const { error } = await supabase
+        const { error: insertError } = await supabase
           .from('followers')
           .insert({
             follower_id: currentUser.id,
             following_id: userId
           });
 
-        if (error) throw error;
+        if (insertError) {
+          console.error("Error following:", insertError);
+          throw insertError;
+        }
+
+        // Update profile data
+        const { error: updateProfileError } = await supabase
+          .from('profiles')
+          .update({ followers: (profileData?.followers || 0) + 1 })
+          .eq('id', userId);
+
+        if (updateProfileError) {
+          console.error("Error updating profile followers:", updateProfileError);
+          throw updateProfileError;
+        }
+
+        // Update current user's following count
+        const { error: updateCurrentUserError } = await supabase
+          .from('profiles')
+          .update({ following: (currentUser.following || 0) + 1 })
+          .eq('id', currentUser.id);
+
+        if (updateCurrentUserError) {
+          console.error("Error updating current user following:", updateCurrentUserError);
+          throw updateCurrentUserError;
+        }
 
         setIsFollowing(true);
-        // Update profile data
         setProfileData(prev => prev ? {
           ...prev,
-          followers: prev.followers + 1
+          followers: (prev.followers || 0) + 1
         } : null);
-        // Update current user's following count
         updateUserProfile({
           ...currentUser,
           following: (currentUser.following || 0) + 1
@@ -152,8 +203,8 @@ const UserProfile = () => {
         toast.success("Followed successfully");
       }
     } catch (error) {
-      console.error("Error following/unfollowing:", error);
-      toast.error("Failed to follow/unfollow user");
+      console.error("Error in follow/unfollow operation:", error);
+      toast.error("Failed to follow/unfollow user. Please try again.");
     }
   };
 
