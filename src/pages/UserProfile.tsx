@@ -120,7 +120,7 @@ const UserProfile = () => {
 
         if (deleteError) {
           console.error("Error unfollowing:", deleteError);
-          throw deleteError;
+          throw new Error(`Failed to unfollow: ${deleteError.message || 'Unknown error'}`);
         }
 
         // Update profile data
@@ -131,7 +131,7 @@ const UserProfile = () => {
 
         if (updateProfileError) {
           console.error("Error updating profile followers:", updateProfileError);
-          throw updateProfileError;
+          throw new Error(`Failed to update profile: ${updateProfileError.message || 'Unknown error'}`);
         }
 
         // Update current user's following count
@@ -142,7 +142,7 @@ const UserProfile = () => {
 
         if (updateCurrentUserError) {
           console.error("Error updating current user following:", updateCurrentUserError);
-          throw updateCurrentUserError;
+          throw new Error(`Failed to update current user: ${updateCurrentUserError.message || 'Unknown error'}`);
         }
 
         setIsFollowing(false);
@@ -157,17 +157,22 @@ const UserProfile = () => {
         toast.success("Unfollowed successfully");
       } else {
         // Follow
-        const { error: insertError } = await supabase
+        console.log('Attempting to follow:', { follower_id: currentUser.id, following_id: userId });
+        
+        const { data: followData, error: insertError } = await supabase
           .from('followers')
           .insert({
             follower_id: currentUser.id,
             following_id: userId
-          });
+          })
+          .select();
 
         if (insertError) {
           console.error("Error following:", insertError);
-          throw insertError;
+          throw new Error(`Failed to follow: ${insertError.message || 'Unknown error'}`);
         }
+
+        console.log('Follow data:', followData);
 
         // Update profile data
         const { error: updateProfileError } = await supabase
@@ -177,7 +182,7 @@ const UserProfile = () => {
 
         if (updateProfileError) {
           console.error("Error updating profile followers:", updateProfileError);
-          throw updateProfileError;
+          throw new Error(`Failed to update profile: ${updateProfileError.message || 'Unknown error'}`);
         }
 
         // Update current user's following count
@@ -188,7 +193,7 @@ const UserProfile = () => {
 
         if (updateCurrentUserError) {
           console.error("Error updating current user following:", updateCurrentUserError);
-          throw updateCurrentUserError;
+          throw new Error(`Failed to update current user: ${updateCurrentUserError.message || 'Unknown error'}`);
         }
 
         setIsFollowing(true);
@@ -204,7 +209,12 @@ const UserProfile = () => {
       }
     } catch (error) {
       console.error("Error in follow/unfollow operation:", error);
-      toast.error("Failed to follow/unfollow user. Please try again.");
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : typeof error === 'string' 
+          ? error 
+          : 'Failed to follow/unfollow user. Please try again.';
+      toast.error(errorMessage);
     }
   };
 
