@@ -215,7 +215,10 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
             />
           </div>
           
-          <Button type="button" className="w-full" onClick={handleNextStep}>
+          <Button 
+            onClick={handleNextStep}
+            className="w-full bg-[#249FEE] hover:bg-[#249FEE]/90 text-white"
+          >
             Next Step
           </Button>
         </motion.div>
@@ -404,7 +407,14 @@ const Login = ({ initialRole, showRegister }: LoginComponentProps) => {
       {/* Blue header bar at the top */}
       <div className="w-full bg-[#249FEE] py-6 px-4 flex items-center gap-3 relative" style={{ minHeight: 80 }}>
         <button
-          onClick={() => navigate('/')}
+          onClick={() => {
+            if (activeTab === 'register') {
+              setActiveTab('login');
+              navigate('/');
+            } else {
+              navigate(-1);
+            }
+          }}
           className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center z-10"
           aria-label="Back"
         >
@@ -453,14 +463,14 @@ const Login = ({ initialRole, showRegister }: LoginComponentProps) => {
           <div className="flex flex-col items-center gap-2 border-t pt-4 pb-2 bg-gray-50 mt-6">
             {activeTab === 'login' ? (
               <button
-                className="w-full rounded-xl py-3 px-4 mt-2 bg-white text-[#1877c0] font-semibold border border-gray-300 shadow hover:bg-gray-100 transition text-sm"
+                className="w-full rounded-xl py-3 px-4 mt-2 text-[#1877c0] font-semibold hover:bg-gray-100 transition text-sm"
                 onClick={() => { setActiveTab('register'); navigate('/register'); }}
               >
                 Want to join SportsLinked? <span className="underline">Sign up</span>
               </button>
             ) : (
               <button
-                className="w-full rounded-xl py-3 px-4 mt-2 bg-white text-[#1877c0] font-semibold border border-gray-300 shadow hover:bg-gray-100 transition text-sm"
+                className="w-full rounded-xl py-3 px-4 mt-2 text-[#1877c0] font-semibold hover:bg-gray-100 transition text-sm"
                 onClick={() => { setActiveTab('login'); navigate('/'); }}
               >
                 Already have an account? <span className="underline">Log in</span>

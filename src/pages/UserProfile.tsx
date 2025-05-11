@@ -126,7 +126,7 @@ const UserProfile = () => {
         // Update profile data
         const { error: updateProfileError } = await supabase
           .from('profiles')
-          .update({ followers: (profileData?.followers || 0) - 1 })
+          .update({ followers: Math.max((profileData?.followers || 0) - 1, 0) })
           .eq('id', userId);
 
         if (updateProfileError) {
@@ -137,7 +137,7 @@ const UserProfile = () => {
         // Update current user's following count
         const { error: updateCurrentUserError } = await supabase
           .from('profiles')
-          .update({ following: (currentUser.following || 0) - 1 })
+          .update({ following: Math.max((currentUser.following || 0) - 1, 0) })
           .eq('id', currentUser.id);
 
         if (updateCurrentUserError) {
@@ -148,17 +148,15 @@ const UserProfile = () => {
         setIsFollowing(false);
         setProfileData(prev => prev ? {
           ...prev,
-          followers: (prev.followers || 0) - 1
+          followers: Math.max((prev.followers || 0) - 1, 0)
         } : null);
         updateUserProfile({
           ...currentUser,
-          following: (currentUser.following || 0) - 1
+          following: Math.max((currentUser.following || 0) - 1, 0)
         });
         toast.success("Unfollowed successfully");
       } else {
         // Follow
-        console.log('Attempting to follow:', { follower_id: currentUser.id, following_id: userId });
-        
         const { data: followData, error: insertError } = await supabase
           .from('followers')
           .insert({
@@ -171,8 +169,6 @@ const UserProfile = () => {
           console.error("Error following:", insertError);
           throw new Error(`Failed to follow: ${insertError.message || 'Unknown error'}`);
         }
-
-        console.log('Follow data:', followData);
 
         // Update profile data
         const { error: updateProfileError } = await supabase
