@@ -120,7 +120,22 @@ const UserProfile = () => {
           console.error("Error unfollowing:", deleteError);
           throw new Error(`Failed to unfollow: ${deleteError.message || 'Unknown error'}`);
         }
-        await fetchProfileData();
+        
+        // Update local state immediately
+        setIsFollowing(false);
+        if (profileData) {
+          setProfileData({
+            ...profileData,
+            followers: Math.max(0, (profileData.followers || 0) - 1)
+          });
+        }
+        
+        // Refresh both profiles to ensure counts are accurate
+        await Promise.all([
+          fetchProfileData(),
+          refreshUserProfile()
+        ]);
+        
         toast.success("Unfollowed successfully");
       } else {
         // Follow
@@ -134,7 +149,22 @@ const UserProfile = () => {
           console.error("Error following:", insertError);
           throw new Error(`Failed to follow: ${insertError.message || 'Unknown error'}`);
         }
-        await fetchProfileData();
+        
+        // Update local state immediately
+        setIsFollowing(true);
+        if (profileData) {
+          setProfileData({
+            ...profileData,
+            followers: (profileData.followers || 0) + 1
+          });
+        }
+        
+        // Refresh both profiles to ensure counts are accurate
+        await Promise.all([
+          fetchProfileData(),
+          refreshUserProfile()
+        ]);
+        
         toast.success("Followed successfully");
       }
     } catch (error) {

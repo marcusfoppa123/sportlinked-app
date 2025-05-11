@@ -407,7 +407,7 @@ const Login = ({ initialRole, showRegister }: LoginComponentProps) => {
       {/* Blue header bar at the top */}
       <div className="w-full bg-[#249FEE] py-6 px-4 flex items-center gap-3 relative" style={{ minHeight: 80 }}>
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/select-role')}
           className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center z-10"
           aria-label="Back"
         >
