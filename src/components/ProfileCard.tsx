@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { UserRole } from "@/context/AuthContext";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -9,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { MessageCircle, UserPlus, Check } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { useMessageRequests } from "@/hooks/useMessageRequests";
+import { useAuth } from "@/context/AuthContext";
 
 interface ProfileCardProps {
   user: {
@@ -28,9 +29,36 @@ interface ProfileCardProps {
 const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stats }: ProfileCardProps) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { sendMessageRequest } = useMessageRequests();
-  const [isConnected, setIsConnected] = useState(false);
+  const { user: currentUser } = useAuth();
+  const [isFollowing, setIsFollowing] = useState(false);
   const [isPending, setIsPending] = useState(false);
+  
+  useEffect(() => {
+    // Check if current user is following this profile
+    if (currentUser?.id && user.id) {
+      checkFollowStatus();
+    }
+  }, [currentUser?.id, user.id]);
+  
+  const checkFollowStatus = async () => {
+    try {
+      const { data: followData, error } = await supabase
+        .from('followers')
+        .select('id')
+        .eq('follower_id', currentUser?.id)
+        .eq('following_id', user.id)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned" error
+        console.error('Error checking follow status:', error);
+        return;
+      }
+      
+      setIsFollowing(!!followData);
+    } catch (error) {
+      console.error('Error checking follow status:', error);
+    }
+  };
   
   // Get initials for avatar fallback
   const getInitials = (name: string) => {
@@ -44,25 +72,45 @@ const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stat
   const isAthlete = user.role === "athlete";
   
   const handleConnect = async () => {
-    if (isConnected) return;
+    if (!currentUser) {
+      toast.error("You must be logged in to follow users");
+      return;
+    }
     
-    if (isPending) {
-      // Cancel connection request
-      setIsPending(false);
-      toast.info("Connection request cancelled");
-      
-      // TODO: Implement connection request cancellation in the database
-      // This would require a connections table in the database
-    } else {
-      try {
-        // Send message request using the useMessageRequests hook
-        await sendMessageRequest(user.id);
-        setIsPending(true);
-        toast.success("Connection request sent!");
-      } catch (error) {
-        console.error('Error sending connection request:', error);
-        toast.error('Failed to send connection request');
+    try {
+      if (isFollowing) {
+        // Unfollow user
+        const { error } = await supabase
+          .from('followers')
+          .delete()
+          .eq('follower_id', currentUser.id)
+          .eq('following_id', user.id);
+          
+        if (error) {
+          throw error;
+        }
+        
+        setIsFollowing(false);
+        toast.success(`Unfollowed ${user.name}`);
+      } else {
+        // Follow user
+        const { error } = await supabase
+          .from('followers')
+          .insert({
+            follower_id: currentUser.id,
+            following_id: user.id
+          });
+          
+        if (error) {
+          throw error;
+        }
+        
+        setIsFollowing(true);
+        toast.success(`Started following ${user.name}`);
       }
+    } catch (error) {
+      console.error('Error updating follow status:', error);
+      toast.error('Failed to update follow status');
     }
   };
   
@@ -138,17 +186,17 @@ const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stat
             handleConnect();
           }}
         >
-          {isConnected ? (
+          {isFollowing ? (
             <>
               <Check className="h-4 w-4 mr-2" />
-              Connected
+              Following
             </>
           ) : isPending ? (
             "Pending"
           ) : (
             <>
               <UserPlus className="h-4 w-4 mr-2" />
-              Connect
+              Follow
             </>
           )}
         </Button>

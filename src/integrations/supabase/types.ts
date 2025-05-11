@@ -276,42 +276,6 @@ export type Database = {
         }
         Relationships: []
       }
-      followers: {
-        Row: {
-          id: string
-          follower_id: string
-          following_id: string
-          created_at: string
-        }
-        Insert: {
-          id?: string
-          follower_id: string
-          following_id: string
-          created_at?: string
-        }
-        Update: {
-          id?: string
-          follower_id?: string
-          following_id?: string
-          created_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "followers_follower_id_fkey"
-            columns: ["follower_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "followers_following_id_fkey"
-            columns: ["following_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          }
-        ]
-      }
     }
     Views: {
       [_ in never]: never
