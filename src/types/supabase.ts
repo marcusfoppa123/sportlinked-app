@@ -1,3 +1,4 @@
+
 export type Json =
   | string
   | number
@@ -139,6 +140,159 @@ export interface Database {
             referencedColumns: ["id"]
           }
         ]
+      }
+      posts: {
+        Row: {
+          id: string
+          user_id: string
+          created_at: string
+          updated_at: string
+          shares: number | null
+          sport: string | null
+          hashtags: string[] | null
+          content: string | null
+          image_url: string | null
+          video_url: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          created_at?: string
+          updated_at?: string
+          shares?: number | null
+          sport?: string | null
+          hashtags?: string[] | null
+          content?: string | null
+          image_url?: string | null
+          video_url?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          created_at?: string
+          updated_at?: string
+          shares?: number | null
+          sport?: string | null
+          hashtags?: string[] | null
+          content?: string | null
+          image_url?: string | null
+          video_url?: string | null
+        }
+        Relationships: []
+      }
+      likes: {
+        Row: {
+          id: string
+          user_id: string
+          post_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          post_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          post_id?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      comments: {
+        Row: {
+          id: string
+          user_id: string
+          post_id: string
+          created_at: string
+          updated_at: string
+          content: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          post_id: string
+          created_at?: string
+          updated_at?: string
+          content: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          post_id?: string
+          created_at?: string
+          updated_at?: string
+          content?: string
+        }
+        Relationships: []
+      }
+      bookmarks: {
+        Row: {
+          id: string
+          user_id: string
+          post_id: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          post_id: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          post_id?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      message_requests: {
+        Row: {
+          id: string
+          sender_id: string
+          receiver_id: string
+          created_at: string
+          updated_at: string
+          status: string
+        }
+        Insert: {
+          id?: string
+          sender_id: string
+          receiver_id: string
+          created_at?: string
+          updated_at?: string
+          status?: string
+        }
+        Update: {
+          id?: string
+          sender_id?: string
+          receiver_id?: string
+          created_at?: string
+          updated_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      sportslinked: {
+        Row: {
+          id: number
+          created_at: string
+          content: string | null
+        }
+        Insert: {
+          id: number
+          created_at?: string
+          content?: string | null
+        }
+        Update: {
+          id?: number
+          created_at?: string
+          content?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {

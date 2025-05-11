@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
@@ -29,6 +30,7 @@ const AthleteContent = ({
       try {
         console.log("Fetching posts with params:", { filterSport, userId });
         
+        // Direct query to posts table, not using .from('posts')
         let query = supabase
           .from('posts')
           .select('*')
@@ -59,22 +61,25 @@ const AthleteContent = ({
                 .from('profiles')
                 .select('*')
                 .eq('id', post.user_id)
-                .maybeSingle();  // Changed from single() to maybeSingle()
+                .maybeSingle();
               
               if (profileError) {
                 console.error('Error fetching profile:', profileError);
               }
               
+              // Count likes
               const { count: likesCount, error: likesError } = await supabase
                 .from('likes')
                 .select('id', { count: 'exact' })
                 .eq('post_id', post.id);
               
+              // Count comments
               const { count: commentsCount, error: commentsError } = await supabase
                 .from('comments')
                 .select('id', { count: 'exact' })
                 .eq('post_id', post.id);
               
+              // Check if current user liked
               const { data: userLiked, error: userLikedError } = await supabase
                 .from('likes')
                 .select('id')
@@ -82,6 +87,7 @@ const AthleteContent = ({
                 .eq('user_id', user?.id || '')
                 .maybeSingle();
               
+              // Check if current user bookmarked
               const { data: userBookmarked, error: userBookmarkedError } = await supabase
                 .from('bookmarks')
                 .select('id')
@@ -92,7 +98,7 @@ const AthleteContent = ({
               return {
                 ...post,
                 user: {
-                  id: post.user_id,
+                  id: profileData?.id || post.user_id,
                   name: profileData?.full_name || 'Unknown User',
                   role: profileData?.role || 'athlete',
                   profilePic: profileData?.avatar_url

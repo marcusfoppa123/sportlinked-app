@@ -77,6 +77,7 @@ const CommentSection = ({ isOpen, onClose, postId }: CommentSectionProps) => {
     
     setLoading(true);
     try {
+      // Direct query to comments table
       const { data: commentsData, error: commentsError } = await supabase
         .from('comments')
         .select('*')
