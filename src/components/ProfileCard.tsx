@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { UserRole } from "@/context/AuthContext";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -6,9 +7,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/context/LanguageContext";
 import { useNavigate } from "react-router-dom";
-import { MessageCircle, UserPlus, Check } from "lucide-react";
+import { MessageCircle, UserPlus, Check, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, checkIfUserIsFollowing, followUser, unfollowUser } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 
 interface ProfileCardProps {
@@ -30,34 +31,19 @@ const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stat
   const navigate = useNavigate();
   const { user: currentUser } = useAuth();
   const [isFollowing, setIsFollowing] = useState(false);
-  const [isPending, setIsPending] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   useEffect(() => {
     // Check if current user is following this profile
-    if (currentUser?.id && user.id) {
-      checkFollowStatus();
-    }
-  }, [currentUser?.id, user.id]);
-  
-  const checkFollowStatus = async () => {
-    try {
-      const { data: followData, error } = await supabase
-        .from('followers')
-        .select('id')
-        .eq('follower_id', currentUser?.id)
-        .eq('following_id', user.id)
-        .single();
-      
-      if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned" error
-        console.error('Error checking follow status:', error);
-        return;
+    const checkFollowStatus = async () => {
+      if (currentUser?.id && user.id && currentUser.id !== user.id) {
+        const following = await checkIfUserIsFollowing(currentUser.id, user.id);
+        setIsFollowing(following);
       }
-      
-      setIsFollowing(!!followData);
-    } catch (error) {
-      console.error('Error checking follow status:', error);
-    }
-  };
+    };
+    
+    checkFollowStatus();
+  }, [currentUser?.id, user.id]);
   
   // Get initials for avatar fallback
   const getInitials = (name: string) => {
@@ -76,40 +62,40 @@ const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stat
       return;
     }
     
+    if (currentUser.id === user.id) {
+      toast.error("You cannot follow yourself");
+      return;
+    }
+    
+    setIsLoading(true);
+    
     try {
       if (isFollowing) {
         // Unfollow user
-        const { error } = await supabase
-          .from('followers')
-          .delete()
-          .eq('follower_id', currentUser.id)
-          .eq('following_id', user.id);
+        const result = await unfollowUser(currentUser.id, user.id);
           
-        if (error) {
-          throw error;
+        if (!result.success) {
+          throw result.error;
         }
         
         setIsFollowing(false);
         toast.success(`Unfollowed ${user.name}`);
       } else {
         // Follow user
-        const { error } = await supabase
-          .from('followers')
-          .insert({
-            follower_id: currentUser.id,
-            following_id: user.id
-          });
+        const result = await followUser(currentUser.id, user.id);
           
-        if (error) {
-          throw error;
+        if (!result.success) {
+          throw result.error;
         }
         
         setIsFollowing(true);
         toast.success(`Started following ${user.name}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating follow status:', error);
-      toast.error('Failed to update follow status');
+      toast.error(error.message || 'Failed to update follow status');
+    } finally {
+      setIsLoading(false);
     }
   };
   
@@ -180,18 +166,22 @@ const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stat
         <Button 
           variant="outline" 
           size="sm"
+          disabled={isLoading || (currentUser?.id === user.id)}
           onClick={(e) => {
             e.stopPropagation();
             handleConnect();
           }}
         >
-          {isFollowing ? (
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Loading...
+            </>
+          ) : isFollowing ? (
             <>
               <Check className="h-4 w-4 mr-2" />
               Following
             </>
-          ) : isPending ? (
-            "Pending"
           ) : (
             <>
               <UserPlus className="h-4 w-4 mr-2" />

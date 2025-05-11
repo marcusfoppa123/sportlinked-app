@@ -13,3 +13,80 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
   }
 });
+
+// Add helper function for checking follow status
+export const checkIfUserIsFollowing = async (currentUserId: string, targetUserId: string): Promise<boolean> => {
+  if (!currentUserId || !targetUserId) return false;
+  
+  try {
+    const { data, error } = await supabase
+      .from('followers')
+      .select('id')
+      .eq('follower_id', currentUserId)
+      .eq('following_id', targetUserId)
+      .maybeSingle();
+    
+    if (error) {
+      console.error('Error checking follow status:', error);
+      return false;
+    }
+    
+    return !!data;
+  } catch (err) {
+    console.error('Exception checking follow status:', err);
+    return false;
+  }
+};
+
+// Add helper function for following a user
+export const followUser = async (currentUserId: string, targetUserId: string): Promise<{ success: boolean, error?: any }> => {
+  if (!currentUserId || !targetUserId) {
+    return { success: false, error: 'Invalid user IDs' };
+  }
+  
+  try {
+    const { data, error } = await supabase
+      .from('followers')
+      .insert({
+        follower_id: currentUserId,
+        following_id: targetUserId
+      })
+      .select()
+      .single();
+    
+    if (error) {
+      console.error('Error following user:', error);
+      return { success: false, error };
+    }
+    
+    return { success: true };
+  } catch (err) {
+    console.error('Exception following user:', err);
+    return { success: false, error: err };
+  }
+};
+
+// Add helper function for unfollowing a user
+export const unfollowUser = async (currentUserId: string, targetUserId: string): Promise<{ success: boolean, error?: any }> => {
+  if (!currentUserId || !targetUserId) {
+    return { success: false, error: 'Invalid user IDs' };
+  }
+  
+  try {
+    const { error } = await supabase
+      .from('followers')
+      .delete()
+      .eq('follower_id', currentUserId)
+      .eq('following_id', targetUserId);
+    
+    if (error) {
+      console.error('Error unfollowing user:', error);
+      return { success: false, error };
+    }
+    
+    return { success: true };
+  } catch (err) {
+    console.error('Exception unfollowing user:', err);
+    return { success: false, error: err };
+  }
+};
