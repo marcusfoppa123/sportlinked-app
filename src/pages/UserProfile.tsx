@@ -33,69 +33,70 @@ interface UserProfileData {
 
 const UserProfile = () => {
   const { userId } = useParams<{ userId: string }>();
-  const { user: currentUser, updateUserProfile } = useAuth();
+  const { user: currentUser, updateUserProfile, refreshUserProfile } = useAuth();
   const navigate = useNavigate();
   const [profileData, setProfileData] = useState<UserProfileData | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      if (!userId) return;
-      
-      try {
-        // Fetch profile data
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .single();
-
-        if (profileError) throw profileError;
-
-        if (profile) {
-          setProfileData({
-            id: profile.id,
-            name: profile.full_name || profile.username || 'Unknown User',
-            role: profile.role,
-            profilePic: profile.avatar_url,
-            bio: profile.bio,
-            location: profile.location,
-            sport: profile.sport,
-            position: profile.position,
-            experience: profile.experience,
-            followers: profile.followers || 0,
-            following: profile.following || 0,
-            ppg: profile.ppg,
-            apg: profile.apg,
-            rpg: profile.rpg,
-            games: profile.games,
-            winPercentage: profile.win_percentage
-          });
-        }
-
-        // Check if current user is following this profile
-        if (currentUser?.id) {
-          const { data: followData, error: followError } = await supabase
-            .from('followers')
-            .select('id')
-            .eq('follower_id', currentUser.id)
-            .eq('following_id', userId)
-            .single();
-
-          if (!followError) {
-            setIsFollowing(!!followData);
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching profile:', error);
-        toast.error('Failed to load profile');
-      } finally {
-        setIsLoading(false);
+  const fetchProfileData = async () => {
+    if (!userId) return;
+    setIsLoading(true);
+    try {
+      // Fetch profile data for the viewed user
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+      if (profileError) throw profileError;
+      if (profile) {
+        setProfileData({
+          id: profile.id,
+          name: profile.full_name || profile.username || 'Unknown User',
+          role: profile.role,
+          profilePic: profile.avatar_url,
+          bio: profile.bio,
+          location: profile.location,
+          sport: profile.sport,
+          position: profile.position,
+          experience: profile.experience,
+          followers: profile.followers || 0,
+          following: profile.following || 0,
+          ppg: profile.ppg,
+          apg: profile.apg,
+          rpg: profile.rpg,
+          games: profile.games,
+          winPercentage: profile.win_percentage
+        });
       }
-    };
+      // Fetch current user's profile to update their following count
+      if (currentUser?.id) {
+        await refreshUserProfile();
+      }
+      // Check if current user is following this profile
+      if (currentUser?.id) {
+        const { data: followData, error: followError } = await supabase
+          .from('followers')
+          .select('id')
+          .eq('follower_id', currentUser.id)
+          .eq('following_id', userId)
+          .single();
+        if (!followError) {
+          setIsFollowing(!!followData);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+      toast.error('Failed to load profile');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     fetchProfileData();
+    // eslint-disable-next-line
   }, [userId, currentUser?.id]);
 
   const handleFollow = async () => {
@@ -103,12 +104,10 @@ const UserProfile = () => {
       toast.error("You must be logged in to follow users");
       return;
     }
-
     if (!userId) {
       toast.error("Invalid user ID");
       return;
     }
-
     try {
       if (isFollowing) {
         // Unfollow
@@ -117,90 +116,25 @@ const UserProfile = () => {
           .delete()
           .eq('follower_id', currentUser.id)
           .eq('following_id', userId);
-
         if (deleteError) {
           console.error("Error unfollowing:", deleteError);
           throw new Error(`Failed to unfollow: ${deleteError.message || 'Unknown error'}`);
         }
-
-        // Update profile data
-        const { error: updateProfileError } = await supabase
-          .from('profiles')
-          .update({ followers: Math.max((profileData?.followers || 0) - 1, 0) })
-          .eq('id', userId);
-
-        if (updateProfileError) {
-          console.error("Error updating profile followers:", updateProfileError);
-          throw new Error(`Failed to update profile: ${updateProfileError.message || 'Unknown error'}`);
-        }
-
-        // Update current user's following count
-        const { error: updateCurrentUserError } = await supabase
-          .from('profiles')
-          .update({ following: Math.max((currentUser.following || 0) - 1, 0) })
-          .eq('id', currentUser.id);
-
-        if (updateCurrentUserError) {
-          console.error("Error updating current user following:", updateCurrentUserError);
-          throw new Error(`Failed to update current user: ${updateCurrentUserError.message || 'Unknown error'}`);
-        }
-
-        setIsFollowing(false);
-        setProfileData(prev => prev ? {
-          ...prev,
-          followers: Math.max((prev.followers || 0) - 1, 0)
-        } : null);
-        updateUserProfile({
-          ...currentUser,
-          following: Math.max((currentUser.following || 0) - 1, 0)
-        });
+        await fetchProfileData();
         toast.success("Unfollowed successfully");
       } else {
         // Follow
-        const { data: followData, error: insertError } = await supabase
+        const { error: insertError } = await supabase
           .from('followers')
           .insert({
             follower_id: currentUser.id,
             following_id: userId
-          })
-          .select();
-
+          });
         if (insertError) {
           console.error("Error following:", insertError);
           throw new Error(`Failed to follow: ${insertError.message || 'Unknown error'}`);
         }
-
-        // Update profile data
-        const { error: updateProfileError } = await supabase
-          .from('profiles')
-          .update({ followers: (profileData?.followers || 0) + 1 })
-          .eq('id', userId);
-
-        if (updateProfileError) {
-          console.error("Error updating profile followers:", updateProfileError);
-          throw new Error(`Failed to update profile: ${updateProfileError.message || 'Unknown error'}`);
-        }
-
-        // Update current user's following count
-        const { error: updateCurrentUserError } = await supabase
-          .from('profiles')
-          .update({ following: (currentUser.following || 0) + 1 })
-          .eq('id', currentUser.id);
-
-        if (updateCurrentUserError) {
-          console.error("Error updating current user following:", updateCurrentUserError);
-          throw new Error(`Failed to update current user: ${updateCurrentUserError.message || 'Unknown error'}`);
-        }
-
-        setIsFollowing(true);
-        setProfileData(prev => prev ? {
-          ...prev,
-          followers: (prev.followers || 0) + 1
-        } : null);
-        updateUserProfile({
-          ...currentUser,
-          following: (currentUser.following || 0) + 1
-        });
+        await fetchProfileData();
         toast.success("Followed successfully");
       }
     } catch (error) {

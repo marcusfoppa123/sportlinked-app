@@ -48,6 +48,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   setRole: (role: UserRole) => void;
   updateUserProfile: (updatedProfile: Partial<User>) => Promise<void>;
+  refreshUserProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -345,6 +346,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Expose a refresh function for user profile
+  const refreshUserProfile = async () => {
+    if (supabaseUser?.id) {
+      await fetchUserProfile(supabaseUser.id);
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -358,6 +366,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         setRole,
         updateUserProfile,
+        refreshUserProfile,
       }}
     >
       {children}
