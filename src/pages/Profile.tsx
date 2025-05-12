@@ -131,6 +131,37 @@ const Profile = () => {
     navigate('/settings');
   };
 
+  const openAthleteStatEditor = (stat: string, value: number) => {
+    setEditingAthleteStat(stat);
+    setAthleteStatValue(value);
+  };
+
+  const saveAthleteStatChange = async () => {
+    if (!editingAthleteStat) return;
+
+    try {
+      // Update local state
+      setAthleteStats(prev => ({
+        ...prev,
+        [editingAthleteStat]: athleteStatValue
+      }));
+
+      // Update in database
+      await updateUserProfile({
+        [editingAthleteStat]: athleteStatValue
+      });
+
+      // Close the dialog
+      setEditingAthleteStat(null);
+    } catch (error) {
+      console.error('Error updating athlete stat:', error);
+    }
+  };
+
+  const handleCreatePost = () => {
+    navigate('/create-post');
+  };
+
   return (
     <div className="min-h-screen pb-16 bg-white dark:bg-gray-900 relative">
       <SideMenu isOpen={sideMenuOpen} onClose={() => setSideMenuOpen(false)} />
