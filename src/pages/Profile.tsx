@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -127,6 +126,10 @@ const Profile = () => {
     };
     fetchPostCount();
   }, [user?.id]);
+
+  const handleSettingsClick = () => {
+    navigate('/settings');
+  };
 
   return (
     <div className="min-h-screen pb-16 bg-white dark:bg-gray-900 relative">
