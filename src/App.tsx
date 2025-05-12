@@ -26,6 +26,8 @@ import Login from "./components/Login";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import UserProfile from "@/pages/UserProfile";
+import NotificationSettings from "@/pages/NotificationSettings";
+import MessageSettings from "@/pages/MessageSettings";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +41,8 @@ const AppRoutes = () => (
     <Route path="/messages" element={<Messages />} />
     <Route path="/notifications" element={<Notifications />} />
     <Route path="/settings" element={<Settings />} />
+    <Route path="/notification-settings" element={<NotificationSettings />} />
+    <Route path="/message-settings" element={<MessageSettings />} />
     <Route path="/athletes" element={<Athletes />} />
     <Route path="/create-post" element={<CreatePost />} />
     <Route path="/subscriptions" element={<Subscriptions />} />
