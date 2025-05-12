@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -77,42 +78,42 @@ const Profile = () => {
     }
   }, []);
 
+  // Add additional effect to fetch accurate follower and following counts
+  useEffect(() => {
+    const fetchFollowerCounts = async () => {
+      if (!user?.id) return;
+      
+      try {
+        // Get accurate follower count
+        const { count: followerCount, error: followerError } = await supabase
+          .from('followers')
+          .select('id', { count: 'exact' })
+          .eq('following_id', user.id);
+          
+        // Get accurate following count
+        const { count: followingCount, error: followingError } = await supabase
+          .from('followers')
+          .select('id', { count: 'exact' })
+          .eq('follower_id', user.id);
+          
+        if (!followerError && !followingError && 
+            (followerCount !== user.followers || followingCount !== user.following)) {
+          // Only update if counts differ from current user data
+          await updateUserProfile({
+            followers: Math.max(0, followerCount || 0),
+            following: Math.max(0, followingCount || 0)
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching follower counts:", error);
+      }
+    };
+    
+    fetchFollowerCounts();
+  }, [user?.id]);
+
   const handleEditProfile = () => {
     navigate("/edit-profile");
-  };
-  
-  const handleSettingsClick = () => {
-    navigate("/settings");
-  };
-  
-  const handleCreatePost = () => {
-    navigate("/create-post");
-  };
-  
-  const openStatEditor = (stat: string, value: number) => {
-    // Stats are now read-only
-  };
-  
-  const saveStatChange = () => {
-    // Stats are now read-only
-  };
-  
-  const openAthleteStatEditor = (stat: string, value: number) => {
-    setEditingAthleteStat(stat);
-    setAthleteStatValue(value);
-  };
-  
-  const saveAthleteStatChange = () => {
-    if (editingAthleteStat) {
-      const newStats = { ...athleteStats, [editingAthleteStat]: athleteStatValue };
-      setAthleteStats(newStats);
-      
-      if (updateUserProfile) {
-        updateUserProfile({ [editingAthleteStat]: athleteStatValue });
-      }
-      
-      setEditingAthleteStat(null);
-    }
   };
 
   useEffect(() => {
@@ -163,11 +164,11 @@ const Profile = () => {
             <div className="text-xs text-gray-500">Posts</div>
           </div>
           <div className="text-center">
-            <span className="font-bold text-lg">{user?.followers ?? 0}</span>
+            <span className="font-bold text-lg">{Math.max(0, user?.followers ?? 0)}</span>
             <div className="text-xs text-gray-500">Followers</div>
           </div>
           <div className="text-center">
-            <span className="font-bold text-lg">{user?.following ?? 0}</span>
+            <span className="font-bold text-lg">{Math.max(0, user?.following ?? 0)}</span>
             <div className="text-xs text-gray-500">Following</div>
           </div>
         </div>

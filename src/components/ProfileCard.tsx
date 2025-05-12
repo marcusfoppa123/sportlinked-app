@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { UserRole } from "@/context/AuthContext";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -35,16 +36,18 @@ const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stat
   useEffect(() => {
     // Check if current user is following this profile
     const checkFollowStatus = async () => {
-      if (currentUser?.id && user.id && currentUser.id !== user.id) {
-        setIsLoading(true);
-        try {
-          const following = await checkIfUserIsFollowing(currentUser.id, user.id);
-          setIsFollowing(following);
-        } catch (error) {
-          console.error("Error checking follow status:", error);
-        } finally {
-          setIsLoading(false);
-        }
+      if (!currentUser?.id || !user.id || currentUser.id === user.id) {
+        return;
+      }
+      
+      setIsLoading(true);
+      try {
+        const following = await checkIfUserIsFollowing(currentUser.id, user.id);
+        setIsFollowing(following);
+      } catch (error) {
+        console.error("Error checking follow status:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     

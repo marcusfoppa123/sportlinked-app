@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -10,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Settings, Share2, UserPlus, UserMinus, Loader2 } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import ProfilePostGrid from "@/components/ProfilePostGrid";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, checkIfUserIsFollowing, followUser, unfollowUser } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 interface UserProfileData {
@@ -74,23 +73,11 @@ const UserProfile = () => {
       }
       
       // Check if current user is following this profile
-      if (currentUser?.id) {
-        const { data: followData, error: followError } = await supabase
-          .from('followers')
-          .select('id')
-          .eq('follower_id', currentUser.id)
-          .eq('following_id', userId)
-          .single();
-        
-        // Use maybeSingle instead of single to avoid errors when no record exists
-        if (!followError) {
-          setIsFollowing(!!followData);
-        } else if (followError.code !== 'PGRST116') {
-          // PGRST116 means no record found, which is fine
-          console.error('Error checking follow status:', followError);
-        } else {
-          setIsFollowing(false);
-        }
+      if (currentUser?.id && currentUser.id !== userId) {
+        const following = await checkIfUserIsFollowing(currentUser.id, userId);
+        setIsFollowing(following);
+      } else {
+        setIsFollowing(false);
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
@@ -102,7 +89,6 @@ const UserProfile = () => {
 
   useEffect(() => {
     fetchProfileData();
-    // eslint-disable-next-line
   }, [userId, currentUser?.id]);
 
   const handleFollow = async () => {
@@ -120,48 +106,23 @@ const UserProfile = () => {
     try {
       if (isFollowing) {
         // Unfollow
-        const { error: deleteError } = await supabase
-          .from('followers')
-          .delete()
-          .eq('follower_id', currentUser.id)
-          .eq('following_id', userId);
+        const { success, error } = await unfollowUser(currentUser.id, userId);
         
-        if (deleteError) throw deleteError;
+        if (!success) throw error;
         
-        // Update local state immediately for better UX
         setIsFollowing(false);
-        if (profileData) {
-          setProfileData({
-            ...profileData,
-            followers: Math.max(0, profileData.followers - 1)
-          });
-        }
-        
         toast.success("Unfollowed successfully");
       } else {
         // Follow
-        const { error: insertError } = await supabase
-          .from('followers')
-          .insert({
-            follower_id: currentUser.id,
-            following_id: userId
-          });
+        const { success, error } = await followUser(currentUser.id, userId);
         
-        if (insertError) throw insertError;
+        if (!success) throw error;
         
-        // Update local state immediately for better UX
         setIsFollowing(true);
-        if (profileData) {
-          setProfileData({
-            ...profileData,
-            followers: profileData.followers + 1
-          });
-        }
-        
         toast.success("Followed successfully");
       }
       
-      // Refresh both user profiles to ensure counts are accurate
+      // Refresh profiles to ensure counts are accurate
       await Promise.all([
         refreshUserProfile(),
         fetchProfileData()
