@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -6,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Settings, Share2, UserPlus, UserMinus } from "lucide-react";
+import { Settings, Share2, UserPlus, UserMinus, Loader2 } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import ProfilePostGrid from "@/components/ProfilePostGrid";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,6 +39,7 @@ const UserProfile = () => {
   const [profileData, setProfileData] = useState<UserProfileData | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [followActionLoading, setFollowActionLoading] = useState(false);
 
   const fetchProfileData = async () => {
     if (!userId) return;
@@ -70,10 +72,7 @@ const UserProfile = () => {
           winPercentage: profile.win_percentage
         });
       }
-      // Fetch current user's profile to update their following count
-      if (currentUser?.id) {
-        await refreshUserProfile();
-      }
+      
       // Check if current user is following this profile
       if (currentUser?.id) {
         const { data: followData, error: followError } = await supabase
@@ -82,8 +81,15 @@ const UserProfile = () => {
           .eq('follower_id', currentUser.id)
           .eq('following_id', userId)
           .single();
+        
+        // Use maybeSingle instead of single to avoid errors when no record exists
         if (!followError) {
           setIsFollowing(!!followData);
+        } else if (followError.code !== 'PGRST116') {
+          // PGRST116 means no record found, which is fine
+          console.error('Error checking follow status:', followError);
+        } else {
+          setIsFollowing(false);
         }
       }
     } catch (error) {
@@ -108,6 +114,9 @@ const UserProfile = () => {
       toast.error("Invalid user ID");
       return;
     }
+    
+    setFollowActionLoading(true);
+    
     try {
       if (isFollowing) {
         // Unfollow
@@ -116,25 +125,17 @@ const UserProfile = () => {
           .delete()
           .eq('follower_id', currentUser.id)
           .eq('following_id', userId);
-        if (deleteError) {
-          console.error("Error unfollowing:", deleteError);
-          throw new Error(`Failed to unfollow: ${deleteError.message || 'Unknown error'}`);
-        }
         
-        // Update local state immediately
+        if (deleteError) throw deleteError;
+        
+        // Update local state immediately for better UX
         setIsFollowing(false);
         if (profileData) {
           setProfileData({
             ...profileData,
-            followers: Math.max(0, (profileData.followers || 0) - 1)
+            followers: Math.max(0, profileData.followers - 1)
           });
         }
-        
-        // Refresh both profiles to ensure counts are accurate
-        await Promise.all([
-          fetchProfileData(),
-          refreshUserProfile()
-        ]);
         
         toast.success("Unfollowed successfully");
       } else {
@@ -145,36 +146,32 @@ const UserProfile = () => {
             follower_id: currentUser.id,
             following_id: userId
           });
-        if (insertError) {
-          console.error("Error following:", insertError);
-          throw new Error(`Failed to follow: ${insertError.message || 'Unknown error'}`);
-        }
         
-        // Update local state immediately
+        if (insertError) throw insertError;
+        
+        // Update local state immediately for better UX
         setIsFollowing(true);
         if (profileData) {
           setProfileData({
             ...profileData,
-            followers: (profileData.followers || 0) + 1
+            followers: profileData.followers + 1
           });
         }
         
-        // Refresh both profiles to ensure counts are accurate
-        await Promise.all([
-          fetchProfileData(),
-          refreshUserProfile()
-        ]);
-        
         toast.success("Followed successfully");
       }
-    } catch (error) {
+      
+      // Refresh both user profiles to ensure counts are accurate
+      await Promise.all([
+        refreshUserProfile(),
+        fetchProfileData()
+      ]);
+      
+    } catch (error: any) {
       console.error("Error in follow/unfollow operation:", error);
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : typeof error === 'string' 
-          ? error 
-          : 'Failed to follow/unfollow user. Please try again.';
-      toast.error(errorMessage);
+      toast.error(error.message || "Failed to update follow status");
+    } finally {
+      setFollowActionLoading(false);
     }
   };
 
@@ -221,8 +218,14 @@ const UserProfile = () => {
                         : "bg-blue-500 text-white hover:bg-blue-600"
                     }`}
                     onClick={handleFollow}
+                    disabled={followActionLoading}
                   >
-                    {isFollowing ? (
+                    {followActionLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        {isFollowing ? "Unfollowing..." : "Following..."}
+                      </>
+                    ) : isFollowing ? (
                       <>
                         <UserMinus className="h-4 w-4 mr-2" />
                         Unfollow
@@ -356,4 +359,4 @@ const UserProfile = () => {
   );
 };
 
-export default UserProfile; 
+export default UserProfile;

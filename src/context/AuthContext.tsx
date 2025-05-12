@@ -346,7 +346,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Expose a refresh function for user profile
+  // Improve the refresh function for user profile
   const refreshUserProfile = async () => {
     if (supabaseUser?.id) {
       await fetchUserProfile(supabaseUser.id);

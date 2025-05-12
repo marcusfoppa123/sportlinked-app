@@ -31,7 +31,7 @@ const highlightData = [
 ];
 
 const Profile = () => {
-  const { user, updateUserProfile } = useAuth();
+  const { user, updateUserProfile, refreshUserProfile } = useAuth();
   const navigate = useNavigate();
   const isAthlete = user?.role === "athlete";
   const isMobile = useIsMobile();
@@ -69,6 +69,14 @@ const Profile = () => {
       .toUpperCase();
   };
   
+  // Add a refresh effect that runs on component mount
+  useEffect(() => {
+    // Refresh user profile data from the database when component mounts
+    if (user?.id) {
+      refreshUserProfile();
+    }
+  }, []);
+
   const handleEditProfile = () => {
     navigate("/edit-profile");
   };
