@@ -45,6 +45,12 @@ export const followUser = async (currentUserId: string, targetUserId: string): P
   }
   
   try {
+    // First check if already following to prevent duplicate entries
+    const isFollowing = await checkIfUserIsFollowing(currentUserId, targetUserId);
+    if (isFollowing) {
+      return { success: true }; // Already following, consider it a success
+    }
+    
     const { data, error } = await supabase
       .from('followers')
       .insert({

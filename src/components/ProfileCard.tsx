@@ -29,16 +29,25 @@ interface ProfileCardProps {
 const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stats }: ProfileCardProps) => {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, refreshUserProfile } = useAuth();
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
   useEffect(() => {
     // Check if current user is following this profile
     const checkFollowStatus = async () => {
-      if (currentUser?.id && user.id && currentUser.id !== user.id) {
+      if (!currentUser?.id || !user.id || currentUser.id === user.id) {
+        return;
+      }
+      
+      setIsLoading(true);
+      try {
         const following = await checkIfUserIsFollowing(currentUser.id, user.id);
         setIsFollowing(following);
+      } catch (error) {
+        console.error("Error checking follow status:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
     
@@ -91,6 +100,10 @@ const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stat
         setIsFollowing(true);
         toast.success(`Started following ${user.name}`);
       }
+      
+      // Refresh user profile to update follower/following counts
+      await refreshUserProfile();
+      
     } catch (error: any) {
       console.error('Error updating follow status:', error);
       toast.error(error.message || 'Failed to update follow status');

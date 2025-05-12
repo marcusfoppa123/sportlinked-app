@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
@@ -114,6 +115,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               id: userId,
               role: supabaseUser.user_metadata.role as UserRole,
               full_name: supabaseUser.user_metadata.full_name || '',
+              followers: 0,
+              following: 0
             };
             
             const { error: insertError } = await supabase
@@ -130,6 +133,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data) {
+        // Ensure followers and following counts are valid numbers and never negative
+        const followers = Math.max(0, data.followers || 0);
+        const following = Math.max(0, data.following || 0);
+        
+        // If the database values are negative, update them to zero
+        if (data.followers < 0 || data.following < 0) {
+          await supabase
+            .from('profiles')
+            .update({ 
+              followers: followers, 
+              following: following
+            })
+            .eq('id', userId);
+        }
+        
         // Map the database profile to our User interface
         setUser({
           id: data.id,
@@ -155,8 +173,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           rpg: data.rpg,
           games: data.games,
           winPercentage: data.win_percentage,
-          followers: data.followers || 0,
-          following: data.following || 0,
+          followers: followers,
+          following: following,
         });
       }
     } catch (error) {
@@ -346,7 +364,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Expose a refresh function for user profile
+  // Improve the refresh function for user profile
   const refreshUserProfile = async () => {
     if (supabaseUser?.id) {
       await fetchUserProfile(supabaseUser.id);
