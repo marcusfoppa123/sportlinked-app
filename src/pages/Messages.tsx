@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Search, Edit, Bell, Send, Image, Paperclip, X, ArrowLeft, VolumeX } from "lucide-react";
-import BottomNavigation from "@/components/ui/BottomNavigation";
+import BottomNavigation from "@/components/BottomNavigation";
 import { Textarea } from "@/components/ui/textarea";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -38,6 +38,8 @@ const Messages = () => {
   const TABS = ["All"];
   const [activeTab, setActiveTab] = useState("All");
   const { pendingRequests, sentRequests, loading, error, sendMessageRequest, respondToRequest } = useMessageRequests();
+  const [profileCache, setProfileCache] = useState<Record<string, { name: string; avatar_url: string | null }>>({});
+  const [unreadConversations, setUnreadConversations] = useState<string[]>([]);
 
   useEffect(() => {
     if (!user?.id) return;
@@ -119,6 +121,55 @@ const Messages = () => {
     setSwipedConvoId(null);
   };
 
+  // Helper to fetch and cache a user's profile
+  const fetchProfile = async (userId: string) => {
+    if (profileCache[userId]) return profileCache[userId];
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('full_name, avatar_url')
+      .eq('id', userId)
+      .maybeSingle();
+    if (data) {
+      setProfileCache((prev) => ({ ...prev, [userId]: { name: data.full_name, avatar_url: data.avatar_url } }));
+      return { name: data.full_name, avatar_url: data.avatar_url };
+    }
+    return { name: userId, avatar_url: null };
+  };
+
+  // Fetch all other user profiles for conversations
+  useEffect(() => {
+    if (!user?.id || !conversations.length) return;
+    const fetchAll = async () => {
+      for (const convo of conversations) {
+        const otherUserId = convo.user1_id === user.id ? convo.user2_id : convo.user1_id;
+        await fetchProfile(otherUserId);
+      }
+    };
+    fetchAll();
+    // eslint-disable-next-line
+  }, [conversations, user?.id]);
+
+  // Check for unread messages in each conversation
+  useEffect(() => {
+    if (!user?.id || !conversations.length) return;
+    const checkUnread = async () => {
+      const unread: string[] = [];
+      for (const convo of conversations) {
+        const { data: msgs } = await supabase
+          .from('messages')
+          .select('id,sender_id')
+          .eq('conversation_id', convo.id)
+          .order('created_at', { ascending: false })
+          .limit(1);
+        if (msgs && msgs.length > 0 && msgs[0].sender_id !== user.id) {
+          unread.push(convo.id);
+        }
+      }
+      setUnreadConversations(unread);
+    };
+    checkUnread();
+  }, [conversations, user?.id, messages]);
+
   return (
     <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"}`}>
       {/* Header and Recent Contacts */}
@@ -159,7 +210,8 @@ const Messages = () => {
               conversations.map((convo) => {
                 const isSwipedConvo = swipedConvoId === convo.id;
                 const otherUserId = convo.user1_id === user.id ? convo.user2_id : convo.user1_id;
-                // For demo, just show the conversation ID and other user ID
+                const otherProfile = profileCache[otherUserId];
+                const isUnread = unreadConversations.includes(convo.id);
                 return (
                   <div
                     key={convo.id}
@@ -171,12 +223,17 @@ const Messages = () => {
                       onClick={() => openConversation(convo)}
                     >
                       <Avatar className="h-12 w-12 mr-3">
-                        <AvatarFallback>{otherUserId[0]}</AvatarFallback>
+                        {otherProfile?.avatar_url ? (
+                          <AvatarImage src={otherProfile.avatar_url} alt={otherProfile.name} />
+                        ) : (
+                          <AvatarFallback>{otherProfile?.name?.[0] || otherUserId[0]}</AvatarFallback>
+                        )}
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <div className="flex justify-between items-center">
                           <span className="font-semibold text-gray-900 dark:text-white truncate flex items-center">
-                            Conversation with {otherUserId}
+                            {otherProfile?.name || otherUserId}
+                            {isUnread && <span className="ml-2 w-2 h-2 rounded-full bg-blue-500 inline-block" />}
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
@@ -204,12 +261,21 @@ const Messages = () => {
                 <ArrowLeft className="h-5 w-5 dark:text-white" />
               </Button>
               <Avatar className="h-8 w-8 mr-3">
-                <AvatarFallback>
-                  {(activeConversation.user1_id === user.id ? activeConversation.user2_id : activeConversation.user1_id)[0]}
-                </AvatarFallback>
+                {(() => {
+                  const otherUserId = activeConversation.user1_id === user.id ? activeConversation.user2_id : activeConversation.user1_id;
+                  const otherProfile = profileCache[otherUserId];
+                  if (otherProfile?.avatar_url) {
+                    return <AvatarImage src={otherProfile.avatar_url} alt={otherProfile.name} />;
+                  }
+                  return <AvatarFallback>{otherProfile?.name?.[0] || otherUserId[0]}</AvatarFallback>;
+                })()}
               </Avatar>
               <span className="font-semibold text-gray-900 dark:text-white flex-1">
-                Conversation with {activeConversation.user1_id === user.id ? activeConversation.user2_id : activeConversation.user1_id}
+                {(() => {
+                  const otherUserId = activeConversation.user1_id === user.id ? activeConversation.user2_id : activeConversation.user1_id;
+                  const otherProfile = profileCache[otherUserId];
+                  return otherProfile?.name || otherUserId;
+                })()}
               </span>
               <Button variant="ghost" size="icon"><Bell className="h-5 w-5 dark:text-white" /></Button>
               <Button variant="ghost" size="icon"><Edit className="h-5 w-5 dark:text-white" /></Button>
@@ -255,7 +321,9 @@ const Messages = () => {
           </div>
         </>
       )}
-      <BottomNavigation />
+      <BottomNavigation
+        unreadMessages={unreadConversations.length > 0}
+      />
     </div>
   );
 };

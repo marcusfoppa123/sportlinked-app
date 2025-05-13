@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Settings, Share2, UserPlus, UserMinus } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import ProfilePostGrid from "@/components/ProfilePostGrid";
-import { supabase, checkIfUserIsFollowing, followUser, unfollowUser } from "@/integrations/supabase/client";
+import { supabase, checkIfUserIsFollowing, followUser, unfollowUser, checkMutualFollow, createConversationIfNotExists } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 
 interface UserProfileData {
@@ -161,6 +161,12 @@ const UserProfile = () => {
         
         // Refresh current user data to update their following count
         await refreshUserProfile();
+
+        // --- NEW: Check for mutual follow and create conversation if needed ---
+        if (await checkMutualFollow(currentUser.id, userId)) {
+          await createConversationIfNotExists(currentUser.id, userId);
+        }
+        // --- END NEW ---
       }
     } catch (error) {
       console.error("Error in follow/unfollow operation:", error);
