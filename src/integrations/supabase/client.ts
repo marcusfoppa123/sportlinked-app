@@ -148,3 +148,71 @@ export const sendMessage = async (conversationId: string, senderId: string, text
     created_at: new Date().toISOString()
   });
 };
+
+export const searchProfilesAndHashtags = async (query: string) => {
+  // Search profiles
+  const { data: profiles, error: profilesError } = await supabase
+    .from('profiles')
+    .select('id, full_name, username, avatar_url, role')
+    .or(`full_name.ilike.%${query}%,username.ilike.%${query}%`)
+    .limit(5);
+
+  // Search posts for hashtags in the hashtags array column
+  const { data: posts, error: postsError } = await supabase
+    .from('posts')
+    .select('id, hashtags')
+    .contains('hashtags', query ? [query] : [])
+    .limit(10);
+
+  if (profilesError || postsError) {
+    console.error('Search error:', profilesError || postsError);
+    return { profiles: [], hashtags: [] };
+  }
+
+  // Extract unique hashtags from posts
+  const hashtags = Array.from(new Set(
+    posts
+      ?.map(post => post.hashtags || [])
+      .flat()
+      .filter(tag => tag.toLowerCase().includes(query.toLowerCase()))
+  ));
+
+  return {
+    profiles: profiles || [],
+    hashtags: hashtags
+  };
+};
+
+export const getPostsByHashtag = async (hashtag: string) => {
+  const lowerHashtag = hashtag.toLowerCase();
+  const { data: posts, error } = await supabase
+    .from('posts')
+    .select(`
+      *,
+      profiles:user_id (
+        id,
+        full_name,
+        username,
+        avatar_url,
+        role
+      ),
+      likes:likes(count),
+      comments:comments(count)
+    `)
+    .contains('hashtags', [lowerHashtag])
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching hashtag posts:', error);
+    return [];
+  }
+
+  return posts.map(post => ({
+    ...post,
+    user: post.profiles,
+    stats: {
+      likes: Array.isArray(post.likes) && post.likes[0] && typeof post.likes[0].count === 'number' ? post.likes[0].count : 0,
+      comments: Array.isArray(post.comments) && post.comments[0] && typeof post.comments[0].count === 'number' ? post.comments[0].count : 0
+    }
+  }));
+};

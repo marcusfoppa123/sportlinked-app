@@ -8,7 +8,6 @@ import BottomNavigation from "@/components/BottomNavigation";
 import ContentFeed from "@/components/ContentFeed";
 import UploadButton from "@/components/UploadButton";
 import SideMenu from "@/components/SideMenu";
-import SearchDialog from "@/components/SearchDialog";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import logo from "@/assets/sportslinked-logo.png";
@@ -146,8 +145,6 @@ const ForYou = () => {
     <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"}`}>
       <SideMenu isOpen={sideMenuOpen} onClose={() => setSideMenuOpen(false)} />
       
-      <SearchDialog isOpen={searchOpen} onClose={() => setSearchOpen(false)} />
-      
       <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-border shadow-sm">
         <div className="container px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -182,7 +179,7 @@ const ForYou = () => {
             <Button 
               variant="ghost" 
               size="icon" 
-              onClick={() => setSearchOpen(true)}
+              onClick={() => navigate("/search")}
               className="dark:text-white dark:hover:bg-gray-800"
             >
               <Search className="h-5 w-5" />
@@ -248,6 +245,7 @@ const ForYou = () => {
                   stats={post.stats}
                   userLiked={post.userLiked}
                   userBookmarked={post.userBookmarked}
+                  hashtags={Array.isArray(post.hashtags) && post.hashtags.length > 0 ? post.hashtags : (post.content?.text?.match(/#(\w+)/g) || []).map(tag => tag.slice(1))}
                 />
               </section>
             ))}

@@ -357,7 +357,9 @@ const Messages = () => {
                 <div key={msg.id} className={`flex ${msg.sender_id === user.id ? "justify-end" : "justify-start"}`}>
                   <div className={`rounded-2xl px-4 py-2 max-w-xs ${msg.sender_id === user.id ? "bg-blue-500 text-white" : "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"}`}>
                     {msg.text}
-                    <div className="text-xs text-right mt-1 opacity-70">{new Date(msg.created_at).toLocaleTimeString()}</div>
+                    <div className="text-xs text-right mt-1 opacity-70">
+                      {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    </div>
                   </div>
                 </div>
               ))

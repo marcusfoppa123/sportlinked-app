@@ -33,6 +33,8 @@ interface ContentFeedCardProps {
   userLiked: boolean;
   userBookmarked: boolean;
   onDelete?: () => void;
+  isVideoVisible?: boolean;
+  hashtags?: string[];
 }
 
 const ContentFeedCard = ({
@@ -43,7 +45,9 @@ const ContentFeedCard = ({
   stats,
   userLiked,
   userBookmarked,
-  onDelete
+  onDelete,
+  isVideoVisible = true,
+  hashtags,
 }: ContentFeedCardProps) => {
   const { t } = useLanguage();
   const { user: currentUser } = useAuth();
@@ -115,6 +119,7 @@ const ContentFeedCard = ({
         <TikTokVideo
           src={content.video}
           className="w-full object-contain rounded-t-2xl border-b border-blue-50"
+          isVisible={isVideoVisible}
         />
       )}
 
@@ -125,20 +130,32 @@ const ContentFeedCard = ({
         </div>
       )}
 
+      {/* Hashtags */}
+      {(Array.isArray(hashtags) && hashtags.length > 0 ? hashtags : (content?.text?.match(/#(\w+)/g) || []).map(tag => tag.slice(1))).length > 0 && (
+        <div className="mb-2 flex flex-wrap gap-2 ml-4">
+          {(Array.isArray(hashtags) && hashtags.length > 0 ? hashtags : (content?.text?.match(/#(\w+)/g) || []).map(tag => tag.slice(1))).map((tag: string) => (
+            <span
+              key={tag}
+              className="text-inherit cursor-pointer hover:underline"
+              onClick={() => navigate(`/hashtag/${tag}`)}
+            >
+              #{tag}
+            </span>
+          ))}
+        </div>
+      )}
+
       {/* Actions */}
       <div className="flex items-center justify-between px-4 py-2 border-t border-blue-50 bg-blue-50/40 dark:bg-blue-950/30 rounded-b-2xl">
-        <button className={`flex items-center gap-1 text-blue-600 hover:text-blue-800 transition`} onClick={() => setCommentsOpen(true)}>
-          <Heart className={`h-5 w-5 ${userLiked ? 'fill-blue-600' : ''}`} />
-          <span className="text-sm font-medium">{stats.likes}</span>
-        </button>
-        <button className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition" onClick={() => setCommentsOpen(true)}>
-          <MessageSquare className="h-5 w-5" />
-          <span className="text-sm font-medium">{stats.comments}</span>
-        </button>
-        <button className="flex items-center gap-1 text-blue-600 hover:text-blue-800 transition">
-          <Share2 className="h-5 w-5" />
-          <span className="text-sm font-medium">{stats.shares}</span>
-        </button>
+        <PostInteractions
+          postId={id}
+          initialLikes={stats.likes}
+          initialComments={stats.comments}
+          initialBookmarks={0}
+          initialUserLiked={userLiked}
+          initialUserBookmarked={userBookmarked}
+          onCommentClick={() => setCommentsOpen(true)}
+        />
       </div>
 
       {/* Comments section (modal or below) */}

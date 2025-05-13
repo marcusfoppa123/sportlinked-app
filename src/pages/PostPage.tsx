@@ -315,9 +315,19 @@ const PostPage: React.FC = () => {
             <div className="w-full px-4 pb-4 text-black dark:text-white text-left">
               <span className="font-semibold mr-2">{post.user?.name || "User"}</span>
               <span className="whitespace-pre-line break-words">{post.content || post.bio || ""}</span>
-              {/* Hashtags placeholder */}
-              {post.hashtags && (
-                <div className="mb-2 text-blue-400">{post.hashtags}</div>
+              {/* Hashtags */}
+              {(Array.isArray(post.hashtags) && post.hashtags.length > 0 ? post.hashtags : (post.content?.match(/#(\w+)/g) || []).map(tag => tag.slice(1))).length > 0 && (
+                <div className="mb-2 flex flex-wrap gap-2">
+                  {(Array.isArray(post.hashtags) && post.hashtags.length > 0 ? post.hashtags : (post.content?.match(/#(\w+)/g) || []).map(tag => tag.slice(1))).map((tag: string) => (
+                    <span
+                      key={tag}
+                      className="text-inherit cursor-pointer hover:underline"
+                      onClick={() => navigate(`/hashtag/${tag}`)}
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
               )}
             </div>
             {/* Comment Section Modal */}
