@@ -1,67 +1,86 @@
-
 import React, { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Search, ArrowLeft, User, Hash, X } from "lucide-react";
+import { Search, Hash, User, X, Clock, ArrowLeft } from "lucide-react";
 import { searchProfilesAndHashtags } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { useDebounce } from "@/hooks/use-debounce";
 import BottomNavigation from "@/components/BottomNavigation";
 
 const SearchPage = () => {
-  const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
-  const initialQuery = searchParams.get("q") || "";
-  
-  const [searchQuery, setSearchQuery] = useState(initialQuery);
-  const [searchResults, setSearchResults] = useState<{
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<{
     profiles: any[];
     hashtags: string[];
-  }>({
-    profiles: [],
-    hashtags: [],
-  });
+  }>({ profiles: [], hashtags: [] });
   const [loading, setLoading] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const navigate = useNavigate();
+  const debouncedQuery = useDebounce(query, 300);
+
+  // Helper to determine if searching for hashtags only
+  const isHashtagSearch = debouncedQuery.trim().startsWith('#');
 
   useEffect(() => {
-    if (initialQuery) {
-      performSearch(initialQuery);
-    }
-  }, [initialQuery]);
+    const saved = localStorage.getItem("recentSearches");
+    if (saved) setRecentSearches(JSON.parse(saved));
+  }, []);
 
-  const performSearch = async (query: string) => {
-    if (!query.trim()) return;
-    
-    setLoading(true);
-    try {
-      const results = await searchProfilesAndHashtags(query);
-      // Type assertion to ensure hashtags are of type string[]
-      setSearchResults({
-        profiles: results.profiles || [],
-        hashtags: (results.hashtags || []) as string[]
-      });
-    } catch (error) {
-      console.error('Search error:', error);
-      toast.error('Search failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+  const addRecentSearch = (search: string) => {
+    if (!search) return;
+    let updated = [search, ...recentSearches.filter(s => s !== search)];
+    if (updated.length > 10) updated = updated.slice(0, 10);
+    setRecentSearches(updated);
+    localStorage.setItem("recentSearches", JSON.stringify(updated));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
-    
-    setSearchParams({ q: searchQuery });
-    performSearch(searchQuery);
+  const clearRecentSearches = () => {
+    setRecentSearches([]);
+    localStorage.removeItem("recentSearches");
   };
 
-  const handleClear = () => {
-    setSearchQuery("");
-    setSearchResults({ profiles: [], hashtags: [] });
-    setSearchParams({});
+  useEffect(() => {
+    const performSearch = async () => {
+      if (!debouncedQuery.trim()) {
+        setResults({ profiles: [], hashtags: [] });
+        return;
+      }
+      setLoading(true);
+      try {
+        const searchTerm = isHashtagSearch ? debouncedQuery.slice(1) : debouncedQuery;
+        const searchResults = await searchProfilesAndHashtags(searchTerm);
+        setResults({
+          profiles: isHashtagSearch ? [] : searchResults.profiles,
+          hashtags: searchResults.hashtags
+        });
+      } catch (error) {
+        console.error('Search error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    performSearch();
+  }, [debouncedQuery, isHashtagSearch]);
+
+  const handleProfileClick = (profileId: string, name: string) => {
+    addRecentSearch(name);
+    navigate(`/user/${profileId}`);
+  };
+
+  const handleHashtagClick = (hashtag: string) => {
+    addRecentSearch(`#${hashtag}`);
+    navigate(`/hashtag/${hashtag}`);
+  };
+
+  const handleRecentClick = (search: string) => {
+    setQuery(search.startsWith('#') ? search : search);
+  };
+
+  const handleHashtagButton = () => {
+    if (!query.startsWith('#')) {
+      setQuery('#' + query);
+    }
   };
 
   const getInitials = (name?: string) => {
@@ -73,98 +92,106 @@ const SearchPage = () => {
       .toUpperCase();
   };
 
-  const handleProfileClick = (profileId: string) => {
-    navigate(`/profile/${profileId}`);
-  };
-
-  const handleHashtagClick = (hashtag: string) => {
-    // Remove # if it exists
-    const cleanHashtag = hashtag.replace(/^#/, '');
-    navigate(`/hashtag/${cleanHashtag}`);
-  };
-
   return (
-    <div className="min-h-screen pb-16 flex flex-col bg-white dark:bg-gray-900">
+    <div className="min-h-screen pb-16 bg-white dark:bg-black">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-border">
         <div className="container px-4 h-16 flex items-center gap-2">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <button
+            className="mr-2 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800"
             onClick={() => navigate(-1)}
-            className="dark:text-white dark:hover:bg-gray-800"
           >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          
-          <form onSubmit={handleSubmit} className="flex-1 flex items-center">
-            <div className="relative w-full flex items-center">
-              <Search className="absolute left-3 h-5 w-5 text-gray-400 dark:text-gray-500" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search athletes, teams, hashtags..."
-                className="pl-10 pr-10 py-2 w-full dark:bg-gray-800 dark:border-gray-700 dark:text-white"
-                autoFocus
-              />
-              {searchQuery && (
-                <Button
-                  type="button" 
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-1 h-8 w-8 dark:text-gray-400 dark:hover:bg-gray-700"
-                  onClick={handleClear}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-            <Button type="submit" className="hidden">Search</Button>
-          </form>
+            <ArrowLeft className="h-6 w-6 text-gray-700 dark:text-gray-200" />
+          </button>
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+            <Input
+              placeholder="Search profiles and hashtags..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="pl-10 pr-16 h-12 text-lg bg-gray-100 dark:bg-gray-900 rounded-full"
+              autoFocus
+            />
+            {/* Hashtag button */}
+            <button
+              className={`absolute right-12 top-2.5 h-7 w-7 flex items-center justify-center rounded-full ${query.startsWith('#') ? 'bg-blue-100 text-blue-600' : 'bg-gray-200 text-gray-500'} hover:bg-blue-200`}
+              onClick={handleHashtagButton}
+              type="button"
+              aria-label="Search hashtags"
+            >
+              <Hash className="h-5 w-5" />
+            </button>
+            {query && (
+              <button
+                className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
+                onClick={() => setQuery("")}
+                type="button"
+                aria-label="Clear search"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
-      <main className="flex-1 container px-4 py-4">
-        {loading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      {/* Recent Searches */}
+      {!query && recentSearches.length > 0 && (
+        <div className="container px-4 py-2">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm font-semibold text-gray-500 dark:text-gray-400">Recent Searches</span>
+            <button
+              className="text-xs text-blue-500 hover:underline"
+              onClick={clearRecentSearches}
+            >
+              Clear
+            </button>
           </div>
+          <div className="flex flex-col gap-1">
+            {recentSearches.map((search, idx) => (
+              <button
+                key={idx}
+                className="flex items-center gap-2 px-2 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-left"
+                onClick={() => handleRecentClick(search)}
+              >
+                <Clock className="h-4 w-4 text-gray-400" />
+                <span className="truncate">{search}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Results */}
+      <div className="container px-4 pb-4 mt-2">
+        {loading ? (
+          <div className="text-center py-4">Searching...</div>
         ) : (
           <>
-            {/* Profiles section */}
-            {searchResults.profiles.length > 0 && (
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold mb-3 dark:text-white flex items-center gap-2">
-                  <User className="h-5 w-5" />
+            {/* Profiles */}
+            {!isHashtagSearch && results.profiles.length > 0 && (
+              <div>
+                <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                  <User className="h-4 w-4" />
                   Profiles
-                </h2>
-                <div className="space-y-3">
-                  {searchResults.profiles.map((profile) => (
-                    <div 
+                </h3>
+                <div className="space-y-2">
+                  {results.profiles.map((profile) => (
+                    <div
                       key={profile.id}
-                      className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800 cursor-pointer"
-                      onClick={() => handleProfileClick(profile.id)}
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
+                      onClick={() => handleProfileClick(profile.id, profile.full_name)}
                     >
-                      <Avatar className="h-12 w-12">
+                      <Avatar className="h-10 w-10">
                         <AvatarImage src={profile.avatar_url} />
-                        <AvatarFallback className={
-                          profile.role === "athlete" ? "bg-blue-100 text-blue-800" : 
-                          profile.role === "team" ? "bg-yellow-100 text-yellow-800" : 
-                          "bg-green-100 text-green-800"
-                        }>
-                          {getInitials(profile.full_name || profile.username)}
-                        </AvatarFallback>
+                        <AvatarFallback>{getInitials(profile.full_name)}</AvatarFallback>
                       </Avatar>
-                      <div className="flex-1">
-                        <div className="font-medium dark:text-white">{profile.full_name || profile.username}</div>
-                        <div className="flex items-center">
-                          <Badge variant="outline" className="mr-2 dark:border-gray-600 dark:text-gray-300">
-                            {profile.role}
-                          </Badge>
-                          {profile.username && (
-                            <span className="text-sm text-gray-500 dark:text-gray-400">@{profile.username}</span>
-                          )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold truncate">{profile.full_name}</span>
+                          <Badge className="text-xs">{profile.role}</Badge>
                         </div>
+                        <span className="text-sm text-gray-500 truncate">@{profile.username}</span>
                       </div>
                     </div>
                   ))}
@@ -172,62 +199,41 @@ const SearchPage = () => {
               </div>
             )}
 
-            {/* Hashtags section */}
-            {searchResults.hashtags.length > 0 && (
+            {/* Hashtags */}
+            {results.hashtags.length > 0 && (
               <div>
-                <h2 className="text-lg font-semibold mb-3 dark:text-white flex items-center gap-2">
-                  <Hash className="h-5 w-5" />
+                <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
+                  <Hash className="h-4 w-4" />
                   Hashtags
-                </h2>
-                <div className="flex flex-wrap gap-2">
-                  {searchResults.hashtags.map((hashtag) => (
-                    <Badge 
+                </h3>
+                <div className="space-y-2">
+                  {results.hashtags.map((hashtag) => (
+                    <div
                       key={hashtag}
-                      variant="secondary"
-                      className="px-3 py-1.5 text-sm cursor-pointer flex items-center gap-1 dark:bg-gray-800 dark:hover:bg-gray-700"
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 cursor-pointer"
                       onClick={() => handleHashtagClick(hashtag)}
                     >
-                      <Hash className="h-3.5 w-3.5" />
-                      {hashtag}
-                    </Badge>
+                      <div className="flex-1">
+                        <span className="font-semibold">#{hashtag}</span>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
             )}
 
-            {/* No results */}
-            {searchQuery && 
-              searchParams.has("q") && 
-              searchResults.profiles.length === 0 && 
-              searchResults.hashtags.length === 0 && 
-              !loading && (
-                <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <Search className="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4" />
-                  <h2 className="text-xl font-semibold mb-2 dark:text-white">No results found</h2>
-                  <p className="text-gray-500 dark:text-gray-400 max-w-md">
-                    We couldn't find any matches for "{searchParams.get("q")}". Try checking for typos or using different keywords.
-                  </p>
-                </div>
-              )
-            }
-
-            {/* Initial state */}
-            {!searchParams.has("q") && !loading && (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <Search className="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4" />
-                <h2 className="text-xl font-semibold mb-2 dark:text-white">Search SportsLinked</h2>
-                <p className="text-gray-500 dark:text-gray-400 max-w-md">
-                  Find athletes, teams, or topics by entering keywords above.
-                </p>
+            {!loading && query && results.profiles.length === 0 && results.hashtags.length === 0 && (
+              <div className="text-center py-4 text-gray-500">
+                No results found
               </div>
             )}
           </>
         )}
-      </main>
+      </div>
 
       <BottomNavigation />
     </div>
   );
 };
 
-export default SearchPage;
+export default SearchPage; 
