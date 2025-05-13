@@ -59,7 +59,7 @@ const HashtagPage = () => {
         ) : posts.length === 0 ? (
           <div className="text-center py-8 text-gray-500">No posts found with #{hashtag}</div>
         ) : (
-          <div className="grid grid-cols-3 gap-1">
+          <div className="grid grid-cols-2 gap-1">
             {posts.map((post) => (
               <Card
                 key={post.id}

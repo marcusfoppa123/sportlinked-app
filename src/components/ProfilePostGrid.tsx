@@ -84,7 +84,7 @@ const ProfilePostGrid: React.FC<ProfilePostGridProps> = ({ userId, onPostDeleted
   }
 
   return (
-    <div className="grid grid-cols-3 gap-1">
+    <div className="grid grid-cols-2 gap-1">
       {posts.map((post) => (
         <ProfilePostThumbnail
           key={post.id}
