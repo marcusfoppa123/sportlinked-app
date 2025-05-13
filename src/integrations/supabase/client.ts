@@ -1,7 +1,7 @@
 
 import { createClient } from '@supabase/supabase-js';
 import { toast } from "sonner";
-import { Database } from '../types/supabase';
+import { Database } from '@/types/supabase';
 
 // Initialize Supabase client
 const supabaseUrl = 'https://tanfwjpaukclrgiugafk.supabase.co';
