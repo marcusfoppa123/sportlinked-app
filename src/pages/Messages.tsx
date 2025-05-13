@@ -33,7 +33,14 @@ const Messages = () => {
   const [loadingConvos, setLoadingConvos] = useState(true);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [swipedConvoId, setSwipedConvoId] = useState(null);
-  const [mutedConversations, setMutedConversations] = useState<string[]>([]);
+  const [pinnedConversations, setPinnedConversations] = useState<string[]>(() => {
+    const stored = localStorage.getItem('pinnedConversations');
+    return stored ? JSON.parse(stored) : [];
+  });
+  const [mutedConversations, setMutedConversations] = useState<string[]>(() => {
+    const stored = localStorage.getItem('mutedConversations');
+    return stored ? JSON.parse(stored) : [];
+  });
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const TABS = ["All"];
   const [activeTab, setActiveTab] = useState("All");
@@ -66,12 +73,16 @@ const Messages = () => {
         setTimeout(() => {
           if (messagesEndRef.current) messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
         }, 100);
+        // Mark as read if the conversation is open and the message is from the other user
+        if (payload.new.sender_id !== user.id) {
+          setUnreadConversations((prev) => prev.filter((id) => id !== activeConversation.id));
+        }
       })
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [activeConversation]);
+  }, [activeConversation, user.id]);
 
   const openConversation = async (convo: any) => {
     setActiveConversation(convo);
@@ -85,6 +96,8 @@ const Messages = () => {
         if (messagesEndRef.current) messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
       }, 100);
     });
+    // Mark as read (remove from unreadConversations)
+    setUnreadConversations((prev) => prev.filter((id) => id !== convo.id));
   };
 
   const handleSendMessage = async () => {
@@ -104,21 +117,22 @@ const Messages = () => {
   const handleSwipe = (convoId: string) => {
     setSwipedConvoId(swipedConvoId === convoId ? null : convoId);
   };
+  // Pin conversation: move to top
   const handlePin = (convoId: string) => {
-    // Pin logic (optional)
-    setSwipedConvoId(null);
+    setPinnedConversations((prev) => [convoId, ...prev.filter((id) => id !== convoId)]);
   };
+  // Mute conversation: toggle mute
   const handleMute = (convoId: string) => {
-    setMutedConversations(prev =>
+    setMutedConversations((prev) =>
       prev.includes(convoId)
-        ? prev.filter(id => id !== convoId)
+        ? prev.filter((id) => id !== convoId)
         : [...prev, convoId]
     );
-    setSwipedConvoId(null);
   };
-  const handleDelete = (convoId: string) => {
-    // Delete logic (optional)
-    setSwipedConvoId(null);
+  // Delete conversation: remove from UI and Supabase
+  const handleDelete = async (convoId: string) => {
+    setConversations((prev) => prev.filter((c) => c.id !== convoId));
+    await supabase.from('conversations').delete().eq('id', convoId);
   };
 
   // Helper to fetch and cache a user's profile
@@ -170,6 +184,52 @@ const Messages = () => {
     checkUnread();
   }, [conversations, user?.id, messages]);
 
+  // Sort conversations: pinned first
+  const sortedConversations = [
+    ...pinnedConversations
+      .map((id) => conversations.find((c) => c.id === id))
+      .filter(Boolean),
+    ...conversations.filter((c) => !pinnedConversations.includes(c.id)),
+  ];
+
+  // Add helpers for pin/mute state in Supabase
+  const getUserConversationSettings = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('conversation_settings')
+      .eq('id', userId)
+      .maybeSingle();
+    return data?.conversation_settings || { pinned: [], muted: [] };
+  };
+  const updateUserConversationSettings = async (userId: string, settings: { pinned: string[]; muted: string[] }) => {
+    await supabase
+      .from('profiles')
+      .update({ conversation_settings: settings })
+      .eq('id', userId);
+  };
+
+  // On mount, load pin/mute state from Supabase
+  useEffect(() => {
+    if (!user?.id) return;
+    getUserConversationSettings(user.id).then((settings) => {
+      setPinnedConversations(settings.pinned || []);
+      setMutedConversations(settings.muted || []);
+    });
+    // eslint-disable-next-line
+  }, [user?.id]);
+  // On change, update pin/mute state in Supabase
+  useEffect(() => {
+    if (!user?.id) return;
+    updateUserConversationSettings(user.id, {
+      pinned: pinnedConversations,
+      muted: mutedConversations,
+    });
+    // eslint-disable-next-line
+  }, [pinnedConversations, mutedConversations, user?.id]);
+
+  // Only show unread dot if there are unread conversations not currently open
+  const showUnreadDot = unreadConversations.some((id) => id !== activeConversation?.id);
+
   return (
     <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"}`}>
       {/* Header and Recent Contacts */}
@@ -207,15 +267,16 @@ const Messages = () => {
             ) : conversations.length === 0 ? (
               <div className="p-4 text-center text-gray-500">No conversations yet.</div>
             ) : (
-              conversations.map((convo) => {
+              sortedConversations.map((convo) => {
                 const isSwipedConvo = swipedConvoId === convo.id;
                 const otherUserId = convo.user1_id === user.id ? convo.user2_id : convo.user1_id;
                 const otherProfile = profileCache[otherUserId];
                 const isUnread = unreadConversations.includes(convo.id);
+                const isMuted = mutedConversations.includes(convo.id);
                 return (
                   <div
                     key={convo.id}
-                    className="relative"
+                    className="relative group"
                     style={{ height: '72px' }}
                   >
                     <div
@@ -234,10 +295,14 @@ const Messages = () => {
                           <span className="font-semibold text-gray-900 dark:text-white truncate flex items-center">
                             {otherProfile?.name || otherUserId}
                             {isUnread && <span className="ml-2 w-2 h-2 rounded-full bg-blue-500 inline-block" />}
+                            {isMuted && <span title="Muted"><VolumeX className="ml-2 w-4 h-4 text-gray-400" /></span>}
                           </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className={`truncate text-sm text-gray-600 dark:text-gray-300`}>{convo.id}</span>
+                          {/* Pin, Mute, Delete actions */}
+                          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <Button size="icon" variant="ghost" className="hover:bg-gray-200 dark:hover:bg-gray-700" onClick={e => { e.stopPropagation(); handlePin(convo.id); }}><span className="text-xs">Pin</span></Button>
+                            <Button size="icon" variant="ghost" className="hover:bg-gray-200 dark:hover:bg-gray-700" onClick={e => { e.stopPropagation(); handleMute(convo.id); }}><span className="text-xs">{isMuted ? 'Unmute' : 'Mute'}</span></Button>
+                            <Button size="icon" variant="destructive" className="hover:bg-red-100 dark:hover:bg-red-900" onClick={e => { e.stopPropagation(); handleDelete(convo.id); }}><span className="text-xs">Delete</span></Button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -322,7 +387,7 @@ const Messages = () => {
         </>
       )}
       <BottomNavigation
-        unreadMessages={unreadConversations.length > 0}
+        unreadMessages={showUnreadDot}
       />
     </div>
   );

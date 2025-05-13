@@ -67,7 +67,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({ unreadMessages }) =
               {item.icon}
               {/* Unread dot for Messages tab */}
               {item.path === "/messages" && unreadMessages && (
-                <span className="absolute top-0 right-0 w-2 h-2 rounded-full bg-blue-500" style={{ marginTop: 2, marginRight: 2 }} />
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-blue-500 border-2 border-white" />
               )}
             </div>
             <span className="text-[10px] mt-1">{item.label}</span>
