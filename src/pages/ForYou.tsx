@@ -237,8 +237,8 @@ const ForYou = () => {
             {posts.map((post, idx) => (
               <section
                 key={post.id}
-                className="w-full flex flex-col items-center justify-start min-h-screen bg-white dark:bg-black"
-                style={{ minHeight: '100vh', margin: 0, padding: 0 }}
+                className="w-full flex flex-col items-center justify-start bg-white dark:bg-black"
+                style={{ margin: 0, padding: 0 }}
               >
                 <ContentFeedCard
                   id={post.id}
