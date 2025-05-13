@@ -254,13 +254,14 @@ const PostPage: React.FC = () => {
       </button>
       <div
         ref={containerRef}
-        className="w-full max-w-md mx-auto overflow-y-auto snap-y snap-mandatory"
+        className="w-full max-w-md mx-auto overflow-y-auto"
         style={{ WebkitOverflowScrolling: "touch", maxHeight: '100vh' }}
       >
         {posts.map((post, idx) => (
           <section
             key={post.id}
-            className={`w-full flex flex-col items-center justify-start snap-start bg-white dark:bg-black ${idx !== 0 ? 'border-t border-gray-200 dark:border-gray-800' : ''}`}
+            className="w-full flex flex-col items-center justify-start bg-white dark:bg-black"
+            style={{ margin: 0, padding: 0 }}
           >
             {/* Profile picture, name, and three dots menu */}
             <div className="flex items-center gap-2 pt-4 pb-2 w-full px-4 relative">

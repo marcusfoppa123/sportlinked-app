@@ -231,13 +231,13 @@ const ForYou = () => {
         ) : (
           <div
             ref={containerRef}
-            className="w-full max-w-md mx-auto overflow-y-auto snap-y snap-mandatory"
+            className="w-full max-w-md mx-auto overflow-y-auto"
             style={{ WebkitOverflowScrolling: "touch", maxHeight: '100vh', minHeight: '100vh' }}
           >
             {posts.map((post, idx) => (
               <section
                 key={post.id}
-                className="w-full flex flex-col items-center justify-start snap-start min-h-screen bg-white dark:bg-black"
+                className="w-full flex flex-col items-center justify-start min-h-screen bg-white dark:bg-black"
                 style={{ minHeight: '100vh', margin: 0, padding: 0 }}
               >
                 <ContentFeedCard
