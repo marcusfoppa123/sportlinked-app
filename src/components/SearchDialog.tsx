@@ -24,6 +24,12 @@ const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
   const navigate = useNavigate();
   const debouncedQuery = useDebounce(query, 300);
 
+  // Helper to normalize hashtag searches
+  const normalizeHashtag = (hashtag: string) => {
+    // Remove # if present and lowercase
+    return hashtag.startsWith('#') ? hashtag.slice(1).toLowerCase() : hashtag.toLowerCase();
+  };
+
   // Load recent searches from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("recentSearches");
@@ -53,7 +59,10 @@ const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
 
       setLoading(true);
       try {
-        const searchResults = await searchProfilesAndHashtags(debouncedQuery);
+        // Normalize search term for hashtags
+        const searchTerm = normalizeHashtag(debouncedQuery);
+        console.log('Searching for:', searchTerm);
+        const searchResults = await searchProfilesAndHashtags(searchTerm);
         setResults(searchResults);
       } catch (error) {
         console.error('Search error:', error);
@@ -72,13 +81,22 @@ const SearchDialog = ({ open, onOpenChange }: SearchDialogProps) => {
   };
 
   const handleHashtagClick = (hashtag: string) => {
+    // Store the hashtag with # in recent searches for display
     addRecentSearch(`#${hashtag}`);
+    // Navigate to hashtag page using normalized hashtag
     navigate(`/hashtag/${hashtag}`);
     onOpenChange(false);
   };
 
   const handleRecentClick = (search: string) => {
-    setQuery(search.startsWith('#') ? search.slice(1) : search);
+    if (search.startsWith('#')) {
+      // For hashtag searches, navigate directly
+      navigate(`/hashtag/${search.slice(1)}`);
+      onOpenChange(false);
+    } else {
+      // For other searches, set as query
+      setQuery(search);
+    }
   };
 
   const getInitials = (name?: string) => {

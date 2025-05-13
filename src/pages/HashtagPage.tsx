@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getPostsByHashtag } from "@/integrations/supabase/client";
@@ -8,6 +9,7 @@ import { Heart, MessageCircle, Share2 } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
+import PostModal from "@/components/PostModal";
 
 const HashtagPage = () => {
   const { hashtag } = useParams<{ hashtag: string }>();
@@ -15,14 +17,17 @@ const HashtagPage = () => {
   const { user } = useAuth();
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedPost, setSelectedPost] = useState<any>(null);
 
   useEffect(() => {
     const fetchPosts = async () => {
       if (!hashtag) return;
       setLoading(true);
       try {
-        const posts = await getPostsByHashtag(hashtag);
-        setPosts(posts);
+        console.log(`Fetching posts for hashtag: #${hashtag}`);
+        const fetchedPosts = await getPostsByHashtag(hashtag);
+        console.log(`Found ${fetchedPosts.length} posts with hashtag #${hashtag}`);
+        setPosts(fetchedPosts);
       } catch (error) {
         console.error('Error fetching hashtag posts:', error);
         toast.error('Failed to load posts');
@@ -33,6 +38,10 @@ const HashtagPage = () => {
 
     fetchPosts();
   }, [hashtag]);
+
+  const handlePostClick = (post: any) => {
+    setSelectedPost(post);
+  };
 
   const getInitials = (name?: string) => {
     if (!name) return "U";
@@ -64,7 +73,7 @@ const HashtagPage = () => {
               <Card
                 key={post.id}
                 className="aspect-square cursor-pointer overflow-hidden"
-                onClick={() => navigate(`/post/${post.id}`)}
+                onClick={() => handlePostClick(post)}
               >
                 {post.image_url ? (
                   <img
@@ -79,7 +88,11 @@ const HashtagPage = () => {
                     muted
                     playsInline
                   />
-                ) : null}
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 p-4">
+                    <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-4">{post.content}</p>
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
                   <div className="text-white text-sm flex items-center gap-4">
                     <span className="flex items-center gap-1">
@@ -98,9 +111,18 @@ const HashtagPage = () => {
         )}
       </div>
 
+      {/* Post modal */}
+      {selectedPost && (
+        <PostModal
+          open={!!selectedPost}
+          onClose={() => setSelectedPost(null)}
+          post={selectedPost}
+        />
+      )}
+
       <BottomNavigation />
     </div>
   );
 };
 
-export default HashtagPage; 
+export default HashtagPage;
