@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/context/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { MessageCircle, UserPlus, Check, Loader2 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { supabase, checkIfUserIsFollowing, followUser, unfollowUser } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 
@@ -67,12 +67,18 @@ const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stat
   
   const handleConnect = async () => {
     if (!currentUser) {
-      toast.error("You must be logged in to follow users");
+      toast({
+        description: "You must be logged in to follow users",
+        variant: "destructive"
+      });
       return;
     }
     
     if (currentUser.id === user.id) {
-      toast.error("You cannot follow yourself");
+      toast({
+        description: "You cannot follow yourself",
+        variant: "destructive"
+      });
       return;
     }
     
@@ -88,7 +94,10 @@ const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stat
         }
         
         setIsFollowing(false);
-        toast.success(`Unfollowed ${user.name}`);
+        toast({
+          description: `Unfollowed ${user.name}`,
+          variant: "default"
+        });
       } else {
         // Follow user
         const result = await followUser(currentUser.id, user.id);
@@ -98,7 +107,10 @@ const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stat
         }
         
         setIsFollowing(true);
-        toast.success(`Started following ${user.name}`);
+        toast({
+          description: `Started following ${user.name}`,
+          variant: "default"
+        });
       }
       
       // Refresh user profile to update follower/following counts
@@ -106,7 +118,10 @@ const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stat
       
     } catch (error: any) {
       console.error('Error updating follow status:', error);
-      toast.error(error.message || 'Failed to update follow status');
+      toast({
+        description: error.message || 'Failed to update follow status',
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -115,7 +130,10 @@ const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stat
   const handleMessage = () => {
     // Navigate to messages page and open a conversation with this user
     navigate("/messages");
-    toast.success(`Started conversation with ${user.name}`);
+    toast({
+      description: `Started conversation with ${user.name}`,
+      variant: "default"
+    });
   };
 
   const handleProfileClick = () => {
