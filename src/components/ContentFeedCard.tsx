@@ -77,7 +77,7 @@ const ContentFeedCard = ({
   };
 
   return (
-    <Card className="w-full max-w-xl mx-auto mb-6 rounded-2xl card-shadow border border-blue-100 bg-white dark:bg-gray-900">
+    <Card className="w-full max-w-xl mx-auto rounded-2xl card-shadow border border-blue-100 bg-white dark:bg-gray-900" style={{ margin: 0 }}>
       {/* User info header */}
       <div className="flex items-center gap-3 px-4 pt-4 pb-2">
         <Avatar
