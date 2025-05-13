@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -125,7 +124,7 @@ const UserProfile = () => {
         setIsFollowing(false);
         toast({
           description: "Unfollowed successfully",
-          variant: "default"
+          variant: "success"
         });
         
         // Update the UI with the new follower count
@@ -149,7 +148,7 @@ const UserProfile = () => {
         setIsFollowing(true);
         toast({
           description: "Followed successfully",
-          variant: "default"
+          variant: "success"
         });
         
         // Update the UI with the new follower count
@@ -187,6 +186,10 @@ const UserProfile = () => {
       .map(n => n[0])
       .join("")
       .toUpperCase();
+  };
+
+  const handleSettingsClick = () => {
+    navigate('/settings');
   };
 
   if (isLoading) {
