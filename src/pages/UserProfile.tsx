@@ -9,8 +9,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Settings, Share2, UserPlus, UserMinus } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import ProfilePostGrid from "@/components/ProfilePostGrid";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { supabase, checkIfUserIsFollowing, followUser, unfollowUser } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
 interface UserProfileData {
   id: string;
@@ -38,6 +38,7 @@ const UserProfile = () => {
   const [profileData, setProfileData] = useState<UserProfileData | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [followLoading, setFollowLoading] = useState(false);
 
   const fetchProfileData = async () => {
     if (!userId) return;
@@ -70,25 +71,19 @@ const UserProfile = () => {
           winPercentage: profile.win_percentage
         });
       }
-      // Fetch current user's profile to update their following count
-      if (currentUser?.id) {
-        await refreshUserProfile();
-      }
+      
       // Check if current user is following this profile
       if (currentUser?.id) {
-        const { data: followData, error: followError } = await supabase
-          .from('followers')
-          .select('id')
-          .eq('follower_id', currentUser.id)
-          .eq('following_id', userId)
-          .single();
-        if (!followError) {
-          setIsFollowing(!!followData);
-        }
+        const following = await checkIfUserIsFollowing(currentUser.id, userId);
+        setIsFollowing(following);
       }
+      
     } catch (error) {
       console.error('Error fetching profile:', error);
-      toast.error('Failed to load profile');
+      toast({
+        description: 'Failed to load profile',
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -96,46 +91,76 @@ const UserProfile = () => {
 
   useEffect(() => {
     fetchProfileData();
-    // eslint-disable-next-line
   }, [userId, currentUser?.id]);
 
   const handleFollow = async () => {
     if (!currentUser) {
-      toast.error("You must be logged in to follow users");
+      toast({
+        description: "You must be logged in to follow users",
+        variant: "destructive"
+      });
       return;
     }
+    
     if (!userId) {
-      toast.error("Invalid user ID");
+      toast({
+        description: "Invalid user ID",
+        variant: "destructive"
+      });
       return;
     }
+    
+    setFollowLoading(true);
+    
     try {
       if (isFollowing) {
-        // Unfollow
-        const { error: deleteError } = await supabase
-          .from('followers')
-          .delete()
-          .eq('follower_id', currentUser.id)
-          .eq('following_id', userId);
-        if (deleteError) {
-          console.error("Error unfollowing:", deleteError);
-          throw new Error(`Failed to unfollow: ${deleteError.message || 'Unknown error'}`);
+        // Unfollow user
+        const result = await unfollowUser(currentUser.id, userId);
+        
+        if (!result.success) {
+          throw new Error(result.error?.message || "Failed to unfollow user");
         }
-        await fetchProfileData();
-        toast.success("Unfollowed successfully");
-      } else {
-        // Follow
-        const { error: insertError } = await supabase
-          .from('followers')
-          .insert({
-            follower_id: currentUser.id,
-            following_id: userId
+        
+        setIsFollowing(false);
+        toast({
+          description: "Unfollowed successfully",
+          variant: "success"
+        });
+        
+        // Update the UI with the new follower count
+        if (profileData) {
+          setProfileData({
+            ...profileData,
+            followers: Math.max(0, profileData.followers - 1)
           });
-        if (insertError) {
-          console.error("Error following:", insertError);
-          throw new Error(`Failed to follow: ${insertError.message || 'Unknown error'}`);
         }
-        await fetchProfileData();
-        toast.success("Followed successfully");
+        
+        // Refresh current user data to update their following count
+        await refreshUserProfile();
+      } else {
+        // Follow user
+        const result = await followUser(currentUser.id, userId);
+        
+        if (!result.success) {
+          throw new Error(result.error?.message || "Failed to follow user");
+        }
+        
+        setIsFollowing(true);
+        toast({
+          description: "Followed successfully",
+          variant: "success"
+        });
+        
+        // Update the UI with the new follower count
+        if (profileData) {
+          setProfileData({
+            ...profileData,
+            followers: profileData.followers + 1
+          });
+        }
+        
+        // Refresh current user data to update their following count
+        await refreshUserProfile();
       }
     } catch (error) {
       console.error("Error in follow/unfollow operation:", error);
@@ -144,7 +169,13 @@ const UserProfile = () => {
         : typeof error === 'string' 
           ? error 
           : 'Failed to follow/unfollow user. Please try again.';
-      toast.error(errorMessage);
+      
+      toast({
+        description: errorMessage,
+        variant: "destructive"
+      });
+    } finally {
+      setFollowLoading(false);
     }
   };
 
@@ -155,6 +186,10 @@ const UserProfile = () => {
       .map(n => n[0])
       .join("")
       .toUpperCase();
+  };
+
+  const handleSettingsClick = () => {
+    navigate('/settings');
   };
 
   if (isLoading) {
@@ -191,8 +226,9 @@ const UserProfile = () => {
                         : "bg-blue-500 text-white hover:bg-blue-600"
                     }`}
                     onClick={handleFollow}
+                    disabled={followLoading}
                   >
-                    {isFollowing ? (
+                    {followLoading ? "Loading..." : isFollowing ? (
                       <>
                         <UserMinus className="h-4 w-4 mr-2" />
                         Unfollow
@@ -326,4 +362,4 @@ const UserProfile = () => {
   );
 };
 
-export default UserProfile; 
+export default UserProfile;

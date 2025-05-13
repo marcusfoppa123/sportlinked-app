@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -127,15 +128,18 @@ const Profile = () => {
     fetchPostCount();
   }, [user?.id]);
 
+  // Added the missing handleSettingsClick function
   const handleSettingsClick = () => {
     navigate('/settings');
   };
 
+  // Added the missing openAthleteStatEditor function
   const openAthleteStatEditor = (stat: string, value: number) => {
     setEditingAthleteStat(stat);
     setAthleteStatValue(value);
   };
 
+  // Added the missing saveAthleteStatChange function
   const saveAthleteStatChange = async () => {
     if (!editingAthleteStat) return;
 
@@ -158,6 +162,7 @@ const Profile = () => {
     }
   };
 
+  // Added the missing handleCreatePost function
   const handleCreatePost = () => {
     navigate('/create-post');
   };
