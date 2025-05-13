@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { Button } from "@/components/ui/button";
@@ -12,6 +12,8 @@ import SearchDialog from "@/components/SearchDialog";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import logo from "@/assets/sportslinked-logo.png";
+import ContentFeedCard from "@/components/ContentFeedCard";
+import { supabase } from "@/integrations/supabase/client";
 
 const ForYou = () => {
   const { user } = useAuth();
@@ -25,10 +27,102 @@ const ForYou = () => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [key, setKey] = useState(0); // Used to force re-render of ContentFeed
+  const [posts, setPosts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
     setKey(prev => prev + 1);
   }, [location.pathname]);
+  
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      try {
+        // Fetch posts for the For You feed (all sports or filtered)
+        let query = supabase
+          .from('posts')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (activeTab !== "for-you") {
+          query = query.eq('sport', activeTab);
+        }
+        const { data: postsData, error: postsError } = await query;
+        if (postsError) throw postsError;
+        // Fetch all needed profiles in one query
+        const userIds = Array.from(new Set((postsData || []).map((p: any) => p.user_id)));
+        const { data: profilesData } = await supabase
+          .from("profiles")
+          .select("*")
+          .in("id", userIds);
+        const profileMap = new Map((profilesData || []).map((profile: any) => [profile.id, profile]));
+        // For each post, fetch stats and user state
+        const postsWithStats = await Promise.all(
+          (postsData || []).map(async (post: any) => {
+            // Like count
+            const { count: likesCount } = await supabase
+              .from('likes')
+              .select('id', { count: 'exact' })
+              .eq('post_id', post.id);
+            // Comment count
+            const { count: commentsCount } = await supabase
+              .from('comments')
+              .select('id', { count: 'exact' })
+              .eq('post_id', post.id);
+            // User liked/bookmarked
+            let userLiked = false;
+            let userBookmarked = false;
+            if (user) {
+              const { data: userLike } = await supabase
+                .from('likes')
+                .select('id')
+                .eq('post_id', post.id)
+                .eq('user_id', user.id)
+                .maybeSingle();
+              userLiked = !!userLike;
+              const { data: userBookmark } = await supabase
+                .from('bookmarks')
+                .select('id')
+                .eq('post_id', post.id)
+                .eq('user_id', user.id)
+                .maybeSingle();
+              userBookmarked = !!userBookmark;
+            }
+            // Profile
+            const profileData = profileMap.get(post.user_id);
+            return {
+              ...post,
+              user: {
+                id: post.user_id,
+                name: profileData?.full_name || profileData?.username || 'Unknown User',
+                role: profileData?.role || 'athlete',
+                profilePic: profileData?.avatar_url,
+              },
+              content: {
+                text: post.content,
+                image: post.image_url,
+                video: post.video_url,
+              },
+              stats: {
+                likes: likesCount || 0,
+                comments: commentsCount || 0,
+                shares: post.shares || 0,
+              },
+              userLiked,
+              userBookmarked,
+            };
+          })
+        );
+        setPosts(postsWithStats);
+      } catch (err) {
+        setPosts([]);
+        console.error("ForYou feed error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPosts();
+  }, [activeTab, user?.id, key]);
   
   const sportTabs = [
     { id: "for-you", label: t("nav.forYou") },
@@ -129,13 +223,36 @@ const ForYou = () => {
         </div>
       </header>
 
-      <main className="container px-4 py-4">
-        <ContentFeed 
-          key={key} 
-          filterSport={activeTab !== "for-you" ? activeTab : undefined} 
-          contentType="posts"
-          showAllPosts={true} // Show all posts on the home page
-        />
+      <main className="w-full flex-1 flex flex-col items-center justify-center">
+        {loading ? (
+          <div className="text-center py-8 text-gray-500">Loading...</div>
+        ) : posts.length === 0 ? (
+          <div className="text-center py-8 text-gray-500">No posts found.</div>
+        ) : (
+          <div
+            ref={containerRef}
+            className="w-full max-w-md mx-auto overflow-y-auto snap-y snap-mandatory"
+            style={{ WebkitOverflowScrolling: "touch", maxHeight: '100vh', minHeight: '100vh' }}
+          >
+            {posts.map((post, idx) => (
+              <section
+                key={post.id}
+                className="w-full flex flex-col items-center justify-start snap-start min-h-screen bg-white dark:bg-black"
+                style={{ minHeight: '100vh' }}
+              >
+                <ContentFeedCard
+                  id={post.id}
+                  user={post.user}
+                  timestamp={new Date(post.created_at)}
+                  content={post.content}
+                  stats={post.stats}
+                  userLiked={post.userLiked}
+                  userBookmarked={post.userBookmarked}
+                />
+              </section>
+            ))}
+          </div>
+        )}
       </main>
 
       {isAthlete && <UploadButton />}
