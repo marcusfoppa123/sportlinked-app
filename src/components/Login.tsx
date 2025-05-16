@@ -201,8 +201,8 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
             birth_month: parseInt(formData.birthMonth),
             birth_day: parseInt(formData.birthDay),
             division: formData.division,
-            sport: [formData.sport],
-            position: formData.position,
+            sport: formData.sport ? `{${formData.sport}}` : null,
+            position: formData.position && formData.position.length > 0 ? `{${formData.position.join(',')}}` : null,
             experience: formData.experience,
             team_size: formData.teamSize,
             team_type: formData.teamType,
@@ -224,6 +224,23 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const getAvailableDivisions = () => {
+    const currentYear = new Date().getFullYear();
+    const birthYear = parseInt(formData.birthYear);
+    const age = currentYear - birthYear;
+
+    const baseDivisions = [
+      "P13", "P14", "P15", "P16", "P17", "P18", "P19",
+      "F13", "F14", "F15", "F16", "F17", "F18", "F19"
+    ];
+
+    if (age >= 17 && age <= 19) {
+      return [...baseDivisions, "P19 Allsvenskan", "P17 Allsvenskan", "F19 Allsvenskan", "F17 Allsvenskan"];
+    }
+
+    return baseDivisions;
   };
 
   return (
