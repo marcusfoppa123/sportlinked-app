@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
@@ -23,6 +22,10 @@ export interface User {
   homeVenue?: string;
   phone?: string;
   website?: string;
+  birthYear?: number;
+  birthMonth?: number;
+  birthDay?: number;
+  division?: string;
   // Stats
   connections?: number;
   posts?: number;
@@ -165,6 +168,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           homeVenue: data.home_venue,
           phone: data.phone,
           website: data.website,
+          birthYear: data.birth_year,
+          birthMonth: data.birth_month,
+          birthDay: data.birth_day,
+          division: data.division,
           connections: data.connections,
           posts: data.posts,
           offers: data.offers,
@@ -313,6 +320,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (updatedProfile.homeVenue) dbProfile.home_venue = updatedProfile.homeVenue;
       if (updatedProfile.phone) dbProfile.phone = updatedProfile.phone;
       if (updatedProfile.website) dbProfile.website = updatedProfile.website;
+      if (updatedProfile.birthYear) dbProfile.birth_year = updatedProfile.birthYear;
+      if (updatedProfile.birthMonth) dbProfile.birth_month = updatedProfile.birthMonth;
+      if (updatedProfile.birthDay) dbProfile.birth_day = updatedProfile.birthDay;
+      if (updatedProfile.division) dbProfile.division = updatedProfile.division;
       if (updatedProfile.connections !== undefined) dbProfile.connections = updatedProfile.connections;
       if (updatedProfile.posts !== undefined) dbProfile.posts = updatedProfile.posts;
       if (updatedProfile.offers !== undefined) dbProfile.offers = updatedProfile.offers;

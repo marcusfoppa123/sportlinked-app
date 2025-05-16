@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAuth, UserRole } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import logo from "@/assets/sportslinked-logo.png";
 import { supabase } from "@/integrations/supabase/client";
@@ -96,8 +97,22 @@ interface RegisterFormProps {
   initialRole: UserRole;
 }
 
+const steps = ["Account", "Birth & Division", "Sport & Position", "Soccer Info"];
+
+const ProgressBar = ({ step }: { step: number }) => (
+  <div className="flex items-center justify-center mb-6">
+    {steps.map((label, idx) => (
+      <div key={label} className="flex items-center">
+        <div className={`rounded-full border-2 w-8 h-8 flex items-center justify-center font-bold text-lg transition-all duration-200 ${step === idx + 1 ? 'border-blue-600 text-blue-600 bg-white' : step > idx + 1 ? 'border-blue-400 text-blue-400 bg-white' : 'border-gray-300 text-gray-400 bg-white'}`}>{idx + 1}</div>
+        {idx < steps.length - 1 && <div className={`h-1 w-8 ${step > idx + 1 ? 'bg-blue-400' : 'bg-gray-200'}`}></div>}
+      </div>
+    ))}
+  </div>
+);
+
 const RegisterForm = ({ initialRole }: RegisterFormProps) => {
   const { register } = useAuth();
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     name: "",
@@ -106,15 +121,33 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
     confirmPassword: "",
     role: initialRole,
     sport: "",
-    position: "",
+    position: [] as string[],
     experience: "",
     teamSize: "",
     teamType: "",
+    birthYear: "",
+    birthMonth: "",
+    birthDay: "",
+    division: "",
+    yearsPlayed: "",
+    dominantFoot: "",
+    weight: "",
+    height: "",
+    latestClub: ""
   });
   const [isLoading, setIsLoading] = useState(false);
 
-  const updateFormData = (field: string, value: string) => {
+  const updateFormData = (field: string, value: any) => {
     setFormData({ ...formData, [field]: value });
+  };
+
+  const togglePosition = (position: string) => {
+    const currentPositions = formData.position;
+    if (currentPositions.includes(position)) {
+      updateFormData("position", currentPositions.filter(p => p !== position));
+    } else {
+      updateFormData("position", [...currentPositions, position]);
+    }
   };
 
   const handleNextStep = () => {
@@ -127,6 +160,25 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
         toast.error("Passwords do not match");
         return;
       }
+    } else if (step === 2) {
+      if (!formData.birthYear || !formData.birthMonth || !formData.birthDay) {
+        toast.error("Please select your birth date");
+        return;
+      }
+      if (!formData.division) {
+        toast.error("Please select your division");
+        return;
+      }
+    } else if (step === 3) {
+      if (!formData.sport || formData.position.length === 0) {
+        toast.error("Please complete all required information");
+        return;
+      }
+    } else if (step === 4 && formData.sport === "soccer") {
+      if (!formData.dominantFoot || !formData.weight || !formData.height || !formData.latestClub) {
+        toast.error("Please complete all soccer info");
+        return;
+      }
     }
     setStep(step + 1);
   };
@@ -137,21 +189,36 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (formData.role === "team") {
-      if (!formData.role || !formData.sport || !formData.teamType) {
-        toast.error("Please complete all required information");
-        return;
-      }
-    } else if (!formData.role || !formData.sport || !formData.position) {
-      toast.error("Please complete all required information");
-      return;
-    }
-    
     setIsLoading(true);
     try {
       await register(formData.email, formData.password, formData.name, formData.role);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            birth_year: parseInt(formData.birthYear),
+            birth_month: parseInt(formData.birthMonth),
+            birth_day: parseInt(formData.birthDay),
+            division: formData.division,
+            sport: [formData.sport],
+            position: formData.position,
+            experience: formData.experience,
+            team_size: formData.teamSize,
+            team_type: formData.teamType,
+            years_played: formData.yearsPlayed ? parseInt(formData.yearsPlayed) : null,
+            dominant_foot: formData.dominantFoot,
+            weight: formData.weight ? parseInt(formData.weight) : null,
+            height: formData.height ? parseInt(formData.height) : null,
+            latest_club: formData.latestClub
+          })
+          .eq('id', user.id);
+        if (profileError) {
+          console.error("Error updating profile:", profileError);
+        }
+      }
       toast.success("Account created successfully");
+      navigate("/for-you");
     } catch (error) {
       toast.error("Registration failed. Please try again.");
     } finally {
@@ -161,6 +228,7 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
 
   return (
     <div className="space-y-4">
+      <ProgressBar step={step} />
       {step === 1 && (
         <motion.div
           initial={{ opacity: 0, x: 20 }}
@@ -169,7 +237,7 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
           className="space-y-4"
         >
           <div className="space-y-2">
-            <Label htmlFor="name">Full Name</Label>
+            <Label htmlFor="name" className="text-white">Full Name</Label>
             <Input
               id="name"
               placeholder="John Doe"
@@ -180,7 +248,7 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email" className="text-white">Email</Label>
             <Input
               id="email"
               type="email"
@@ -192,7 +260,7 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password" className="text-white">Password</Label>
             <Input
               id="password"
               type="password"
@@ -204,7 +272,7 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <Label htmlFor="confirmPassword" className="text-white">Confirm Password</Label>
             <Input
               id="confirmPassword"
               type="password"
@@ -231,95 +299,243 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
           exit={{ opacity: 0, x: -20 }}
           className="space-y-4"
         >
+          <div className="space-y-4">
+            <Label className="text-white">Date of Birth</Label>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="birthYear" className="text-white">Year</Label>
+                <Select
+                  value={formData.birthYear}
+                  onValueChange={(value) => updateFormData("birthYear", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Year" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - 13 - i).map((year) => (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="birthMonth" className="text-white">Month</Label>
+                <Select
+                  value={formData.birthMonth}
+                  onValueChange={(value) => updateFormData("birthMonth", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Month" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                      <SelectItem key={month} value={month.toString().padStart(2, '0')}>
+                        {month.toString().padStart(2, '0')}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="birthDay" className="text-white">Day</Label>
+                <Select
+                  value={formData.birthDay}
+                  onValueChange={(value) => updateFormData("birthDay", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Day" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => (
+                      <SelectItem key={day} value={day.toString().padStart(2, '0')}>
+                        {day.toString().padStart(2, '0')}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
           <div className="space-y-2">
-            <Label>I am a</Label>
-            <RadioGroup
-              defaultValue={formData.role || "athlete"}
-              onValueChange={(value) => updateFormData("role", value)}
-              className="flex flex-col space-y-1"
+            <Label htmlFor="division" className="text-white">Division/League</Label>
+            <Select
+              value={formData.division}
+              onValueChange={(value) => updateFormData("division", value)}
             >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="athlete" id="athlete" />
-                <Label htmlFor="athlete" className="cursor-pointer">Athlete</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="scout" id="scout" />
-                <Label htmlFor="scout" className="cursor-pointer">Scout</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="team" id="team" />
-                <Label htmlFor="team" className="cursor-pointer">Team/Club</Label>
-              </div>
-            </RadioGroup>
+              <SelectTrigger>
+                <SelectValue placeholder="Select your division" />
+              </SelectTrigger>
+              <SelectContent>
+                {getAvailableDivisions().map((division) => (
+                  <SelectItem key={division} value={division}>
+                    {division}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
-          
-          <div className="space-y-2">
-            <Label htmlFor="sport">Sport</Label>
-            <Input
-              id="sport"
-              placeholder="Basketball, Football, etc."
-              value={formData.sport}
-              onChange={(e) => updateFormData("sport", e.target.value)}
-              required
-            />
-          </div>
-          
-          {formData.role === "team" ? (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="teamType">Team Type</Label>
-                <Input
-                  id="teamType"
-                  placeholder="Professional, College, High School, etc."
-                  value={formData.teamType}
-                  onChange={(e) => updateFormData("teamType", e.target.value)}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="teamSize">Team Size</Label>
-                <Input
-                  id="teamSize"
-                  placeholder="Number of athletes/members"
-                  value={formData.teamSize}
-                  onChange={(e) => updateFormData("teamSize", e.target.value)}
-                />
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="position">
-                  {formData.role === "athlete" ? "Position" : "Organization/Team"}
-                </Label>
-                <Input
-                  id="position"
-                  placeholder={formData.role === "athlete" ? "Point Guard, Forward, etc." : "Lakers, Michigan State, etc."}
-                  value={formData.position}
-                  onChange={(e) => updateFormData("position", e.target.value)}
-                  required
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="experience">Experience Level</Label>
-                <Input
-                  id="experience"
-                  placeholder="College, Professional, High School"
-                  value={formData.experience}
-                  onChange={(e) => updateFormData("experience", e.target.value)}
-                />
-              </div>
-            </>
-          )}
           
           <div className="flex gap-2">
             <Button type="button" variant="outline" className="w-1/2" onClick={handlePrevStep}>
               Back
             </Button>
+            <Button type="button" className="w-1/2" onClick={handleNextStep}>
+              Next Step
+            </Button>
+          </div>
+        </motion.div>
+      )}
+
+      {step === 3 && (
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          className="space-y-4"
+        >
+          <div className="space-y-2">
+            <Label className="text-white">Select Sport</Label>
+            <div className="flex gap-2">
+              {['soccer', 'basketball', 'hockey'].map((sport) => (
+                <Button
+                  key={sport}
+                  type="button"
+                  variant={formData.sport === sport ? "default" : "outline"}
+                  className="w-full justify-center"
+                  onClick={() => updateFormData("sport", sport)}
+                >
+                  {sport.charAt(0).toUpperCase() + sport.slice(1)}
+                </Button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-white">Select Positions (Multiple Choice)</Label>
+            <div className="grid grid-cols-1 gap-2">
+              {[
+                'goalkeeper', 'right back', 'center back', 'left back',
+                'left midfielder', 'right midfielder', 'central defending midfielder',
+                'central attacking midfielder', 'striker', 'right wing', 'left wing'
+              ].map((position) => (
+                <Button
+                  key={position}
+                  type="button"
+                  variant={formData.position.includes(position) ? "default" : "outline"}
+                  className="w-full justify-start"
+                  onClick={() => togglePosition(position)}
+                >
+                  {position.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                </Button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="yearsPlayed" className="text-white">How many years have you played?</Label>
+            <Select
+              value={formData.yearsPlayed}
+              onValueChange={(value) => updateFormData("yearsPlayed", value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select years" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 18 }, (_, i) => i + 1).map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year} {year === 1 ? 'year' : 'years'}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" className="w-1/2" onClick={handlePrevStep}>
+              Back
+            </Button>
+            <Button type="button" className="w-1/2" onClick={handleNextStep}>
+              Next Step
+            </Button>
+          </div>
+        </motion.div>
+      )}
+      {step === 4 && formData.sport === "soccer" && (
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          className="space-y-4"
+        >
+          <div className="space-y-2">
+            <Label className="text-white">Dominant Foot</Label>
+            <div className="flex gap-2">
+              {['left', 'right'].map((foot) => (
+                <Button
+                  key={foot}
+                  type="button"
+                  variant={formData.dominantFoot === foot ? "default" : "outline"}
+                  className="w-full justify-center"
+                  onClick={() => updateFormData("dominantFoot", foot)}
+                >
+                  {foot.charAt(0).toUpperCase() + foot.slice(1)}
+                </Button>
+              ))}
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-white">Weight (kg)</Label>
+            <Select
+              value={formData.weight}
+              onValueChange={(value) => updateFormData("weight", value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select weight" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 91 }, (_, i) => i + 40).map((kg) => (
+                  <SelectItem key={kg} value={kg.toString()}>
+                    {kg} kg
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-white">Height (cm)</Label>
+            <Select
+              value={formData.height}
+              onValueChange={(value) => updateFormData("height", value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select height" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 81 }, (_, i) => i + 140).map((cm) => (
+                  <SelectItem key={cm} value={cm.toString()}>
+                    {cm} cm
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-white">Latest/Current Club</Label>
+            <Input
+              id="latestClub"
+              placeholder="Your latest or current club"
+              value={formData.latestClub}
+              onChange={(e) => updateFormData("latestClub", e.target.value)}
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" className="w-1/2" onClick={handlePrevStep}>
+              Back
+            </Button>
             <Button type="button" className="w-1/2" onClick={handleSubmit} disabled={isLoading}>
-              {isLoading ? "Creating account..." : "Register"}
+              {isLoading ? "Creating account..." : "Register & Go Home"}
             </Button>
           </div>
         </motion.div>

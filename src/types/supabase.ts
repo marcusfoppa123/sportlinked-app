@@ -1,4 +1,3 @@
-
 export type Json =
   | string
   | number
@@ -71,6 +70,10 @@ export interface Database {
           win_percentage: number | null
           followers: number | null
           following: number | null
+          birth_year: number | null
+          birth_month: number | null
+          birth_day: number | null
+          division: string | null
           created_at: string
           updated_at: string | null
         }
@@ -100,6 +103,10 @@ export interface Database {
           win_percentage?: number | null
           followers?: number | null
           following?: number | null
+          birth_year?: number | null
+          birth_month?: number | null
+          birth_day?: number | null
+          division?: string | null
           created_at?: string
           updated_at?: string | null
         }
@@ -129,6 +136,10 @@ export interface Database {
           win_percentage?: number | null
           followers?: number | null
           following?: number | null
+          birth_year?: number | null
+          birth_month?: number | null
+          birth_day?: number | null
+          division?: string | null
           created_at?: string
           updated_at?: string | null
         }
