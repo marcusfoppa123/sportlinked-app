@@ -42,7 +42,7 @@ export interface Database {
             referencedColumns: ["id"]
           }
         ]
-      }
+      },
       profiles: {
         Row: {
           id: string
@@ -151,7 +151,7 @@ export interface Database {
             referencedColumns: ["id"]
           }
         ]
-      }
+      },
       posts: {
         Row: {
           id: string
@@ -190,7 +190,7 @@ export interface Database {
           video_url?: string | null
         }
         Relationships: []
-      }
+      },
       likes: {
         Row: {
           id: string
@@ -211,7 +211,7 @@ export interface Database {
           created_at?: string
         }
         Relationships: []
-      }
+      },
       comments: {
         Row: {
           id: string
@@ -238,7 +238,7 @@ export interface Database {
           content?: string
         }
         Relationships: []
-      }
+      },
       bookmarks: {
         Row: {
           id: string
@@ -259,7 +259,7 @@ export interface Database {
           created_at?: string
         }
         Relationships: []
-      }
+      },
       message_requests: {
         Row: {
           id: string
@@ -286,7 +286,7 @@ export interface Database {
           status?: string
         }
         Relationships: []
-      }
+      },
       sportslinked: {
         Row: {
           id: number
@@ -304,7 +304,52 @@ export interface Database {
           content?: string | null
         }
         Relationships: []
-      }
+      },
+      conversations: {
+        Row: {
+          id: string;
+          user1_id: string;
+          user2_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user1_id: string;
+          user2_id: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user1_id?: string;
+          user2_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      },
+      messages: {
+        Row: {
+          id: string;
+          conversation_id: string;
+          sender_id: string;
+          text: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          conversation_id: string;
+          sender_id: string;
+          text: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          conversation_id?: string;
+          sender_id?: string;
+          text?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      },
     }
     Views: {
       [_ in never]: never

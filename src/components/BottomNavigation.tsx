@@ -1,11 +1,14 @@
-
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Home, Search, PlusCircle, User, MessageCircle, Heart, CreditCard } from "lucide-react";
 
-const BottomNavigation = () => {
+interface BottomNavigationProps {
+  unreadMessages?: boolean;
+}
+
+const BottomNavigation: React.FC<BottomNavigationProps> = ({ unreadMessages }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useAuth();
@@ -60,7 +63,13 @@ const BottomNavigation = () => {
             }`}
             onClick={() => navigate(item.path)}
           >
-            {item.icon}
+            <div className="relative flex flex-col items-center">
+              {item.icon}
+              {/* Unread dot for Messages tab */}
+              {item.path === "/messages" && unreadMessages && (
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-blue-500 border-2 border-white" />
+              )}
+            </div>
             <span className="text-[10px] mt-1">{item.label}</span>
           </Button>
         ))}

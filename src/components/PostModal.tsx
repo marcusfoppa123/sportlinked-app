@@ -2,6 +2,7 @@ import React from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Heart, MessageCircle, Bookmark, Share2, ArrowLeft } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useNavigate } from "react-router-dom";
 
 interface PostModalProps {
   open: boolean;
@@ -10,7 +11,23 @@ interface PostModalProps {
 }
 
 const PostModal: React.FC<PostModalProps> = ({ open, onClose, post }) => {
+  const navigate = useNavigate();
   if (!post) return null;
+
+  // Helper to extract hashtags from content
+  const extractHashtags = (text: string) => {
+    if (!text) return [];
+    return Array.from(new Set((text.match(/#(\w+)/g) || []).map(tag => tag.slice(1))));
+  };
+
+  const handleHashtagClick = (tag: string) => {
+    navigate(`/hashtag/${tag}`);
+  };
+
+  const hashtags = Array.isArray(post.hashtags) && post.hashtags.length > 0
+    ? post.hashtags
+    : extractHashtags(post.content || "");
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="max-w-md w-full p-0 border-none bg-white dark:bg-black">
@@ -48,9 +65,19 @@ const PostModal: React.FC<PostModalProps> = ({ open, onClose, post }) => {
         <div className="w-full px-4 pb-4 text-black dark:text-white text-left">
           <span className="font-semibold mr-2">{post.user?.name || "User"}</span>
           <span className="whitespace-pre-line break-words">{post.content || post.bio || ""}</span>
-          {/* Hashtags placeholder */}
-          {post.hashtags && (
-            <div className="mb-2 text-blue-400">{post.hashtags}</div>
+          {/* Hashtags */}
+          {hashtags.length > 0 && (
+            <div className="mb-2 flex flex-wrap gap-2">
+              {hashtags.map((tag: string) => (
+                <span
+                  key={tag}
+                  className="text-inherit cursor-pointer hover:underline"
+                  onClick={() => handleHashtagClick(tag)}
+                >
+                  #{tag}
+                </span>
+              ))}
+            </div>
           )}
           {/* Comments placeholder */}
           <div className="mt-2 text-gray-500 dark:text-gray-400 text-sm">Comments coming soon...</div>

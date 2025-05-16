@@ -1,15 +1,31 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 
 interface TikTokVideoProps {
   src: string;
   className?: string;
+  isVisible?: boolean;
 }
 
-const TikTokVideo: React.FC<TikTokVideoProps> = ({ src, className }) => {
+const TikTokVideo: React.FC<TikTokVideoProps> = ({ src, className, isVisible = true }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPaused, setIsPaused] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (isVisible) {
+      video.play().catch(() => {
+        // Handle autoplay restrictions
+        setIsPaused(true);
+      });
+    } else {
+      video.pause();
+      setIsPaused(true);
+    }
+  }, [isVisible]);
 
   const handleTogglePlay = () => {
     const video = videoRef.current;
@@ -24,7 +40,7 @@ const TikTokVideo: React.FC<TikTokVideoProps> = ({ src, className }) => {
   };
 
   const handleToggleMute = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent pausing/playing when clicking the mute button
+    e.stopPropagation();
     const video = videoRef.current;
     if (!video) return;
     video.muted = !video.muted;
@@ -37,7 +53,6 @@ const TikTokVideo: React.FC<TikTokVideoProps> = ({ src, className }) => {
         ref={videoRef}
         src={src}
         className={className}
-        autoPlay
         loop
         muted={isMuted}
         playsInline

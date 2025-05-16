@@ -168,6 +168,21 @@ const CreatePost = () => {
         videoUrl = publicUrl;
       }
       
+      // Extract hashtags from postText (lowercase, no duplicates)
+      const extracted = Array.from(
+        new Set(
+          (postText.match(/#(\w+)/g) || [])
+            .map(tag => tag.slice(1).toLowerCase())
+        )
+      );
+      // Merge with manually added hashtags (also lowercase)
+      const allHashtags = Array.from(
+        new Set([
+          ...hashtags.map(h => h.toLowerCase()),
+          ...extracted
+        ])
+      );
+      
       // Create post in database
       const { data: newPost, error } = await supabase
         .from('posts')
@@ -177,7 +192,7 @@ const CreatePost = () => {
           image_url: imageUrl,
           video_url: videoUrl,
           sport: selectedSport || null,
-          hashtags: hashtags.length > 0 ? hashtags : null
+          hashtags: allHashtags.length > 0 ? allHashtags : null
         })
         .select('id')
         .single();

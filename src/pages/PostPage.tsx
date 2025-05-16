@@ -254,13 +254,14 @@ const PostPage: React.FC = () => {
       </button>
       <div
         ref={containerRef}
-        className="w-full max-w-md mx-auto overflow-y-auto snap-y snap-mandatory"
+        className="w-full max-w-md mx-auto overflow-y-auto"
         style={{ WebkitOverflowScrolling: "touch", maxHeight: '100vh' }}
       >
         {posts.map((post, idx) => (
           <section
             key={post.id}
-            className={`w-full flex flex-col items-center justify-start snap-start bg-white dark:bg-black ${idx !== 0 ? 'border-t border-gray-200 dark:border-gray-800' : ''}`}
+            className="w-full flex flex-col items-center justify-start bg-white dark:bg-black"
+            style={{ margin: 0, padding: 0 }}
           >
             {/* Profile picture, name, and three dots menu */}
             <div className="flex items-center gap-2 pt-4 pb-2 w-full px-4 relative">
@@ -314,9 +315,19 @@ const PostPage: React.FC = () => {
             <div className="w-full px-4 pb-4 text-black dark:text-white text-left">
               <span className="font-semibold mr-2">{post.user?.name || "User"}</span>
               <span className="whitespace-pre-line break-words">{post.content || post.bio || ""}</span>
-              {/* Hashtags placeholder */}
-              {post.hashtags && (
-                <div className="mb-2 text-blue-400">{post.hashtags}</div>
+              {/* Hashtags */}
+              {(Array.isArray(post.hashtags) && post.hashtags.length > 0 ? post.hashtags : (post.content?.match(/#(\w+)/g) || []).map(tag => tag.slice(1))).length > 0 && (
+                <div className="mb-2 flex flex-wrap gap-2">
+                  {(Array.isArray(post.hashtags) && post.hashtags.length > 0 ? post.hashtags : (post.content?.match(/#(\w+)/g) || []).map(tag => tag.slice(1))).map((tag: string) => (
+                    <span
+                      key={tag}
+                      className="text-inherit cursor-pointer hover:underline"
+                      onClick={() => navigate(`/hashtag/${tag}`)}
+                    >
+                      #{tag}
+                    </span>
+                  ))}
+                </div>
               )}
             </div>
             {/* Comment Section Modal */}
