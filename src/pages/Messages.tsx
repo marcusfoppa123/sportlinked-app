@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import {
   getUserConversations,
   getConversationMessages,
   sendMessage,
-  checkMutualFollow,
+  checkMutualFollowForMessages,
 } from "@/integrations/supabase/client";
 
 const ACTION_WIDTH = 120; // px, width of the revealed action area
@@ -88,7 +89,8 @@ const Messages = () => {
     setActiveConversation(convo);
     setLoadingMessages(true);
     const otherUserId = convo.user1_id === user.id ? convo.user2_id : convo.user1_id;
-    setCanMessage(await checkMutualFollow(user.id, otherUserId));
+    const { data, error } = await checkMutualFollowForMessages(user.id, otherUserId);
+    setCanMessage(data || false);
     getConversationMessages(convo.id).then(({ data }) => {
       setMessages(data || []);
       setLoadingMessages(false);

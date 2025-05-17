@@ -1,27 +1,31 @@
-
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '../client';
 
-export const checkMutualFollow = async (user1Id: string, user2Id: string): Promise<boolean> => {
+export const checkMutualFollow = async (user1Id: string, user2Id: string): Promise<{data: boolean, error: any}> => {
   // Check if both users follow each other (mutual follow)
-  const { data: follows1, error: error1 } = await supabase
-    .from('followers')
-    .select('*')
-    .eq('follower_id', user1Id)
-    .eq('following_id', user2Id);
+  try {
+    const { data: follows1, error: error1 } = await supabase
+      .from('followers')
+      .select('*')
+      .eq('follower_id', user1Id)
+      .eq('following_id', user2Id);
 
-  const { data: follows2, error: error2 } = await supabase
-    .from('followers')
-    .select('*')
-    .eq('follower_id', user2Id)
-    .eq('following_id', user1Id);
+    const { data: follows2, error: error2 } = await supabase
+      .from('followers')
+      .select('*')
+      .eq('follower_id', user2Id)
+      .eq('following_id', user1Id);
 
-  if (error1 || error2) {
-    console.error("Error checking mutual follow:", error1 || error2);
-    return false;
+    if (error1 || error2) {
+      console.error("Error checking mutual follow:", error1 || error2);
+      return { data: false, error: error1 || error2 };
+    }
+
+    return { data: follows1?.length > 0 && follows2?.length > 0, error: null };
+  } catch (error) {
+    console.error("Error checking mutual follow:", error);
+    return { data: false, error };
   }
-
-  return follows1?.length > 0 && follows2?.length > 0;
 };
 
 export const createConversationIfNotExists = async (user1Id: string, user2Id: string): Promise<{id: string} | null> => {

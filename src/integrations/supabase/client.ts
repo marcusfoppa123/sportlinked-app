@@ -8,8 +8,16 @@ const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
-// Re-export modules for easier imports
+// Export specific functions from modules
 export * from './modules/followers';
-export * from './modules/conversations';
+
+// Export renamed functions from conversations to avoid conflicts
+export { 
+  createConversationIfNotExists,
+  getUserConversations,
+  // Renamed to avoid conflict with followers.ts
+  checkMutualFollow as checkMutualFollowForMessages 
+} from './modules/conversations';
+
 export * from './modules/messages';
 export * from './modules/search';
