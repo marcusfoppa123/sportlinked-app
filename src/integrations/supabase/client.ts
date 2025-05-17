@@ -86,7 +86,12 @@ export const checkIfUserIsFollowing = async (followerId: string, followingId: st
 // Helper function to increment followers count
 const incrementFollowers = async (userId: string) => {
   try {
-    const { data, error } = await supabase.rpc('increment_followers', { user_id: userId });
+    // Instead of using RPC, directly update the profile
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ followers: supabase.rpc('increment') })
+      .eq('id', userId);
+      
     if (error) {
       console.error("Error incrementing followers:", error);
     }
@@ -98,7 +103,12 @@ const incrementFollowers = async (userId: string) => {
 // Helper function to decrement followers count
 const decrementFollowers = async (userId: string) => {
   try {
-    const { data, error } = await supabase.rpc('decrement_followers', { user_id: userId });
+    // Instead of using RPC, directly update the profile
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ followers: supabase.rpc('decrement') })
+      .eq('id', userId);
+      
     if (error) {
       console.error("Error decrementing followers:", error);
     }
@@ -110,7 +120,12 @@ const decrementFollowers = async (userId: string) => {
 // Helper function to increment following count
 const incrementFollowing = async (userId: string) => {
   try {
-    const { data, error } = await supabase.rpc('increment_following', { user_id: userId });
+    // Instead of using RPC, directly update the profile
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ following: supabase.rpc('increment') })
+      .eq('id', userId);
+      
     if (error) {
       console.error("Error incrementing following:", error);
     }
@@ -122,7 +137,12 @@ const incrementFollowing = async (userId: string) => {
 // Helper function to decrement following count
 const decrementFollowing = async (userId: string) => {
   try {
-    const { data, error } = await supabase.rpc('decrement_following', { user_id: userId });
+    // Instead of using RPC, directly update the profile
+    const { data, error } = await supabase
+      .from('profiles')
+      .update({ following: supabase.rpc('decrement') })
+      .eq('id', userId);
+      
     if (error) {
       console.error("Error decrementing following:", error);
     }
