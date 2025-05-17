@@ -9,7 +9,8 @@ import { useLanguage } from "@/context/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { MessageCircle, UserPlus, Check, Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
-import { supabase, checkIfUserIsFollowing, followUser, unfollowUser } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
+import { checkIfFollowing, followUser, unfollowUser } from "@/integrations/supabase/modules/followers";
 import { useAuth } from "@/context/AuthContext";
 
 interface ProfileCardProps {
@@ -42,8 +43,8 @@ const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stat
       
       setIsLoading(true);
       try {
-        const following = await checkIfUserIsFollowing(currentUser.id, user.id);
-        setIsFollowing(following);
+        const { data: following, error } = await checkIfFollowing(currentUser.id, user.id);
+        setIsFollowing(following || false);
       } catch (error) {
         console.error("Error checking follow status:", error);
       } finally {
@@ -87,10 +88,10 @@ const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stat
     try {
       if (isFollowing) {
         // Unfollow user
-        const result = await unfollowUser(currentUser.id, user.id);
+        const { data, error } = await unfollowUser(currentUser.id, user.id);
           
-        if (!result.success) {
-          throw result.error;
+        if (error) {
+          throw error;
         }
         
         setIsFollowing(false);
@@ -100,10 +101,10 @@ const ProfileCard = ({ user, sport, position, onViewProfile, isFullProfile, stat
         });
       } else {
         // Follow user
-        const result = await followUser(currentUser.id, user.id);
+        const { data, error } = await followUser(currentUser.id, user.id);
           
-        if (!result.success) {
-          throw result.error;
+        if (error) {
+          throw error;
         }
         
         setIsFollowing(true);

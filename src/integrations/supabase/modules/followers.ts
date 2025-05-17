@@ -127,6 +127,25 @@ export const checkIfFollowing = async (followerId: string, followingId: string) 
   }
 };
 
+// Check if two users are mutually following each other
+export const checkMutualFollow = async (userId1: string, userId2: string) => {
+  try {
+    // Check if user1 follows user2
+    const { data: user1FollowsUser2, error: error1 } = await checkIfFollowing(userId1, userId2);
+    if (error1) throw error1;
+    
+    // Check if user2 follows user1
+    const { data: user2FollowsUser1, error: error2 } = await checkIfFollowing(userId2, userId1);
+    if (error2) throw error2;
+    
+    // Return true only if both users follow each other
+    return { data: user1FollowsUser2 && user2FollowsUser1, error: null };
+  } catch (error) {
+    console.error("Error checking mutual follow:", error);
+    return { data: false, error };
+  }
+};
+
 // Get all followers for a user
 export const getFollowers = async (userId: string) => {
   try {
