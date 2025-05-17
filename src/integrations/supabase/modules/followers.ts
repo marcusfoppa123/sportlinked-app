@@ -1,202 +1,178 @@
 
 import { supabase } from '../client';
-import { toast } from 'sonner';
 
-// Function to follow a user
+// Follow a user
 export const followUser = async (followerId: string, followingId: string) => {
   try {
-    const { data, error } = await supabase
+    // Insert the follow relationship
+    const { data: followData, error: followError } = await supabase
       .from('followers')
-      .insert([
-        { follower_id: followerId, following_id: followingId }
-      ]);
-
-    if (error) {
-      console.error("Error following user:", error);
-      return { success: false, error };
-    }
-
-    // Optimistically update the follower count for the followed user
-    await incrementFollowers(followingId);
-
-    // Optimistically update the following count for the current user
-    await incrementFollowing(followerId);
-
-    return { success: true, data };
+      .insert({
+        follower_id: followerId,
+        following_id: followingId
+      });
+      
+    if (followError) throw followError;
+    
+    // Update the followers count for the followed user
+    const { data: followedUserData, error: followedCountError } = await supabase
+      .from('profiles')
+      .select('followers')
+      .eq('id', followingId)
+      .single();
+      
+    if (followedCountError) throw followedCountError;
+    
+    const newFollowersCount = (followedUserData.followers || 0) + 1;
+    const { error: updateFollowedError } = await supabase
+      .from('profiles')
+      .update({ followers: newFollowersCount })
+      .eq('id', followingId);
+      
+    if (updateFollowedError) throw updateFollowedError;
+    
+    // Update the following count for the follower user
+    const { data: followerUserData, error: followerCountError } = await supabase
+      .from('profiles')
+      .select('following')
+      .eq('id', followerId)
+      .single();
+      
+    if (followerCountError) throw followerCountError;
+    
+    const newFollowingCount = (followerUserData.following || 0) + 1;
+    const { error: updateFollowerError } = await supabase
+      .from('profiles')
+      .update({ following: newFollowingCount })
+      .eq('id', followerId);
+      
+    if (updateFollowerError) throw updateFollowerError;
+    
+    return { data: followData, error: null };
   } catch (error) {
     console.error("Error following user:", error);
-    return { success: false, error: error instanceof Error ? error : new Error('Unknown error') };
+    return { data: null, error };
   }
 };
 
-// Function to unfollow a user
+// Unfollow a user
 export const unfollowUser = async (followerId: string, followingId: string) => {
   try {
-    const { data, error } = await supabase
+    // Delete the follow relationship
+    const { data: unfollowData, error: unfollowError } = await supabase
       .from('followers')
       .delete()
       .eq('follower_id', followerId)
       .eq('following_id', followingId);
-
-    if (error) {
-      console.error("Error unfollowing user:", error);
-      return { success: false, error };
-    }
-
-    // Optimistically update the follower count for the followed user
-    await decrementFollowers(followingId);
-
-    // Optimistically update the following count for the current user
-    await decrementFollowing(followerId);
-
-    return { success: true, data };
+      
+    if (unfollowError) throw unfollowError;
+    
+    // Update the followers count for the unfollowed user
+    const { data: followedUserData, error: followedCountError } = await supabase
+      .from('profiles')
+      .select('followers')
+      .eq('id', followingId)
+      .single();
+      
+    if (followedCountError) throw followedCountError;
+    
+    const newFollowersCount = Math.max(0, (followedUserData.followers || 0) - 1);
+    const { error: updateFollowedError } = await supabase
+      .from('profiles')
+      .update({ followers: newFollowersCount })
+      .eq('id', followingId);
+      
+    if (updateFollowedError) throw updateFollowedError;
+    
+    // Update the following count for the follower user
+    const { data: followerUserData, error: followerCountError } = await supabase
+      .from('profiles')
+      .select('following')
+      .eq('id', followerId)
+      .single();
+      
+    if (followerCountError) throw followerCountError;
+    
+    const newFollowingCount = Math.max(0, (followerUserData.following || 0) - 1);
+    const { error: updateFollowerError } = await supabase
+      .from('profiles')
+      .update({ following: newFollowingCount })
+      .eq('id', followerId);
+      
+    if (updateFollowerError) throw updateFollowerError;
+    
+    return { data: unfollowData, error: null };
   } catch (error) {
     console.error("Error unfollowing user:", error);
-    return { success: false, error: error instanceof Error ? error : new Error('Unknown error') };
+    return { data: null, error };
   }
 };
 
-// Function to check if a user is following another user
-export const checkIfUserIsFollowing = async (followerId: string, followingId: string): Promise<boolean> => {
+// Check if a user is following another user
+export const checkIfFollowing = async (followerId: string, followingId: string) => {
   try {
     const { data, error } = await supabase
       .from('followers')
       .select('*')
       .eq('follower_id', followerId)
       .eq('following_id', followingId);
-
-    if (error) {
-      console.error("Error checking follow status:", error);
-      return false;
-    }
-
-    return data && data.length > 0;
+      
+    if (error) throw error;
+    
+    // Return true if there's a record, false if not
+    return { data: data && data.length > 0, error: null };
   } catch (error) {
-    console.error("Error checking follow status:", error);
-    return false;
+    console.error("Error checking if following:", error);
+    return { data: false, error };
   }
 };
 
-// Helper function to increment followers count
-export const incrementFollowers = async (userId: string) => {
+// Get all followers for a user
+export const getFollowers = async (userId: string) => {
   try {
-    // First, get the current followers count
-    const { data: profile, error: fetchError } = await supabase
-      .from('profiles')
-      .select('followers')
-      .eq('id', userId)
-      .single();
+    const { data, error } = await supabase
+      .from('followers')
+      .select(`
+        follower_id,
+        profiles:follower_id (
+          id,
+          full_name,
+          avatar_url,
+          role
+        )
+      `)
+      .eq('following_id', userId);
       
-    if (fetchError) {
-      console.error("Error fetching profile for follower increment:", fetchError);
-      return;
-    }
+    if (error) throw error;
     
-    // Calculate the new count and update
-    const newCount = (profile?.followers || 0) + 1;
-    
-    const { error } = await supabase
-      .from('profiles')
-      .update({ followers: newCount })
-      .eq('id', userId);
-      
-    if (error) {
-      console.error("Error incrementing followers:", error);
-    }
+    return { data: data?.map(item => item.profiles) || [], error: null };
   } catch (error) {
-    console.error("Error incrementing followers:", error);
+    console.error("Error fetching followers:", error);
+    return { data: [], error };
   }
 };
 
-// Helper function to decrement followers count
-export const decrementFollowers = async (userId: string) => {
+// Get all users that a user is following
+export const getFollowing = async (userId: string) => {
   try {
-    // First, get the current followers count
-    const { data: profile, error: fetchError } = await supabase
-      .from('profiles')
-      .select('followers')
-      .eq('id', userId)
-      .single();
+    const { data, error } = await supabase
+      .from('followers')
+      .select(`
+        following_id,
+        profiles:following_id (
+          id,
+          full_name,
+          avatar_url,
+          role
+        )
+      `)
+      .eq('follower_id', userId);
       
-    if (fetchError) {
-      console.error("Error fetching profile for follower decrement:", fetchError);
-      return;
-    }
+    if (error) throw error;
     
-    // Calculate the new count and update (ensure it doesn't go below 0)
-    const newCount = Math.max((profile?.followers || 0) - 1, 0);
-    
-    const { error } = await supabase
-      .from('profiles')
-      .update({ followers: newCount })
-      .eq('id', userId);
-      
-    if (error) {
-      console.error("Error decrementing followers:", error);
-    }
+    return { data: data?.map(item => item.profiles) || [], error: null };
   } catch (error) {
-    console.error("Error decrementing followers:", error);
-  }
-};
-
-// Helper function to increment following count
-export const incrementFollowing = async (userId: string) => {
-  try {
-    // First, get the current following count
-    const { data: profile, error: fetchError } = await supabase
-      .from('profiles')
-      .select('following')
-      .eq('id', userId)
-      .single();
-      
-    if (fetchError) {
-      console.error("Error fetching profile for following increment:", fetchError);
-      return;
-    }
-    
-    // Calculate the new count and update
-    const newCount = (profile?.following || 0) + 1;
-    
-    const { error } = await supabase
-      .from('profiles')
-      .update({ following: newCount })
-      .eq('id', userId);
-      
-    if (error) {
-      console.error("Error incrementing following:", error);
-    }
-  } catch (error) {
-    console.error("Error incrementing following:", error);
-  }
-};
-
-// Helper function to decrement following count
-export const decrementFollowing = async (userId: string) => {
-  try {
-    // First, get the current following count
-    const { data: profile, error: fetchError } = await supabase
-      .from('profiles')
-      .select('following')
-      .eq('id', userId)
-      .single();
-      
-    if (fetchError) {
-      console.error("Error fetching profile for following decrement:", fetchError);
-      return;
-    }
-    
-    // Calculate the new count and update (ensure it doesn't go below 0)
-    const newCount = Math.max((profile?.following || 0) - 1, 0);
-    
-    const { error } = await supabase
-      .from('profiles')
-      .update({ following: newCount })
-      .eq('id', userId);
-      
-    if (error) {
-      console.error("Error decrementing following:", error);
-    }
-  } catch (error) {
-    console.error("Error decrementing following:", error);
+    console.error("Error fetching following:", error);
+    return { data: [], error };
   }
 };
