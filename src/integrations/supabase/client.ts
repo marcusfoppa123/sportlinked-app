@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 import { toast } from 'sonner';
 import { v4 as uuidv4 } from 'uuid';
@@ -86,10 +87,24 @@ export const checkIfUserIsFollowing = async (followerId: string, followingId: st
 // Helper function to increment followers count
 const incrementFollowers = async (userId: string) => {
   try {
-    // Instead of using RPC, directly update the profile
-    const { data, error } = await supabase
+    // First, get the current followers count
+    const { data: profile, error: fetchError } = await supabase
       .from('profiles')
-      .update({ followers: supabase.rpc('increment') })
+      .select('followers')
+      .eq('id', userId)
+      .single();
+      
+    if (fetchError) {
+      console.error("Error fetching profile for follower increment:", fetchError);
+      return;
+    }
+    
+    // Calculate the new count and update
+    const newCount = (profile?.followers || 0) + 1;
+    
+    const { error } = await supabase
+      .from('profiles')
+      .update({ followers: newCount })
       .eq('id', userId);
       
     if (error) {
@@ -103,10 +118,24 @@ const incrementFollowers = async (userId: string) => {
 // Helper function to decrement followers count
 const decrementFollowers = async (userId: string) => {
   try {
-    // Instead of using RPC, directly update the profile
-    const { data, error } = await supabase
+    // First, get the current followers count
+    const { data: profile, error: fetchError } = await supabase
       .from('profiles')
-      .update({ followers: supabase.rpc('decrement') })
+      .select('followers')
+      .eq('id', userId)
+      .single();
+      
+    if (fetchError) {
+      console.error("Error fetching profile for follower decrement:", fetchError);
+      return;
+    }
+    
+    // Calculate the new count and update (ensure it doesn't go below 0)
+    const newCount = Math.max((profile?.followers || 0) - 1, 0);
+    
+    const { error } = await supabase
+      .from('profiles')
+      .update({ followers: newCount })
       .eq('id', userId);
       
     if (error) {
@@ -120,10 +149,24 @@ const decrementFollowers = async (userId: string) => {
 // Helper function to increment following count
 const incrementFollowing = async (userId: string) => {
   try {
-    // Instead of using RPC, directly update the profile
-    const { data, error } = await supabase
+    // First, get the current following count
+    const { data: profile, error: fetchError } = await supabase
       .from('profiles')
-      .update({ following: supabase.rpc('increment') })
+      .select('following')
+      .eq('id', userId)
+      .single();
+      
+    if (fetchError) {
+      console.error("Error fetching profile for following increment:", fetchError);
+      return;
+    }
+    
+    // Calculate the new count and update
+    const newCount = (profile?.following || 0) + 1;
+    
+    const { error } = await supabase
+      .from('profiles')
+      .update({ following: newCount })
       .eq('id', userId);
       
     if (error) {
@@ -137,10 +180,24 @@ const incrementFollowing = async (userId: string) => {
 // Helper function to decrement following count
 const decrementFollowing = async (userId: string) => {
   try {
-    // Instead of using RPC, directly update the profile
-    const { data, error } = await supabase
+    // First, get the current following count
+    const { data: profile, error: fetchError } = await supabase
       .from('profiles')
-      .update({ following: supabase.rpc('decrement') })
+      .select('following')
+      .eq('id', userId)
+      .single();
+      
+    if (fetchError) {
+      console.error("Error fetching profile for following decrement:", fetchError);
+      return;
+    }
+    
+    // Calculate the new count and update (ensure it doesn't go below 0)
+    const newCount = Math.max((profile?.following || 0) - 1, 0);
+    
+    const { error } = await supabase
+      .from('profiles')
+      .update({ following: newCount })
       .eq('id', userId);
       
     if (error) {
