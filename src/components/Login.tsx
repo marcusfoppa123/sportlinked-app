@@ -13,7 +13,7 @@ import logo from "@/assets/sportslinked-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import sportslinkedIcon from '@/assets/sportslinked-icon.png';
 import { useNavigate } from 'react-router-dom';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog as UIDialog, DialogContent as UIDialogContent, DialogHeader as UIDialogHeader, DialogTitle as UIDialogTitle } from '@/components/ui/dialog';
 import { X, ArrowLeft } from 'lucide-react';
 
 const LoginForm = ({ initialRole, onForgotPassword }: { initialRole: UserRole, onForgotPassword: () => void }) => {
@@ -99,11 +99,19 @@ interface RegisterFormProps {
 
 const steps = ["Account", "Birth & Division", "Sport & Position", "Soccer Info"];
 
-const ProgressBar = ({ step }: { step: number }) => (
+const ProgressBar = ({ step, onStepClick, maxStep }: { step: number, onStepClick?: (idx: number) => void, maxStep?: number }) => (
   <div className="flex items-center justify-center mb-6">
     {steps.map((label, idx) => (
       <div key={label} className="flex items-center">
-        <div className={`rounded-full border-2 w-8 h-8 flex items-center justify-center font-bold text-lg transition-all duration-200 ${step === idx + 1 ? 'border-blue-600 text-blue-600 bg-white' : step > idx + 1 ? 'border-blue-400 text-blue-400 bg-white' : 'border-gray-300 text-gray-400 bg-white'}`}>{idx + 1}</div>
+        <button
+          type="button"
+          className={`rounded-full border-2 w-8 h-8 flex items-center justify-center font-bold text-lg transition-all duration-200 focus:outline-none ${step === idx + 1 ? 'border-blue-600 text-blue-600 bg-white' : step > idx + 1 ? 'border-blue-400 text-blue-400 bg-white' : 'border-gray-300 text-gray-400 bg-white'} ${onStepClick && idx + 1 < step ? 'cursor-pointer hover:border-blue-600' : 'cursor-default'}`}
+          onClick={() => onStepClick && idx + 1 < step && onStepClick(idx + 1)}
+          disabled={!onStepClick || idx + 1 >= step}
+          aria-label={`Go to step ${idx + 1}`}
+        >
+          {idx + 1}
+        </button>
         {idx < steps.length - 1 && <div className={`h-1 w-8 ${step > idx + 1 ? 'bg-blue-400' : 'bg-gray-200'}`}></div>}
       </div>
     ))}
@@ -136,6 +144,8 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
     latestClub: ""
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [maxStep, setMaxStep] = useState(1);
+  const [emailExistsModal, setEmailExistsModal] = useState(false);
 
   const updateFormData = (field: string, value: any) => {
     setFormData({ ...formData, [field]: value });
@@ -150,10 +160,40 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
     }
   };
 
-  const handleNextStep = () => {
+  // Use signInWithPassword to check if email exists (client-safe)
+  const checkEmailExists = async (email: string) => {
+    try {
+      await supabase.auth.signInWithPassword({ email, password: 'dummy-password' });
+      // If no error, account exists (but this should never happen with a dummy password)
+      return true;
+    } catch (error: any) {
+      if (error.message && error.message.toLowerCase().includes('invalid login credentials')) {
+        // Email exists, password is wrong
+        return true;
+      }
+      if (error.message && error.message.toLowerCase().includes('user not found')) {
+        // Email does not exist
+        return false;
+      }
+      // Fallback: treat as not found
+      return false;
+    }
+  };
+
+  const handleNextStep = async () => {
     if (step === 1) {
       if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
         toast.error("Please fill in all fields");
+        return;
+      }
+      if (formData.password.length < 6) {
+        toast.error("Password must be at least 6 characters long.");
+        return;
+      }
+      // Check if email already exists
+      const exists = await checkEmailExists(formData.email);
+      if (exists) {
+        setEmailExistsModal(true);
         return;
       }
       if (formData.password !== formData.confirmPassword) {
@@ -181,10 +221,17 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
       }
     }
     setStep(step + 1);
+    setMaxStep(Math.max(maxStep, step + 1));
   };
 
   const handlePrevStep = () => {
     setStep(step - 1);
+  };
+
+  const handleStepClick = (targetStep: number) => {
+    if (targetStep < step) {
+      setStep(targetStep);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -245,7 +292,7 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
 
   return (
     <div className="space-y-4">
-      <ProgressBar step={step} />
+      <ProgressBar step={step} onStepClick={handleStepClick} maxStep={maxStep} />
       {step === 1 && (
         <motion.div
           initial={{ opacity: 0, x: 20 }}
@@ -557,6 +604,19 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
           </div>
         </motion.div>
       )}
+      <UIDialog open={emailExistsModal} onOpenChange={setEmailExistsModal}>
+        <UIDialogContent className="max-w-xs mx-auto text-center">
+          <UIDialogHeader>
+            <UIDialogTitle className="text-red-600">Account Already Exists</UIDialogTitle>
+          </UIDialogHeader>
+          <div className="py-4 text-base text-gray-800 dark:text-gray-100">
+            There is already an active account connected to this email.
+          </div>
+          <Button className="w-full mt-2" onClick={() => setEmailExistsModal(false)}>
+            OK
+          </Button>
+        </UIDialogContent>
+      </UIDialog>
     </div>
   );
 };
@@ -586,8 +646,8 @@ const ForgotPasswordDialog = ({ open, onClose }) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent>
+    <UIDialog open={open} onOpenChange={onClose}>
+      <UIDialogContent>
         <button
           onClick={onClose}
           className="absolute right-4 top-4 text-[#1877c0] hover:text-blue-800 z-50"
@@ -596,9 +656,9 @@ const ForgotPasswordDialog = ({ open, onClose }) => {
         >
           <X size={32} />
         </button>
-        <DialogHeader>
-          <DialogTitle>Reset Password</DialogTitle>
-        </DialogHeader>
+        <UIDialogHeader>
+          <UIDialogTitle>Reset Password</UIDialogTitle>
+        </UIDialogHeader>
         {sent ? (
           <div className="text-center text-[#1877c0]">Check your email for a reset link.</div>
         ) : (
@@ -615,8 +675,8 @@ const ForgotPasswordDialog = ({ open, onClose }) => {
             </Button>
           </form>
         )}
-      </DialogContent>
-    </Dialog>
+      </UIDialogContent>
+    </UIDialog>
   );
 };
 

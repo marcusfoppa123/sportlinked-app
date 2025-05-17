@@ -31,11 +31,11 @@ export interface User {
   posts?: number;
   offers?: number;
   // Athlete stats
-  ppg?: number;
-  apg?: number;
-  rpg?: number;
-  games?: number;
+  goals?: number;
+  assists?: number;
+  matches?: number;
   winPercentage?: number;
+  cleanSheets?: number;
   // Social
   followers?: number;
   following?: number;
@@ -175,11 +175,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           connections: data.connections,
           posts: data.posts,
           offers: data.offers,
-          ppg: data.ppg,
-          apg: data.apg,
-          rpg: data.rpg,
-          games: data.games,
+          goals: data.goals,
+          assists: data.assists,
+          matches: data.matches,
           winPercentage: data.win_percentage,
+          cleanSheets: data.clean_sheets,
           followers: followers,
           following: following,
         });
@@ -215,7 +215,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     
     try {
-      // Register with Supabase auth
+      // First check if the email exists in Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password: 'dummy-password-for-check'
+      });
+
+      if (authData?.user) {
+        toast.error('An account with this email already exists.');
+        throw new Error('Email already registered');
+      }
+
+      // If we get here, the email doesn't exist in Auth, so we can proceed with registration
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -227,27 +238,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
       });
       
-      if (error) throw error;
-      
-      toast.success("Account created successfully");
-      
-      // Create profile if registration was successful and we have a user
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .insert({
-            id: data.user.id,
-            full_name: name,
-            role: role
-          });
-          
-        if (profileError) {
-          console.error("Error creating profile:", profileError);
+      if (error) {
+        // Check for specific error types
+        if (error.message?.includes('User already registered')) {
+          toast.error('An account with this email already exists.');
+        } else {
+          toast.error(error.message || 'Registration failed. Please try again.');
         }
+        throw error;
       }
+      
+      if (!data.user) {
+        toast.error('Registration failed. Please try again.');
+        throw new Error('No user data returned');
+      }
+
+      // Create profile if registration was successful
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          full_name: name,
+          role: role,
+          email: email,
+          followers: 0,
+          following: 0
+        });
+        
+      if (profileError) {
+        console.error("Error creating profile:", profileError);
+        toast.error("Account created but profile setup failed. Please try logging in.");
+        throw profileError;
+      }
+      
+      toast.success("Account created successfully! Please check your email for verification.");
     } catch (error: any) {
       console.error("Registration error:", error);
-      toast.error(error.message || "Registration failed. Please try again.");
       throw error;
     } finally {
       setIsLoading(false);
@@ -327,11 +353,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (updatedProfile.connections !== undefined) dbProfile.connections = updatedProfile.connections;
       if (updatedProfile.posts !== undefined) dbProfile.posts = updatedProfile.posts;
       if (updatedProfile.offers !== undefined) dbProfile.offers = updatedProfile.offers;
-      if (updatedProfile.ppg !== undefined) dbProfile.ppg = updatedProfile.ppg;
-      if (updatedProfile.apg !== undefined) dbProfile.apg = updatedProfile.apg;
-      if (updatedProfile.rpg !== undefined) dbProfile.rpg = updatedProfile.rpg;
-      if (updatedProfile.games !== undefined) dbProfile.games = updatedProfile.games;
+      if (updatedProfile.goals !== undefined) dbProfile.goals = updatedProfile.goals;
+      if (updatedProfile.assists !== undefined) dbProfile.assists = updatedProfile.assists;
+      if (updatedProfile.matches !== undefined) dbProfile.matches = updatedProfile.matches;
       if (updatedProfile.winPercentage !== undefined) dbProfile.win_percentage = updatedProfile.winPercentage;
+      if (updatedProfile.cleanSheets !== undefined) dbProfile.clean_sheets = updatedProfile.cleanSheets;
       if (updatedProfile.followers !== undefined) dbProfile.followers = updatedProfile.followers;
       if (updatedProfile.following !== undefined) dbProfile.following = updatedProfile.following;
       
