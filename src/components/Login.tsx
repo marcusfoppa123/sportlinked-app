@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAuth, UserRole } from "@/context/AuthContext";
@@ -196,11 +197,27 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
         return;
       }
       
-      // Skip the email check here - we'll handle duplicate emails in the registration process
-      
       if (formData.password !== formData.confirmPassword) {
         toast.error("Passwords do not match");
         return;
+      }
+
+      // Check if email exists before proceeding
+      try {
+        const { data, error } = await supabase.auth.signInWithOtp({
+          email: formData.email,
+          options: {
+            shouldCreateUser: false
+          }
+        });
+        
+        // If no error, email exists (since OTP was sent)
+        if (!error) {
+          setEmailExistsModal(true);
+          return;
+        }
+      } catch (error) {
+        // Continue to next step if there's an error (email doesn't exist)
       }
     } else if (step === 2) {
       if (!formData.birthYear || !formData.birthMonth || !formData.birthDay) {
@@ -239,35 +256,75 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    
     try {
-      await register(formData.email, formData.password, formData.name, formData.role);
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({
-            birth_year: parseInt(formData.birthYear),
-            birth_month: parseInt(formData.birthMonth),
-            birth_day: parseInt(formData.birthDay),
-            division: formData.division,
-            sport: formData.sport ? `{${formData.sport}}` : null,
-            position: formData.position && formData.position.length > 0 ? `{${formData.position.join(',')}}` : null,
-            experience: formData.experience,
-            team_size: formData.teamSize,
-            team_type: formData.teamType,
-            years_played: formData.yearsPlayed ? parseInt(formData.yearsPlayed) : null,
-            dominant_foot: formData.dominantFoot,
-            weight: formData.weight ? parseInt(formData.weight) : null,
-            height: formData.height ? parseInt(formData.height) : null,
-            latest_club: formData.latestClub
-          })
-          .eq('id', user.id);
-        if (profileError) {
-          console.error("Error updating profile:", profileError);
+      // Attempt to register the user
+      const { data, error } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          data: {
+            full_name: formData.name,
+            role: formData.role
+          }
         }
+      });
+      
+      if (error) {
+        // Check for existing email error
+        if (error.message?.includes('User already registered') || 
+            error.message?.includes('email already in use') ||
+            error.message?.includes('duplicate key value') ||
+            error.message?.toLowerCase().includes('already exists')) {
+          setEmailExistsModal(true);
+          setIsLoading(false);
+          return;
+        }
+        
+        toast.error(error.message || "Registration failed. Please try again.");
+        setIsLoading(false);
+        return;
       }
-      toast.success("Account created successfully");
-      navigate("/for-you");
+      
+      if (!data.user) {
+        toast.error('Registration failed. Please try again.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Create or update profile if registration was successful
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert({
+          id: data.user.id,
+          full_name: formData.name,
+          role: formData.role,
+          email: formData.email,
+          birth_year: parseInt(formData.birthYear),
+          birth_month: parseInt(formData.birthMonth),
+          birth_day: parseInt(formData.birthDay),
+          division: formData.division,
+          sport: formData.sport ? `{${formData.sport}}` : null,
+          position: formData.position && formData.position.length > 0 ? `{${formData.position.join(',')}}` : null,
+          experience: formData.experience,
+          team_size: formData.teamSize,
+          team_type: formData.teamType,
+          years_played: formData.yearsPlayed ? parseInt(formData.yearsPlayed) : null,
+          dominant_foot: formData.dominantFoot,
+          weight: formData.weight ? parseInt(formData.weight) : null,
+          height: formData.height ? parseInt(formData.height) : null,
+          latest_club: formData.latestClub,
+          followers: 0,
+          following: 0
+        });
+        
+      if (profileError) {
+        console.error("Error creating profile:", profileError);
+        toast.error("Account created but profile setup failed. Please try logging in.");
+      } else {
+        toast.success("Account created successfully! Please check your email for verification.");
+        navigate("/for-you");
+      }
     } catch (error: any) {
       console.error("Registration error:", error);
       
