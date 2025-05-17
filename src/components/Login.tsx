@@ -165,11 +165,7 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
     try {
       // Use a more accurate method to check if email exists
       const { data, error } = await supabase.auth.admin
-        .listUsers({ 
-          page: 1,
-          perPage: 1,
-          filter: { email: email }
-        })
+        .listUsers()
         .catch(() => ({ data: null, error: null }));
       
       if (error) {

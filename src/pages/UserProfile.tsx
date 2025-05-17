@@ -64,11 +64,13 @@ const UserProfile = () => {
           experience: profile.experience,
           followers: profile.followers || 0,
           following: profile.following || 0,
-          ppg: profile.ppg,
-          apg: profile.apg,
-          rpg: profile.rpg,
-          games: profile.games,
-          winPercentage: profile.win_percentage
+          
+          // Add type assertion for these properties that might not be in the type definition
+          ppg: (profile as any).ppg,
+          apg: (profile as any).apg,
+          rpg: (profile as any).rpg,
+          games: (profile as any).games,
+          winPercentage: (profile as any).win_percentage
         });
       }
       
