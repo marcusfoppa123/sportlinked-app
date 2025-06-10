@@ -118,25 +118,49 @@ const ProgressBar = ({ step, onStepClick, maxStep }: { step: number, onStepClick
   </div>
 );
 
+interface FormData {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  role: UserRole;
+  scoutType: string;
+  scoutTeam: string;
+  scoutSport: string;
+  scoutYearsExperience: string;
+  birthYear: string;
+  birthMonth: string;
+  birthDay: string;
+  division: string;
+  sport: string;
+  position: string[];
+  yearsPlayed: string;
+  dominantFoot: string;
+  weight: string;
+  height: string;
+  latestClub: string;
+}
+
 const RegisterForm = ({ initialRole }: RegisterFormProps) => {
   const { register } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
     role: initialRole,
-    sport: "",
-    position: [] as string[],
-    experience: "",
-    teamSize: "",
-    teamType: "",
+    scoutType: "",
+    scoutTeam: "",
+    scoutSport: "",
+    scoutYearsExperience: "",
     birthYear: "",
     birthMonth: "",
     birthDay: "",
     division: "",
+    sport: "",
+    position: [],
     yearsPlayed: "",
     dominantFoot: "",
     weight: "",
@@ -190,7 +214,6 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
         toast.error("Password must be at least 6 characters long.");
         return;
       }
-      // Check if email already exists
       const exists = await checkEmailExists(formData.email);
       if (exists) {
         setEmailExistsModal(true);
@@ -200,23 +223,23 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
         toast.error("Passwords do not match");
         return;
       }
-    } else if (step === 2) {
-      if (!formData.birthYear || !formData.birthMonth || !formData.birthDay) {
-        toast.error("Please select your birth date");
+    } else if (step === 2 && formData.role === "scout") {
+      if (!formData.scoutType) {
+        toast.error("Please select your scout type");
         return;
       }
-      if (!formData.division) {
-        toast.error("Please select your division");
+      if (formData.scoutType === "team" && !formData.scoutTeam) {
+        toast.error("Please enter your team name");
         return;
       }
-    } else if (step === 3) {
-      if (!formData.sport || formData.position.length === 0) {
-        toast.error("Please complete all required information");
+    } else if (step === 3 && formData.role === "scout") {
+      if (!formData.scoutSport) {
+        toast.error("Please select your sport");
         return;
       }
-    } else if (step === 4 && formData.sport === "soccer") {
-      if (!formData.dominantFoot || !formData.weight || !formData.height || !formData.latestClub) {
-        toast.error("Please complete all soccer info");
+    } else if (step === 4 && formData.role === "scout") {
+      if (!formData.scoutYearsExperience) {
+        toast.error("Please enter your years of experience");
         return;
       }
     }
@@ -244,20 +267,10 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
         const { error: profileError } = await supabase
           .from('profiles')
           .update({
-            birth_year: parseInt(formData.birthYear),
-            birth_month: parseInt(formData.birthMonth),
-            birth_day: parseInt(formData.birthDay),
-            division: formData.division,
-            sport: formData.sport ? `{${formData.sport}}` : null,
-            position: formData.position && formData.position.length > 0 ? `{${formData.position.join(',')}}` : null,
-            experience: formData.experience,
-            team_size: formData.teamSize,
-            team_type: formData.teamType,
-            years_played: formData.yearsPlayed ? parseInt(formData.yearsPlayed) : null,
-            dominant_foot: formData.dominantFoot,
-            weight: formData.weight ? parseInt(formData.weight) : null,
-            height: formData.height ? parseInt(formData.height) : null,
-            latest_club: formData.latestClub
+            scout_type: formData.scoutType,
+            scout_team: formData.scoutTeam,
+            scout_sport: formData.scoutSport,
+            scout_years_experience: formData.scoutYearsExperience ? parseInt(formData.scoutYearsExperience) : null,
           })
           .eq('id', user.id);
         if (profileError) {
@@ -594,6 +607,126 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
               onChange={(e) => updateFormData("latestClub", e.target.value)}
             />
           </div>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" className="w-1/2" onClick={handlePrevStep}>
+              Back
+            </Button>
+            <Button type="button" className="w-1/2" onClick={handleSubmit} disabled={isLoading}>
+              {isLoading ? "Creating account..." : "Register & Go Home"}
+            </Button>
+          </div>
+        </motion.div>
+      )}
+      {step === 2 && formData.role === "scout" && (
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          className="space-y-4"
+        >
+          <div className="space-y-2">
+            <Label className="text-white">Are you an independent/private scout or do you scout for a team?</Label>
+            <div className="flex gap-2">
+              {['independent', 'team'].map((type) => (
+                <Button
+                  key={type}
+                  type="button"
+                  variant={formData.scoutType === type ? "default" : "outline"}
+                  className="w-full justify-center"
+                  onClick={() => updateFormData("scoutType", type)}
+                >
+                  {type.charAt(0).toUpperCase() + type.slice(1)}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {formData.scoutType === "team" && (
+            <div className="space-y-2">
+              <Label htmlFor="scoutTeam" className="text-white">Which team do you scout for?</Label>
+              <Input
+                id="scoutTeam"
+                placeholder="Enter team name"
+                value={formData.scoutTeam}
+                onChange={(e) => updateFormData("scoutTeam", e.target.value)}
+              />
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" className="w-1/2" onClick={handlePrevStep}>
+              Back
+            </Button>
+            <Button type="button" className="w-1/2" onClick={handleNextStep}>
+              Next Step
+            </Button>
+          </div>
+        </motion.div>
+      )}
+
+      {step === 3 && formData.role === "scout" && (
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          className="space-y-4"
+        >
+          <div className="space-y-2">
+            <Label className="text-white">What sport do you scout for?</Label>
+            <Select
+              value={formData.scoutSport}
+              onValueChange={(value) => updateFormData("scoutSport", value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select sport" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="soccer">Soccer</SelectItem>
+                <SelectItem value="basketball">Basketball</SelectItem>
+                <SelectItem value="hockey">Hockey</SelectItem>
+                <SelectItem value="baseball">Baseball</SelectItem>
+                <SelectItem value="football">Football</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" className="w-1/2" onClick={handlePrevStep}>
+              Back
+            </Button>
+            <Button type="button" className="w-1/2" onClick={handleNextStep}>
+              Next Step
+            </Button>
+          </div>
+        </motion.div>
+      )}
+
+      {step === 4 && formData.role === "scout" && (
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          className="space-y-4"
+        >
+          <div className="space-y-2">
+            <Label htmlFor="scoutYearsExperience" className="text-white">How many years have you been a scout?</Label>
+            <Select
+              value={formData.scoutYearsExperience}
+              onValueChange={(value) => updateFormData("scoutYearsExperience", value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select years" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: 51 }, (_, i) => i).map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year} {year === 1 ? 'year' : 'years'}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="flex gap-2">
             <Button type="button" variant="outline" className="w-1/2" onClick={handlePrevStep}>
               Back

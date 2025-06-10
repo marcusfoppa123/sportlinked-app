@@ -77,6 +77,10 @@ export interface Database {
           division: string | null
           created_at: string
           updated_at: string | null
+          scout_type: string | null
+          scout_team: string | null
+          scout_sport: string | null
+          scout_years_experience: number | null
         }
         Insert: {
           id: string
@@ -111,6 +115,10 @@ export interface Database {
           division?: string | null
           created_at?: string
           updated_at?: string | null
+          scout_type?: string | null
+          scout_team?: string | null
+          scout_sport?: string | null
+          scout_years_experience?: number | null
         }
         Update: {
           id?: string
@@ -145,6 +153,10 @@ export interface Database {
           division?: string | null
           created_at?: string
           updated_at?: string | null
+          scout_type?: string | null
+          scout_team?: string | null
+          scout_sport?: string | null
+          scout_years_experience?: number | null
         }
         Relationships: [
           {
