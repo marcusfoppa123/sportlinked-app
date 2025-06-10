@@ -1,18 +1,9 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+
+import React, { useState } from "react";
 import { useAuth, UserRole } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "sonner";
-import logo from "@/assets/sportslinked-logo.png";
-import { supabase } from "@/integrations/supabase/client";
-import sportslinkedIcon from '@/assets/sportslinked-icon.png';
 import { useNavigate } from 'react-router-dom';
+<<<<<<< HEAD
 import { Dialog as UIDialog, DialogContent as UIDialogContent, DialogHeader as UIDialogHeader, DialogTitle as UIDialogTitle } from '@/components/ui/dialog';
 import { X, ArrowLeft } from 'lucide-react';
 
@@ -753,72 +744,26 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
     </div>
   );
 };
+=======
+import { ArrowLeft } from 'lucide-react';
+import sportslinkedIcon from '@/assets/sportslinked-icon.png';
+import LoginForm from "@/components/auth/LoginForm";
+import RegisterForm from "@/components/auth/RegisterForm";
+import ForgotPasswordDialog from "@/components/auth/ForgotPasswordDialog";
+import { supabase } from "@/integrations/supabase/client";
+>>>>>>> 5a8aa209eed46f8b75073213ff1013f4419ed30c
 
 interface LoginComponentProps {
   initialRole: UserRole;
   showRegister?: boolean;
 }
 
-const ForgotPasswordDialog = ({ open, onClose }) => {
-  const [email, setEmail] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [sent, setSent] = useState(false);
-
-  const handleReset = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email);
-      if (error) throw error;
-      setSent(true);
-    } catch (err) {
-      toast.error('Failed to send reset email.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <UIDialog open={open} onOpenChange={onClose}>
-      <UIDialogContent>
-        <button
-          onClick={onClose}
-          className="absolute right-4 top-4 text-[#1877c0] hover:text-blue-800 z-50"
-          style={{ fontSize: 32 }}
-          aria-label="Close"
-        >
-          <X size={32} />
-        </button>
-        <UIDialogHeader>
-          <UIDialogTitle>Reset Password</UIDialogTitle>
-        </UIDialogHeader>
-        {sent ? (
-          <div className="text-center text-[#1877c0]">Check your email for a reset link.</div>
-        ) : (
-          <form onSubmit={handleReset} className="space-y-4">
-            <Input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-            />
-            <Button type="submit" className="w-full bg-[#1877c0] text-white" disabled={isLoading}>
-              {isLoading ? 'Sending...' : 'Send Reset Link'}
-            </Button>
-          </form>
-        )}
-      </UIDialogContent>
-    </UIDialog>
-  );
-};
-
 const Login = ({ initialRole, showRegister }: LoginComponentProps) => {
   const { user, supabaseUser } = useAuth();
   const navigate = useNavigate();
   const [forgotOpen, setForgotOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(showRegister ? 'register' : 'login');
-  const showRoleWarning = supabaseUser && user?.role && initialRole !== user.role;
+  
   const handleGoogleLogin = async () => {
     await supabase.auth.signInWithOAuth({
       provider: "google",

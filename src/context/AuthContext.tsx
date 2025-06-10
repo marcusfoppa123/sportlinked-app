@@ -215,18 +215,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(true);
     
     try {
-      // First check if the email exists in Supabase Auth
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password: 'dummy-password-for-check'
-      });
-
-      if (authData?.user) {
-        toast.error('An account with this email already exists.');
-        throw new Error('Email already registered');
-      }
-
-      // If we get here, the email doesn't exist in Auth, so we can proceed with registration
+      // Directly attempt registration - Supabase will handle duplicate emails
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -239,8 +228,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       
       if (error) {
-        // Check for specific error types
-        if (error.message?.includes('User already registered')) {
+        // Check for specific error types directly from Supabase's response
+        if (error.message?.includes('User already registered') || 
+            error.message?.includes('email already in use')) {
           toast.error('An account with this email already exists.');
         } else {
           toast.error(error.message || 'Registration failed. Please try again.');

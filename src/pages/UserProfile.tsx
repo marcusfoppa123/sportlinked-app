@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -9,7 +10,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Settings, Share2, UserPlus, UserMinus, MapPin, ArrowLeft } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import ProfilePostGrid from "@/components/ProfilePostGrid";
-import { supabase, checkIfUserIsFollowing, followUser, unfollowUser, checkMutualFollow, createConversationIfNotExists } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
+import { checkIfFollowing, followUser, unfollowUser, checkMutualFollow } from "@/integrations/supabase/modules/followers";
+import { createConversationIfNotExists } from "@/integrations/supabase/modules/conversations";
 import { toast } from "@/components/ui/use-toast";
 
 interface UserProfileData {
@@ -64,18 +67,28 @@ const UserProfile = () => {
           experience: profile.experience,
           followers: profile.followers || 0,
           following: profile.following || 0,
+<<<<<<< HEAD
           winPercentage: profile.win_percentage,
           scoutType: profile.scout_type,
           scoutTeam: profile.scout_team,
           scoutSport: profile.scout_sport,
           scoutYearsExperience: profile.scout_years_experience
+=======
+          
+          // Add type assertion for these properties that might not be in the type definition
+          ppg: (profile as any).ppg,
+          apg: (profile as any).apg,
+          rpg: (profile as any).rpg,
+          games: (profile as any).games,
+          winPercentage: (profile as any).win_percentage
+>>>>>>> 5a8aa209eed46f8b75073213ff1013f4419ed30c
         });
       }
       
       // Check if current user is following this profile
-      if (currentUser?.id) {
-        const following = await checkIfUserIsFollowing(currentUser.id, userId);
-        setIsFollowing(following);
+      if (currentUser?.id && userId) {
+        const { data: following } = await checkIfFollowing(currentUser.id, userId);
+        setIsFollowing(following || false);
       }
       
     } catch (error) {
@@ -115,10 +128,10 @@ const UserProfile = () => {
     try {
       if (isFollowing) {
         // Unfollow user
-        const result = await unfollowUser(currentUser.id, userId);
+        const { data, error } = await unfollowUser(currentUser.id, userId);
         
-        if (!result.success) {
-          throw new Error(result.error?.message || "Failed to unfollow user");
+        if (error) {
+          throw new Error(error.message || "Failed to unfollow user");
         }
         
         setIsFollowing(false);
@@ -139,10 +152,10 @@ const UserProfile = () => {
         await refreshUserProfile();
       } else {
         // Follow user
-        const result = await followUser(currentUser.id, userId);
+        const { data, error } = await followUser(currentUser.id, userId);
         
-        if (!result.success) {
-          throw new Error(result.error?.message || "Failed to follow user");
+        if (error) {
+          throw new Error(error.message || "Failed to follow user");
         }
         
         setIsFollowing(true);
@@ -162,11 +175,11 @@ const UserProfile = () => {
         // Refresh current user data to update their following count
         await refreshUserProfile();
 
-        // --- NEW: Check for mutual follow and create conversation if needed ---
-        if (await checkMutualFollow(currentUser.id, userId)) {
+        // Check for mutual follow and create conversation if needed
+        const { data: isMutualFollow } = await checkMutualFollow(currentUser.id, userId);
+        if (isMutualFollow) {
           await createConversationIfNotExists(currentUser.id, userId);
         }
-        // --- END NEW ---
       }
     } catch (error) {
       console.error("Error in follow/unfollow operation:", error);

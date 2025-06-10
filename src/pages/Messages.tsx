@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import {
   getUserConversations,
   getConversationMessages,
   sendMessage,
-  checkMutualFollow,
+  checkMutualFollowForMessages,
 } from "@/integrations/supabase/client";
 
 const ACTION_WIDTH = 120; // px, width of the revealed action area
@@ -88,7 +89,8 @@ const Messages = () => {
     setActiveConversation(convo);
     setLoadingMessages(true);
     const otherUserId = convo.user1_id === user.id ? convo.user2_id : convo.user1_id;
-    setCanMessage(await checkMutualFollow(user.id, otherUserId));
+    const { data, error } = await checkMutualFollowForMessages(user.id, otherUserId);
+    setCanMessage(data || false);
     getConversationMessages(convo.id).then(({ data }) => {
       setMessages(data || []);
       setLoadingMessages(false);
@@ -194,18 +196,29 @@ const Messages = () => {
 
   // Add helpers for pin/mute state in Supabase
   const getUserConversationSettings = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('conversation_settings')
-      .eq('id', userId)
-      .maybeSingle();
-    return data?.conversation_settings || { pinned: [], muted: [] };
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+      
+      // Initialize default settings if they don't exist yet
+      return { pinned: [], muted: [] };
+    } catch (error) {
+      console.error("Error fetching conversation settings:", error);
+      return { pinned: [], muted: [] };
+    }
   };
+  
   const updateUserConversationSettings = async (userId: string, settings: { pinned: string[]; muted: string[] }) => {
-    await supabase
-      .from('profiles')
-      .update({ conversation_settings: settings })
-      .eq('id', userId);
+    try {
+      // Store settings in local storage instead
+      localStorage.setItem('pinnedConversations', JSON.stringify(settings.pinned));
+      localStorage.setItem('mutedConversations', JSON.stringify(settings.muted));
+    } catch (error) {
+      console.error("Error updating conversation settings:", error);
+    }
   };
 
   // On mount, load pin/mute state from Supabase
