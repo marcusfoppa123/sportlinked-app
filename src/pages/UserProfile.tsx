@@ -250,7 +250,11 @@ const UserProfile = () => {
                   {profileData?.role === "scout" && (
                     <div className="mt-2 space-y-1">
                       <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {profileData.scoutType === "independent" ? "Independent Scout" : `Scout for ${profileData.scoutTeam}`}
+                        {profileData.scoutType === "independent"
+                          ? "Independent Scout"
+                          : profileData.scoutType === "team" && profileData.scoutTeam
+                          ? `Scout for ${profileData.scoutTeam}`
+                          : null}
                       </p>
                       <p className="text-sm text-gray-600 dark:text-gray-300">
                         {profileData.scoutSport} • {profileData.scoutYearsExperience} years of experience

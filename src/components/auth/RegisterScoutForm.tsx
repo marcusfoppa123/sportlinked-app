@@ -143,7 +143,7 @@ const RegisterScoutForm = () => {
         });
       if (profileError) {
         console.error("Error creating profile:", profileError);
-        toast.error("Account created but profile setup failed. Please try logging in.");
+        toast.error("Account created but profile setup failed: " + (profileError.message || profileError.details || JSON.stringify(profileError)));
       } else {
         toast.success("Account created successfully! Please check your email for verification.");
         navigate("/for-you");
@@ -232,7 +232,7 @@ const RegisterScoutForm = () => {
           </div>
           <div className="flex gap-2">
             <Button type="button" variant="outline" className="w-1/2" onClick={handlePrevStep}>Back</Button>
-            <Button type="button" className="w-1/2" onClick={handleSubmit} disabled={isLoading}>{isLoading ? "Creating account..." : "Register & Go Home"}</Button>
+            <Button type="button" className="w-1/2" onClick={handleSubmit} disabled={isLoading || !formData.scoutSport}>{isLoading ? "Creating account..." : "Register & Go Home"}</Button>
           </div>
         </motion.div>
       )}
