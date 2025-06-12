@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import AnimatedLoadingScreen from "@/components/AnimatedLoadingScreen";
+import ProfilePostThumbnail from "@/components/ProfilePostThumbnail";
 
 const SavedItems = () => {
   const { user } = useAuth();
@@ -170,48 +171,32 @@ const SavedItems = () => {
 
       {/* Main content */}
       <main className="container px-4 py-4">
-        <Tabs defaultValue="posts" className="w-full">
-          <TabsList className="mb-4 dark:bg-gray-800">
-            <TabsTrigger value="posts" className="dark:text-gray-300 dark:data-[state=active]:text-white">Posts</TabsTrigger>
-            <TabsTrigger value="profiles" className="dark:text-gray-300 dark:data-[state=active]:text-white">Profiles</TabsTrigger>
-            <TabsTrigger value="videos" className="dark:text-gray-300 dark:data-[state=active]:text-white">Videos</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="posts">
-            {loading ? (
-              <AnimatedLoadingScreen isLoading={loading} onComplete={() => {}} />
-            ) : savedPosts.length > 0 ? (
-              <div className="grid grid-cols-2 gap-3">
-                {savedPosts.map(post => renderSavedPostCard(post))}
-              </div>
-            ) : (
-              <div className="text-center py-8">
-                <p className="text-gray-500 dark:text-gray-400">No saved posts yet</p>
-                <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
-                  Bookmark posts to save them for later
-                </p>
-              </div>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="profiles">
-            <div className="text-center py-8">
-              <p className="text-gray-500 dark:text-gray-400">No saved profiles yet</p>
-              <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
-                Save athlete or scout profiles to view them later
-              </p>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="videos">
-            <div className="text-center py-8">
-              <p className="text-gray-500 dark:text-gray-400">No saved videos yet</p>
-              <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
-                Save videos from posts to watch them later
-              </p>
-            </div>
-          </TabsContent>
-        </Tabs>
+        {/* Only show Posts, no tabs */}
+        {loading ? (
+          <AnimatedLoadingScreen isLoading={loading} onComplete={() => {}} />
+        ) : savedPosts.length > 0 ? (
+          <div className="grid grid-cols-2 gap-1">
+            {savedPosts.map(post => (
+              <ProfilePostThumbnail
+                key={post.id}
+                post={{
+                  id: post.id,
+                  image_url: post.content.image,
+                  video_url: post.content.video,
+                  likeCount: post.stats.likes || 0,
+                }}
+                canDelete={false}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-500 dark:text-gray-400">No saved posts yet</p>
+            <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">
+              Bookmark posts to save them for later
+            </p>
+          </div>
+        )}
       </main>
       
       {/* Bottom navigation */}

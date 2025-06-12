@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -6,10 +7,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Settings, Share2, UserPlus, UserMinus } from "lucide-react";
+import { Settings, Share2, UserPlus, UserMinus, MapPin, ArrowLeft } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import ProfilePostGrid from "@/components/ProfilePostGrid";
-import { supabase, checkIfUserIsFollowing, followUser, unfollowUser, checkMutualFollow, createConversationIfNotExists } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
+import { checkIfFollowing, followUser, unfollowUser, checkMutualFollow } from "@/integrations/supabase/modules/followers";
+import { createConversationIfNotExists } from "@/integrations/supabase/modules/conversations";
 import { toast } from "@/components/ui/use-toast";
 
 interface UserProfileData {
@@ -24,11 +27,11 @@ interface UserProfileData {
   experience?: string;
   followers: number;
   following: number;
-  ppg?: number;
-  apg?: number;
-  rpg?: number;
-  games?: number;
   winPercentage?: number;
+  scoutType?: string;
+  scoutTeam?: string;
+  scoutSport?: string;
+  scoutYearsExperience?: number;
 }
 
 const UserProfile = () => {
@@ -64,18 +67,28 @@ const UserProfile = () => {
           experience: profile.experience,
           followers: profile.followers || 0,
           following: profile.following || 0,
-          ppg: profile.ppg,
-          apg: profile.apg,
-          rpg: profile.rpg,
-          games: profile.games,
-          winPercentage: profile.win_percentage
+<<<<<<< HEAD
+          winPercentage: profile.win_percentage,
+          scoutType: profile.scout_type,
+          scoutTeam: profile.scout_team,
+          scoutSport: profile.scout_sport,
+          scoutYearsExperience: profile.scout_years_experience
+=======
+          
+          // Add type assertion for these properties that might not be in the type definition
+          ppg: (profile as any).ppg,
+          apg: (profile as any).apg,
+          rpg: (profile as any).rpg,
+          games: (profile as any).games,
+          winPercentage: (profile as any).win_percentage
+>>>>>>> 5a8aa209eed46f8b75073213ff1013f4419ed30c
         });
       }
       
       // Check if current user is following this profile
-      if (currentUser?.id) {
-        const following = await checkIfUserIsFollowing(currentUser.id, userId);
-        setIsFollowing(following);
+      if (currentUser?.id && userId) {
+        const { data: following } = await checkIfFollowing(currentUser.id, userId);
+        setIsFollowing(following || false);
       }
       
     } catch (error) {
@@ -115,10 +128,10 @@ const UserProfile = () => {
     try {
       if (isFollowing) {
         // Unfollow user
-        const result = await unfollowUser(currentUser.id, userId);
+        const { data, error } = await unfollowUser(currentUser.id, userId);
         
-        if (!result.success) {
-          throw new Error(result.error?.message || "Failed to unfollow user");
+        if (error) {
+          throw new Error(error.message || "Failed to unfollow user");
         }
         
         setIsFollowing(false);
@@ -139,10 +152,10 @@ const UserProfile = () => {
         await refreshUserProfile();
       } else {
         // Follow user
-        const result = await followUser(currentUser.id, userId);
+        const { data, error } = await followUser(currentUser.id, userId);
         
-        if (!result.success) {
-          throw new Error(result.error?.message || "Failed to follow user");
+        if (error) {
+          throw new Error(error.message || "Failed to follow user");
         }
         
         setIsFollowing(true);
@@ -162,11 +175,11 @@ const UserProfile = () => {
         // Refresh current user data to update their following count
         await refreshUserProfile();
 
-        // --- NEW: Check for mutual follow and create conversation if needed ---
-        if (await checkMutualFollow(currentUser.id, userId)) {
+        // Check for mutual follow and create conversation if needed
+        const { data: isMutualFollow } = await checkMutualFollow(currentUser.id, userId);
+        if (isMutualFollow) {
           await createConversationIfNotExists(currentUser.id, userId);
         }
-        // --- END NEW ---
       }
     } catch (error) {
       console.error("Error in follow/unfollow operation:", error);
@@ -209,159 +222,108 @@ const UserProfile = () => {
   const isAthlete = profileData.role === "athlete";
 
   return (
-    <div className="min-h-screen pb-16 bg-white dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="w-full px-4 pt-8 pb-4 flex flex-col border-b bg-white dark:bg-gray-900 relative">
         <div className="flex items-center w-full justify-between">
-          <div className="flex items-center">
-            <Avatar className="h-20 w-20 border-2 border-gray-200">
-              <AvatarImage src={profileData.profilePic} />
-              <AvatarFallback className="text-2xl bg-gray-100">
-                {getInitials(profileData.name)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="ml-4 flex flex-col">
-              <div className="flex items-center">
-                <span className="text-xl font-bold mr-2">{profileData.name}</span>
-              </div>
-              {currentUser?.id !== userId && (
-                <div className="flex mt-2 space-x-2">
-                  <Button 
-                    className={`px-4 py-1 rounded-full text-sm ${
-                      isFollowing 
-                        ? "bg-gray-200 text-black hover:bg-gray-300" 
-                        : "bg-blue-500 text-white hover:bg-blue-600"
-                    }`}
-                    onClick={handleFollow}
-                    disabled={followLoading}
-                  >
-                    {followLoading ? "Loading..." : isFollowing ? (
-                      <>
-                        <UserMinus className="h-4 w-4 mr-2" />
-                        Unfollow
-                      </>
-                    ) : (
-                      <>
-                        <UserPlus className="h-4 w-4 mr-2" />
-                        Follow
-                      </>
-                    )}
-                  </Button>
-                </div>
-              )}
-            </div>
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+          <div className="flex gap-2">
+            <Button variant="ghost" size="icon">
+              <Share2 className="h-5 w-5" />
+            </Button>
+            <Button variant="ghost" size="icon">
+              <Settings className="h-5 w-5" />
+            </Button>
           </div>
-        </div>
-        
-        <div className="flex justify-around mt-6 mb-2">
-          <div className="text-center">
-            <span className="font-bold text-lg">{profileData.followers}</span>
-            <div className="text-xs text-gray-500">Followers</div>
-          </div>
-          <div className="text-center">
-            <span className="font-bold text-lg">{profileData.following}</span>
-            <div className="text-xs text-gray-500">Following</div>
-          </div>
-        </div>
-        
-        <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-          <div className="font-semibold break-words whitespace-pre-line">{profileData.bio}</div>
         </div>
       </div>
-
-      <main className="px-0 py-4">
-        <Tabs defaultValue="posts" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-4 dark:bg-gray-800">
-            <TabsTrigger value="posts" className="dark:text-gray-300 dark:data-[state=active]:text-white">Posts</TabsTrigger>
-            <TabsTrigger value="stats" className="dark:text-gray-300 dark:data-[state=active]:text-white">Stats</TabsTrigger>
-            <TabsTrigger value="about" className="dark:text-gray-300 dark:data-[state=active]:text-white">About</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="posts" className="space-y-4">
-            {userId && <ProfilePostGrid userId={userId} />}
-          </TabsContent>
-          
-          <TabsContent value="stats" className="space-y-4">
-            {isAthlete ? (
-              <div className="grid grid-cols-2 gap-4">
-                <Card className="dark:bg-gray-800 dark:border-gray-700">
-                  <CardContent className="p-4">
-                    <h3 className="font-medium mb-2 dark:text-white">Season Averages</h3>
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="text-center p-2 bg-gray-50 rounded-md dark:bg-gray-700">
-                        <p className="text-xs text-gray-500 dark:text-gray-300">PPG</p>
-                        <p className="font-semibold dark:text-white">{profileData.ppg || 0}</p>
-                      </div>
-                      <div className="text-center p-2 bg-gray-50 rounded-md dark:bg-gray-700">
-                        <p className="text-xs text-gray-500 dark:text-gray-300">APG</p>
-                        <p className="font-semibold dark:text-white">{profileData.apg || 0}</p>
-                      </div>
-                      <div className="text-center p-2 bg-gray-50 rounded-md dark:bg-gray-700">
-                        <p className="text-xs text-gray-500 dark:text-gray-300">RPG</p>
-                        <p className="font-semibold dark:text-white">{profileData.rpg || 0}</p>
-                      </div>
+      
+      <div className="container px-4 py-6">
+        <div className="max-w-2xl mx-auto">
+          <Card className="mb-6">
+            <CardContent className="pt-6">
+              <div className="flex items-center gap-4 mb-6">
+                <Avatar className="h-20 w-20">
+                  <AvatarImage src={profileData?.profilePic} />
+                  <AvatarFallback>{profileData?.name?.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <h1 className="text-2xl font-bold">{profileData?.name}</h1>
+                  {profileData?.role === "scout" && (
+                    <div className="mt-2 space-y-1">
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {profileData.scoutType === "independent" ? "Independent Scout" : `Scout for ${profileData.scoutTeam}`}
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {profileData.scoutSport} • {profileData.scoutYearsExperience} years of experience
+                      </p>
                     </div>
-                  </CardContent>
-                </Card>
-                <Card className="dark:bg-gray-800 dark:border-gray-700">
-                  <CardContent className="p-4">
-                    <h3 className="font-medium mb-2 dark:text-white">Career Stats</h3>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="text-center p-2 bg-gray-50 rounded-md dark:bg-gray-700">
-                        <p className="text-xs text-gray-500 dark:text-gray-300">Games</p>
-                        <p className="font-semibold dark:text-white">{profileData.games || 0}</p>
-                      </div>
-                      <div className="text-center p-2 bg-gray-50 rounded-md dark:bg-gray-700">
-                        <p className="text-xs text-gray-500 dark:text-gray-300">Win %</p>
-                        <p className="font-semibold dark:text-white">{profileData.winPercentage || 0}%</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            ) : (
-              <Card className="dark:bg-gray-800 dark:border-gray-700">
-                <CardContent className="p-6 text-center">
-                  <p className="text-gray-500 dark:text-gray-400">Stats are only available for athletes</p>
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-          
-          <TabsContent value="about" className="space-y-4">
-            <Card className="dark:bg-gray-800 dark:border-gray-700">
-              <CardContent className="p-4">
-                <h3 className="font-medium mb-2 dark:text-white">Personal Information</h3>
-                <div className="space-y-2">
-                  <div className="grid grid-cols-2">
-                    <span className="text-gray-500 dark:text-gray-400">Name</span>
-                    <span className="dark:text-white">{profileData.name}</span>
-                  </div>
-                  <div className="grid grid-cols-2">
-                    <span className="text-gray-500 dark:text-gray-400">Location</span>
-                    <span className="dark:text-white">{profileData.location || "Not specified"}</span>
-                  </div>
-                  {isAthlete && (
-                    <>
-                      <div className="grid grid-cols-2">
-                        <span className="text-gray-500 dark:text-gray-400">Sport</span>
-                        <span className="dark:text-white">{profileData.sport || "Not specified"}</span>
-                      </div>
-                      <div className="grid grid-cols-2">
-                        <span className="text-gray-500 dark:text-gray-400">Position</span>
-                        <span className="dark:text-white">{profileData.position || "Not specified"}</span>
-                      </div>
-                      <div className="grid grid-cols-2">
-                        <span className="text-gray-500 dark:text-gray-400">Experience</span>
-                        <span className="dark:text-white">{profileData.experience || "Not specified"}</span>
-                      </div>
-                    </>
                   )}
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
-      </main>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="text-center">
+                  <p className="text-2xl font-bold">{profileData?.followers}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Followers</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-2xl font-bold">{profileData?.following}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Following</p>
+                </div>
+              </div>
+
+              {profileData?.bio && (
+                <p className="text-gray-600 dark:text-gray-300 mb-6">{profileData.bio}</p>
+              )}
+
+              {profileData?.location && (
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 mb-6">
+                  <MapPin className="h-4 w-4" />
+                  <span>{profileData.location}</span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+          
+          <Tabs defaultValue="posts" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="posts">Posts</TabsTrigger>
+              <TabsTrigger value="about">About</TabsTrigger>
+            </TabsList>
+            <TabsContent value="posts">
+              <ProfilePostGrid userId={userId} />
+            </TabsContent>
+            <TabsContent value="about">
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="space-y-4">
+                    {profileData?.role === "scout" && (
+                      <>
+                        <div>
+                          <h3 className="font-semibold mb-1">Scout Type</h3>
+                          <p className="text-gray-600 dark:text-gray-300">
+                            {profileData.scoutType === "independent" ? "Independent Scout" : `Team Scout (${profileData.scoutTeam})`}
+                          </p>
+                        </div>
+                        <div>
+                          <h3 className="font-semibold mb-1">Sport</h3>
+                          <p className="text-gray-600 dark:text-gray-300">{profileData.scoutSport}</p>
+                        </div>
+                        <div>
+                          <h3 className="font-semibold mb-1">Experience</h3>
+                          <p className="text-gray-600 dark:text-gray-300">{profileData.scoutYearsExperience} years</p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+      </div>
       
       <BottomNavigation />
     </div>

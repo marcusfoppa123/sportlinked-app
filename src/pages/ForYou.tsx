@@ -6,7 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Search, Menu, Settings, RefreshCw } from "lucide-react";
 import BottomNavigation from "@/components/BottomNavigation";
 import ContentFeed from "@/components/ContentFeed";
-import UploadButton from "@/components/UploadButton";
 import SideMenu from "@/components/SideMenu";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
@@ -253,8 +252,6 @@ const ForYou = () => {
         )}
       </main>
 
-      {isAthlete && <UploadButton />}
-      
       <BottomNavigation />
     </div>
   );

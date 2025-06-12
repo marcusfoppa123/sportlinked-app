@@ -50,6 +50,7 @@ export interface Database {
           username: string | null
           avatar_url: string | null
           role: string | null
+          email: string | null
           bio: string | null
           location: string | null
           sport: string | null
@@ -63,15 +64,23 @@ export interface Database {
           connections: number | null
           posts: number | null
           offers: number | null
-          ppg: number | null
-          apg: number | null
-          rpg: number | null
-          games: number | null
+          goals: number | null
+          assists: number | null
+          matches: number | null
           win_percentage: number | null
+          clean_sheets: number | null
           followers: number | null
           following: number | null
+          birth_year: number | null
+          birth_month: number | null
+          birth_day: number | null
+          division: string | null
           created_at: string
           updated_at: string | null
+          scout_type: string | null
+          scout_team: string | null
+          scout_sport: string | null
+          scout_years_experience: number | null
         }
         Insert: {
           id: string
@@ -79,6 +88,7 @@ export interface Database {
           username?: string | null
           avatar_url?: string | null
           role?: string | null
+          email?: string | null
           bio?: string | null
           location?: string | null
           sport?: string | null
@@ -92,15 +102,23 @@ export interface Database {
           connections?: number | null
           posts?: number | null
           offers?: number | null
-          ppg?: number | null
-          apg?: number | null
-          rpg?: number | null
-          games?: number | null
+          goals?: number | null
+          assists?: number | null
+          matches?: number | null
           win_percentage?: number | null
+          clean_sheets?: number | null
           followers?: number | null
           following?: number | null
+          birth_year?: number | null
+          birth_month?: number | null
+          birth_day?: number | null
+          division?: string | null
           created_at?: string
           updated_at?: string | null
+          scout_type?: string | null
+          scout_team?: string | null
+          scout_sport?: string | null
+          scout_years_experience?: number | null
         }
         Update: {
           id?: string
@@ -108,6 +126,7 @@ export interface Database {
           username?: string | null
           avatar_url?: string | null
           role?: string | null
+          email?: string | null
           bio?: string | null
           location?: string | null
           sport?: string | null
@@ -121,15 +140,23 @@ export interface Database {
           connections?: number | null
           posts?: number | null
           offers?: number | null
-          ppg?: number | null
-          apg?: number | null
-          rpg?: number | null
-          games?: number | null
+          goals?: number | null
+          assists?: number | null
+          matches?: number | null
           win_percentage?: number | null
+          clean_sheets?: number | null
           followers?: number | null
           following?: number | null
+          birth_year?: number | null
+          birth_month?: number | null
+          birth_day?: number | null
+          division?: string | null
           created_at?: string
           updated_at?: string | null
+          scout_type?: string | null
+          scout_team?: string | null
+          scout_sport?: string | null
+          scout_years_experience?: number | null
         }
         Relationships: [
           {

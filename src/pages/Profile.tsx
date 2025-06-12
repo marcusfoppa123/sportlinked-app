@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Edit, Settings, Share2, Plus, CheckCircle2 } from "lucide-react";
+import { Edit, Settings, Share2, Plus, CheckCircle2, Trophy, Target, TrendingUp, Users, Award, BarChart2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import BottomNavigation from "@/components/BottomNavigation";
 import { 
@@ -49,11 +48,11 @@ const Profile = () => {
   const [statValue, setStatValue] = useState<number>(0);
   
   const [athleteStats, setAthleteStats] = useState({
-    ppg: user?.ppg || 18.7,
-    apg: user?.apg || 7.2,
-    rpg: user?.rpg || 4.1,
-    games: user?.games || 128,
-    winPercentage: user?.winPercentage || 58
+    goals: user?.goals || 12,
+    assists: user?.assists || 8,
+    matches: user?.matches || 24,
+    winPercentage: user?.winPercentage || 65,
+    cleanSheets: user?.cleanSheets || 8
   });
   
   const [editingAthleteStat, setEditingAthleteStat] = useState<string | null>(null);
@@ -177,8 +176,12 @@ const Profile = () => {
         </button>
         <div className="flex items-center w-full justify-between">
           <div className="flex items-center">
-            <Avatar className="h-20 w-20 border-2 border-gray-200">
-              <AvatarImage src={user?.profilePic} />
+            <Avatar className="h-20 w-20 border-2 border-gray-200 overflow-hidden">
+              <AvatarImage 
+                src={user?.profilePic} 
+                className="object-cover w-full h-full"
+                style={{ objectFit: 'cover' }}
+              />
               <AvatarFallback className="text-2xl bg-gray-100">
                 {getInitials(user?.name)}
               </AvatarFallback>
@@ -231,52 +234,64 @@ const Profile = () => {
           
           <TabsContent value="stats" className="space-y-4">
             {isAthlete ? (
-              <div className="grid grid-cols-2 gap-4">
-                <Card className="dark:bg-gray-800 dark:border-gray-700">
-                  <CardContent className="p-4">
-                    <h3 className="font-medium mb-2 dark:text-white">Season Averages</h3>
-                    <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card className="dark:bg-gray-800 dark:border-gray-700 transform transition-all duration-300 hover:scale-[1.02]">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <BarChart2 className="h-5 w-5 text-blue-500" />
+                      <h3 className="font-semibold text-lg dark:text-white">Season Stats</h3>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
                       <div 
-                        className="text-center p-2 bg-gray-50 rounded-md dark:bg-gray-700 cursor-pointer" 
-                        onClick={() => openAthleteStatEditor('ppg', athleteStats.ppg)}
+                        className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-xl shadow-sm cursor-pointer hover:shadow-md transition-all"
+                        onClick={() => openAthleteStatEditor('goals', athleteStats.goals)}
                       >
-                        <p className="text-xs text-gray-500 dark:text-gray-300">PPG</p>
-                        <p className="font-semibold dark:text-white">{athleteStats.ppg}</p>
+                        <Target className="h-6 w-6 text-blue-500 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Goals</p>
+                        <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{athleteStats.goals}</p>
                       </div>
                       <div 
-                        className="text-center p-2 bg-gray-50 rounded-md dark:bg-gray-700 cursor-pointer"
-                        onClick={() => openAthleteStatEditor('apg', athleteStats.apg)}
+                        className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-xl shadow-sm cursor-pointer hover:shadow-md transition-all"
+                        onClick={() => openAthleteStatEditor('assists', athleteStats.assists)}
                       >
-                        <p className="text-xs text-gray-500 dark:text-gray-300">APG</p>
-                        <p className="font-semibold dark:text-white">{athleteStats.apg}</p>
+                        <TrendingUp className="h-6 w-6 text-green-500 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Assists</p>
+                        <p className="text-2xl font-bold text-green-600 dark:text-green-400">{athleteStats.assists}</p>
                       </div>
                       <div 
-                        className="text-center p-2 bg-gray-50 rounded-md dark:bg-gray-700 cursor-pointer"
-                        onClick={() => openAthleteStatEditor('rpg', athleteStats.rpg)}
+                        className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 rounded-xl shadow-sm cursor-pointer hover:shadow-md transition-all"
+                        onClick={() => openAthleteStatEditor('cleanSheets', athleteStats.cleanSheets)}
                       >
-                        <p className="text-xs text-gray-500 dark:text-gray-300">RPG</p>
-                        <p className="font-semibold dark:text-white">{athleteStats.rpg}</p>
+                        <Users className="h-6 w-6 text-purple-500 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Clean Sheets</p>
+                        <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{athleteStats.cleanSheets}</p>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
-                <Card className="dark:bg-gray-800 dark:border-gray-700">
-                  <CardContent className="p-4">
-                    <h3 className="font-medium mb-2 dark:text-white">Career Stats</h3>
-                    <div className="grid grid-cols-2 gap-2">
+
+                <Card className="dark:bg-gray-800 dark:border-gray-700 transform transition-all duration-300 hover:scale-[1.02]">
+                  <CardContent className="p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Trophy className="h-5 w-5 text-yellow-500" />
+                      <h3 className="font-semibold text-lg dark:text-white">Career Stats</h3>
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
                       <div 
-                        className="text-center p-2 bg-gray-50 rounded-md dark:bg-gray-700 cursor-pointer"
-                        onClick={() => openAthleteStatEditor('games', athleteStats.games)}
+                        className="text-center p-4 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-800/30 rounded-xl shadow-sm cursor-pointer hover:shadow-md transition-all"
+                        onClick={() => openAthleteStatEditor('matches', athleteStats.matches)}
                       >
-                        <p className="text-xs text-gray-500 dark:text-gray-300">Games</p>
-                        <p className="font-semibold dark:text-white">{athleteStats.games}</p>
+                        <Award className="h-6 w-6 text-yellow-500 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Matches</p>
+                        <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{athleteStats.matches}</p>
                       </div>
                       <div 
-                        className="text-center p-2 bg-gray-50 rounded-md dark:bg-gray-700 cursor-pointer"
+                        className="text-center p-4 bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30 rounded-xl shadow-sm cursor-pointer hover:shadow-md transition-all"
                         onClick={() => openAthleteStatEditor('winPercentage', athleteStats.winPercentage)}
                       >
-                        <p className="text-xs text-gray-500 dark:text-gray-300">Win %</p>
-                        <p className="font-semibold dark:text-white">{athleteStats.winPercentage}%</p>
+                        <TrendingUp className="h-6 w-6 text-red-500 mx-auto mb-2" />
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Win %</p>
+                        <p className="text-2xl font-bold text-red-600 dark:text-red-400">{athleteStats.winPercentage}%</p>
                       </div>
                     </div>
                   </CardContent>
