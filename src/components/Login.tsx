@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import logo from "@/assets/sportslinked-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 import sportslinkedIcon from '@/assets/sportslinked-icon.png';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { X, ArrowLeft } from 'lucide-react';
 
@@ -390,6 +390,7 @@ const ForgotPasswordDialog = ({ open, onClose }) => {
 const Login = ({ initialRole, showRegister }: LoginComponentProps) => {
   const { user, supabaseUser } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [forgotOpen, setForgotOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(showRegister ? 'register' : 'login');
   const showRoleWarning = supabaseUser && user?.role && initialRole !== user.role;
@@ -407,8 +408,12 @@ const Login = ({ initialRole, showRegister }: LoginComponentProps) => {
       {/* Blue header bar at the top */}
       <div className="w-full bg-[#249FEE] py-6 px-4 flex items-center gap-3 relative" style={{ minHeight: 80 }}>
         <button
-          onClick={() => navigate('/')}
-          className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center z-10"
+          type="button"
+          onClick={() => {
+            console.log('Back arrow clicked');
+            navigate('/');
+          }}
+          className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center justify-center z-50"
           aria-label="Back"
         >
           <ArrowLeft size={32} className="text-white" />
