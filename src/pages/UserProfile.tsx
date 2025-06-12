@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -32,6 +31,10 @@ interface UserProfileData {
   scoutTeam?: string;
   scoutSport?: string;
   scoutYearsExperience?: number;
+  ppg?: number;
+  apg?: number;
+  rpg?: number;
+  games?: number;
 }
 
 const UserProfile = () => {
@@ -67,21 +70,15 @@ const UserProfile = () => {
           experience: profile.experience,
           followers: profile.followers || 0,
           following: profile.following || 0,
-<<<<<<< HEAD
           winPercentage: profile.win_percentage,
           scoutType: profile.scout_type,
           scoutTeam: profile.scout_team,
           scoutSport: profile.scout_sport,
-          scoutYearsExperience: profile.scout_years_experience
-=======
-          
-          // Add type assertion for these properties that might not be in the type definition
+          scoutYearsExperience: profile.scout_years_experience,
           ppg: (profile as any).ppg,
           apg: (profile as any).apg,
           rpg: (profile as any).rpg,
-          games: (profile as any).games,
-          winPercentage: (profile as any).win_percentage
->>>>>>> 5a8aa209eed46f8b75073213ff1013f4419ed30c
+          games: (profile as any).games
         });
       }
       

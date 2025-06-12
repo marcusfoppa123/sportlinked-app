@@ -24,6 +24,7 @@ import {
 import ForgotPasswordDialog from "@/components/auth/ForgotPasswordDialog";
 import LoginForm from "@/components/auth/LoginForm";
 import RegisterForm from "@/components/auth/RegisterForm";
+import RegisterScoutForm from "@/components/auth/RegisterScoutForm";
 
 interface LoginComponentProps {
   initialRole: UserRole;
@@ -87,7 +88,7 @@ const Login = ({ initialRole, showRegister }: LoginComponentProps) => {
           {activeTab === 'login' ? (
             <LoginForm initialRole={initialRole} onForgotPassword={() => setForgotOpen(true)} />
           ) : (
-            <RegisterForm initialRole={initialRole} />
+            initialRole === 'scout' ? <RegisterScoutForm /> : <RegisterForm initialRole={initialRole} />
           )}
           <div className="flex items-center my-6 w-full">
             <div className="flex-grow h-px bg-gray-200" />
