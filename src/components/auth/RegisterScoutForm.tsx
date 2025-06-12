@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "@/context/AuthContext";
@@ -126,29 +127,43 @@ const RegisterScoutForm = () => {
         setIsLoading(false);
         return;
       }
+
+      // Prepare profile data with proper types
+      const profileData = {
+        id: data.user.id,
+        full_name: formData.name,
+        role: "scout",
+        email: formData.email,
+        scout_type: formData.scoutType, // Make sure this is 'independent' or 'team'
+        scout_team: formData.scoutType === "team" ? formData.scoutTeam : null,
+        scout_years_experience: parseInt(formData.scoutYearsExperience), // Convert to integer
+        scout_sport: formData.scoutSport,
+        followers: 0,
+        following: 0
+      };
+
+      console.log("Attempting to insert profile data:", profileData);
+
       // Save scout info to profiles
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert({
-          id: data.user.id,
-          full_name: formData.name,
-          role: "scout",
-          email: formData.email,
-          scout_type: formData.scoutType,
-          scout_team: formData.scoutType === "team" ? formData.scoutTeam : null,
-          scout_years_experience: parseInt(formData.scoutYearsExperience),
-          scout_sport: formData.scoutSport,
-          followers: 0,
-          following: 0
-        });
+        .insert(profileData);
+
       if (profileError) {
-        console.error("Error creating profile:", profileError);
-        toast.error("Account created but profile setup failed: " + (profileError.message || profileError.details || JSON.stringify(profileError)));
+        console.error("Detailed profile error:", profileError);
+        console.error("Error message:", profileError.message);
+        console.error("Error details:", profileError.details);
+        console.error("Error hint:", profileError.hint);
+        console.error("Error code:", profileError.code);
+        
+        toast.error(`Profile setup failed: ${profileError.message || profileError.details || JSON.stringify(profileError)}`);
       } else {
+        console.log("Profile created successfully");
         toast.success("Account created successfully! Please check your email for verification.");
         navigate("/for-you");
       }
     } catch (error) {
+      console.error("Caught error during registration:", error);
       toast.error(error.message || "Registration failed. Please try again.");
     } finally {
       setIsLoading(false);
@@ -241,4 +256,4 @@ const RegisterScoutForm = () => {
   );
 };
 
-export default RegisterScoutForm; 
+export default RegisterScoutForm;

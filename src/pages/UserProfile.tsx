@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -217,6 +218,7 @@ const UserProfile = () => {
   }
 
   const isAthlete = profileData.role === "athlete";
+  const isScout = profileData.role === "scout";
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -247,18 +249,20 @@ const UserProfile = () => {
                 </Avatar>
                 <div>
                   <h1 className="text-2xl font-bold">{profileData?.name}</h1>
-                  {profileData?.role === "scout" && (
+                  {isScout && (
                     <div className="mt-2 space-y-1">
                       <p className="text-sm text-gray-600 dark:text-gray-300">
                         {profileData.scoutType === "independent"
                           ? "Independent Scout"
                           : profileData.scoutType === "team" && profileData.scoutTeam
                           ? `Scout for ${profileData.scoutTeam}`
-                          : null}
+                          : "Scout"}
                       </p>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
-                        {profileData.scoutSport} • {profileData.scoutYearsExperience} years of experience
-                      </p>
+                      {profileData.scoutSport && profileData.scoutYearsExperience && (
+                        <p className="text-sm text-gray-600 dark:text-gray-300">
+                          {profileData.scoutSport} • {profileData.scoutYearsExperience} years of experience
+                        </p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -300,22 +304,52 @@ const UserProfile = () => {
               <Card>
                 <CardContent className="pt-6">
                   <div className="space-y-4">
-                    {profileData?.role === "scout" && (
+                    {isScout && (
                       <>
                         <div>
                           <h3 className="font-semibold mb-1">Scout Type</h3>
                           <p className="text-gray-600 dark:text-gray-300">
-                            {profileData.scoutType === "independent" ? "Independent Scout" : `Team Scout (${profileData.scoutTeam})`}
+                            {profileData.scoutType === "independent" 
+                              ? "Independent Scout" 
+                              : profileData.scoutType === "team" && profileData.scoutTeam
+                              ? `Team Scout (${profileData.scoutTeam})`
+                              : "Scout"}
                           </p>
                         </div>
-                        <div>
-                          <h3 className="font-semibold mb-1">Sport</h3>
-                          <p className="text-gray-600 dark:text-gray-300">{profileData.scoutSport}</p>
-                        </div>
-                        <div>
-                          <h3 className="font-semibold mb-1">Experience</h3>
-                          <p className="text-gray-600 dark:text-gray-300">{profileData.scoutYearsExperience} years</p>
-                        </div>
+                        {profileData.scoutSport && (
+                          <div>
+                            <h3 className="font-semibold mb-1">Sport</h3>
+                            <p className="text-gray-600 dark:text-gray-300">{profileData.scoutSport}</p>
+                          </div>
+                        )}
+                        {profileData.scoutYearsExperience !== undefined && (
+                          <div>
+                            <h3 className="font-semibold mb-1">Experience</h3>
+                            <p className="text-gray-600 dark:text-gray-300">{profileData.scoutYearsExperience} years</p>
+                          </div>
+                        )}
+                      </>
+                    )}
+                    {isAthlete && (
+                      <>
+                        {profileData.sport && (
+                          <div>
+                            <h3 className="font-semibold mb-1">Sport</h3>
+                            <p className="text-gray-600 dark:text-gray-300">{profileData.sport}</p>
+                          </div>
+                        )}
+                        {profileData.position && (
+                          <div>
+                            <h3 className="font-semibold mb-1">Position</h3>
+                            <p className="text-gray-600 dark:text-gray-300">{profileData.position}</p>
+                          </div>
+                        )}
+                        {profileData.experience && (
+                          <div>
+                            <h3 className="font-semibold mb-1">Experience Level</h3>
+                            <p className="text-gray-600 dark:text-gray-300">{profileData.experience}</p>
+                          </div>
+                        )}
                       </>
                     )}
                   </div>
