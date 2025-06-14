@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "@/context/AuthContext";
@@ -158,7 +157,7 @@ const RegisterScoutForm = () => {
         toast.error(`Profile setup failed: ${profileError.message || profileError.details || JSON.stringify(profileError)}`);
       } else {
         console.log("Profile created successfully");
-        await refreshUserProfile(); // Manually refresh the user profile in context
+        await refreshUserProfile(data.user.id); // Manually refresh the user profile in context with the new ID
         toast.success("Account created successfully! Please check your email for verification.");
         navigate("/for-you");
       }
