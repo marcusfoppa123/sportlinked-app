@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ const Profile = () => {
   const { user, updateUserProfile, refreshUserProfile } = useAuth();
   const navigate = useNavigate();
   const isAthlete = user?.role === "athlete";
+  const isScout = user?.role === "scout";
   const isMobile = useIsMobile();
   
   const [sideMenuOpen, setSideMenuOpen] = useState(false);
@@ -191,6 +193,22 @@ const Profile = () => {
                 <span className="text-xl font-bold mr-2">{user?.name || "User Name"}</span>
                 <CheckCircle2 className="text-blue-500 h-5 w-5" />
               </div>
+              {isScout && user && (
+                <div className="mt-2 space-y-1">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">
+                    {user.scout_type === "independent"
+                      ? "Independent Scout"
+                      : user.scout_type === "team" && user.scout_team
+                      ? `Scout for ${user.scout_team}`
+                      : "Scout"}
+                  </p>
+                  {user.scout_sport && user.scout_years_experience != null && (
+                    <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">
+                      {user.scout_sport} • {user.scout_years_experience} {user.scout_years_experience === 1 ? 'year' : 'years'}
+                    </p>
+                  )}
+                </div>
+              )}
               <div className="flex mt-2 space-x-2">
                 <Button className="bg-gray-200 text-black px-4 py-1 rounded-full text-sm" onClick={handleEditProfile}>
                   Edit Profile
@@ -300,7 +318,9 @@ const Profile = () => {
             ) : (
               <Card className="dark:bg-gray-800 dark:border-gray-700">
                 <CardContent className="p-6 text-center">
-                  <p className="text-gray-500 dark:text-gray-400">Stats are only available for athletes</p>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    {isScout ? "Scout-specific stats are coming soon!" : "Stats are only available for athletes"}
+                  </p>
                 </CardContent>
               </Card>
             )}
@@ -332,6 +352,28 @@ const Profile = () => {
                       <div className="grid grid-cols-2">
                         <span className="text-gray-500 dark:text-gray-400">Experience</span>
                         <span className="dark:text-white">{user?.experience || "College"}</span>
+                      </div>
+                    </>
+                  )}
+                  {isScout && user && (
+                    <>
+                      <div className="grid grid-cols-2">
+                        <span className="text-gray-500 dark:text-gray-400">Scout Type</span>
+                        <span className="dark:text-white capitalize">
+                          {user.scout_type === "independent"
+                            ? "Independent"
+                            : user.scout_type === "team" && user.scout_team
+                            ? `Team (${user.scout_team})`
+                            : "N/A"}
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2">
+                        <span className="text-gray-500 dark:text-gray-400">Sport</span>
+                        <span className="dark:text-white capitalize">{user.scout_sport || "N/A"}</span>
+                      </div>
+                      <div className="grid grid-cols-2">
+                        <span className="text-gray-500 dark:text-gray-400">Experience</span>
+                        <span className="dark:text-white">{user.scout_years_experience != null ? `${user.scout_years_experience} ${user.scout_years_experience === 1 ? 'year' : 'years'}` : "N/A"}</span>
                       </div>
                     </>
                   )}

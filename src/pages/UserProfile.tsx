@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
@@ -251,16 +250,16 @@ const UserProfile = () => {
                   <h1 className="text-2xl font-bold">{profileData?.name}</h1>
                   {isScout && (
                     <div className="mt-2 space-y-1">
-                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                      <p className="text-sm text-gray-600 dark:text-gray-300 capitalize">
                         {profileData.scoutType === "independent"
                           ? "Independent Scout"
                           : profileData.scoutType === "team" && profileData.scoutTeam
                           ? `Scout for ${profileData.scoutTeam}`
                           : "Scout"}
                       </p>
-                      {profileData.scoutSport && profileData.scoutYearsExperience && (
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          {profileData.scoutSport} • {profileData.scoutYearsExperience} years of experience
+                      {profileData.scoutSport && profileData.scoutYearsExperience != null && (
+                        <p className="text-sm text-gray-600 dark:text-gray-300 capitalize">
+                          {profileData.scoutSport} • {profileData.scoutYearsExperience} {profileData.scoutYearsExperience === 1 ? 'year' : 'years'} of experience
                         </p>
                       )}
                     </div>
@@ -308,7 +307,7 @@ const UserProfile = () => {
                       <>
                         <div>
                           <h3 className="font-semibold mb-1">Scout Type</h3>
-                          <p className="text-gray-600 dark:text-gray-300">
+                          <p className="text-gray-600 dark:text-gray-300 capitalize">
                             {profileData.scoutType === "independent" 
                               ? "Independent Scout" 
                               : profileData.scoutType === "team" && profileData.scoutTeam
@@ -319,13 +318,13 @@ const UserProfile = () => {
                         {profileData.scoutSport && (
                           <div>
                             <h3 className="font-semibold mb-1">Sport</h3>
-                            <p className="text-gray-600 dark:text-gray-300">{profileData.scoutSport}</p>
+                            <p className="text-gray-600 dark:text-gray-300 capitalize">{profileData.scoutSport}</p>
                           </div>
                         )}
                         {profileData.scoutYearsExperience !== undefined && (
                           <div>
                             <h3 className="font-semibold mb-1">Experience</h3>
-                            <p className="text-gray-600 dark:text-gray-300">{profileData.scoutYearsExperience} years</p>
+                            <p className="text-gray-600 dark:text-gray-300">{profileData.scoutYearsExperience} {profileData.scoutYearsExperience === 1 ? 'year' : 'years'}</p>
                           </div>
                         )}
                       </>
