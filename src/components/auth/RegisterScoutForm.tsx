@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "@/context/AuthContext";
@@ -133,7 +132,6 @@ const RegisterScoutForm = () => {
         id: data.user.id,
         full_name: formData.name,
         role: "scout",
-        email: formData.email,
         scout_type: formData.scoutType, // Make sure this is 'independent' or 'team'
         scout_team: formData.scoutType === "team" ? formData.scoutTeam : null,
         scout_years_experience: parseInt(formData.scoutYearsExperience), // Convert to integer
