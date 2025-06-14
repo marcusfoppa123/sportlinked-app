@@ -95,6 +95,9 @@ const ForYou = () => {
                 name: profileData?.full_name || profileData?.username || 'Unknown User',
                 role: profileData?.role || 'athlete',
                 profilePic: profileData?.avatar_url,
+                scoutType: profileData?.scout_type,
+                scoutTeam: profileData?.scout_team,
+                scoutSport: profileData?.scout_sport,
               },
               content: {
                 text: post.content,

@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "@/context/AuthContext";
@@ -14,7 +15,7 @@ import { motion } from "framer-motion";
 const STEPS = ["Account", "Scout Type", "Experience", "Sport"];
 
 const RegisterScoutForm = () => {
-  const { register } = useAuth();
+  const { refreshUserProfile } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -157,6 +158,7 @@ const RegisterScoutForm = () => {
         toast.error(`Profile setup failed: ${profileError.message || profileError.details || JSON.stringify(profileError)}`);
       } else {
         console.log("Profile created successfully");
+        await refreshUserProfile(); // Manually refresh the user profile in context
         toast.success("Account created successfully! Please check your email for verification.");
         navigate("/for-you");
       }

@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/context/LanguageContext";
@@ -18,6 +19,9 @@ interface ContentFeedCardProps {
     name: string;
     role: string;
     profilePic?: string;
+    scoutType?: string;
+    scoutTeam?: string;
+    scoutSport?: string;
   };
   timestamp: Date;
   content: {
@@ -102,6 +106,12 @@ const ContentFeedCard = ({
             <Badge className="athlete-badge text-xs px-2 py-0.5">{user.role}</Badge>
           </div>
           <span className="text-xs text-gray-400">{formatTimestamp(timestamp)}</span>
+          {user.role === 'scout' && (
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 capitalize truncate">
+              {user.scoutType === 'team' && user.scoutTeam ? `Scout for ${user.scoutTeam}` : 'Independent Scout'}
+              {user.scoutSport && ` • ${user.scoutSport}`}
+            </div>
+          )}
         </div>
       </div>
 
