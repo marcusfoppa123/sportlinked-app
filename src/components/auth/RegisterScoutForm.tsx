@@ -111,7 +111,11 @@ const RegisterScoutForm = () => {
         options: {
           data: {
             full_name: formData.name,
-            role: "scout"
+            role: "scout",
+            scout_type: formData.scoutType,
+            scout_team: formData.scoutType === "team" ? formData.scoutTeam : null,
+            scout_years_experience: formData.scoutYearsExperience,
+            scout_sport: formData.scoutSport
           }
         }
       });
@@ -135,32 +139,12 @@ const RegisterScoutForm = () => {
         return;
       }
 
-      // Prepare profile data with proper types for the new scout fields
-      const profileData = {
-        id: data.user.id,
-        full_name: formData.name,
-        role: "scout",
-        scout_type: formData.scoutType,
-        scout_team: formData.scoutType === "team" ? formData.scoutTeam : null,
-        scout_years_experience: parseInt(formData.scoutYearsExperience, 10),
-        scout_sport: formData.scoutSport,
-        followers: 0,
-        following: 0
-      };
-
-      // Save scout info to profiles table using upsert
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert(profileData, { onConflict: 'id' });
-
-      if (profileError) {
-        console.error("Detailed profile error:", profileError);
-        toast.error(`Profile setup failed: ${profileError.message}`);
-      } else {
-        await refreshUserProfile(data.user.id);
-        toast.success("Account created successfully! Please check your email for verification.");
-        navigate("/for-you");
-      }
+      // Profile is now created by the handle_new_user trigger.
+      // We just need to refresh the local user state.
+      await refreshUserProfile(data.user.id);
+      toast.success("Account created successfully! Please check your email for verification.");
+      navigate("/for-you");
+      
     } catch (error: any) {
       console.error("Caught error during registration:", error);
       toast.error(error.message || "Registration failed. Please try again.");

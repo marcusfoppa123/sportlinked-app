@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { useAuth, UserRole } from "@/context/AuthContext";
@@ -19,7 +18,7 @@ interface RegisterFormProps {
 const STEPS = ["Account", "Birth & Division", "Sport & Position", "Soccer Info"];
 
 const RegisterForm = ({ initialRole }: RegisterFormProps) => {
-  const { register } = useAuth();
+  const { register, refreshUserProfile } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<RegisterFormData>({
@@ -139,7 +138,21 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
         options: {
           data: {
             full_name: formData.name,
-            role: formData.role
+            role: formData.role,
+            birthYear: formData.birthYear,
+            birthMonth: formData.birthMonth,
+            birthDay: formData.birthDay,
+            division: formData.division,
+            sport: formData.sport,
+            position: formData.position.join(','),
+            experience: formData.experience,
+            teamSize: formData.teamSize,
+            teamType: formData.teamType,
+            yearsPlayed: formData.yearsPlayed,
+            dominantFoot: formData.dominantFoot,
+            weight: formData.weight,
+            height: formData.height,
+            latestClub: formData.latestClub
           }
         }
       });
@@ -166,39 +179,11 @@ const RegisterForm = ({ initialRole }: RegisterFormProps) => {
         return;
       }
 
-      // Create or update profile if registration was successful
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert({
-          id: data.user.id,
-          full_name: formData.name,
-          role: formData.role,
-          email: formData.email,
-          birth_year: parseInt(formData.birthYear),
-          birth_month: parseInt(formData.birthMonth),
-          birth_day: parseInt(formData.birthDay),
-          division: formData.division,
-          sport: formData.sport ? `{${formData.sport}}` : null,
-          position: formData.position && formData.position.length > 0 ? `{${formData.position.join(',')}}` : null,
-          experience: formData.experience,
-          team_size: formData.teamSize,
-          team_type: formData.teamType,
-          years_played: formData.yearsPlayed ? parseInt(formData.yearsPlayed) : null,
-          dominant_foot: formData.dominantFoot,
-          weight: formData.weight ? parseInt(formData.weight) : null,
-          height: formData.height ? parseInt(formData.height) : null,
-          latest_club: formData.latestClub,
-          followers: 0,
-          following: 0
-        });
-        
-      if (profileError) {
-        console.error("Error creating profile:", profileError);
-        toast.error("Account created but profile setup failed. Please try logging in.");
-      } else {
-        toast.success("Account created successfully! Please check your email for verification.");
-        navigate("/for-you");
-      }
+      // Profile is created by trigger, so we don't need to insert from the client.
+      await refreshUserProfile(data.user.id);
+      toast.success("Account created successfully! Please check your email for verification.");
+      navigate("/for-you");
+
     } catch (error: any) {
       console.error("Registration error:", error);
       
