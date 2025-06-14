@@ -265,6 +265,10 @@ export type Database = {
           ppg: number | null
           role: string
           rpg: number | null
+          scout_sport: string | null
+          scout_team: string | null
+          scout_type: string | null
+          scout_years_experience: number | null
           sport: string | null
           team_size: string | null
           updated_at: string
@@ -294,6 +298,10 @@ export type Database = {
           ppg?: number | null
           role?: string
           rpg?: number | null
+          scout_sport?: string | null
+          scout_team?: string | null
+          scout_type?: string | null
+          scout_years_experience?: number | null
           sport?: string | null
           team_size?: string | null
           updated_at?: string
@@ -323,6 +331,10 @@ export type Database = {
           ppg?: number | null
           role?: string
           rpg?: number | null
+          scout_sport?: string | null
+          scout_team?: string | null
+          scout_type?: string | null
+          scout_years_experience?: number | null
           sport?: string | null
           team_size?: string | null
           updated_at?: string

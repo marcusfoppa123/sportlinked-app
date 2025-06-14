@@ -94,9 +94,16 @@ const RegisterScoutForm = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.scoutSport) {
+      toast.error("Please select your sport");
+      return;
+    }
+    
     setIsLoading(true);
+    
     try {
       const { data, error } = await supabase.auth.signUp({
         email: formData.email,
@@ -108,60 +115,53 @@ const RegisterScoutForm = () => {
           }
         }
       });
+
       if (error) {
         if (error.message?.includes('User already registered') || 
             error.message?.includes('email already in use') ||
             error.message?.includes('duplicate key value') ||
             error.message?.toLowerCase().includes('already exists')) {
           setEmailExistsModal(true);
-          setIsLoading(false);
-          return;
+        } else {
+          toast.error(error.message || "Registration failed. Please try again.");
         }
-        toast.error(error.message || "Registration failed. Please try again.");
         setIsLoading(false);
         return;
       }
+
       if (!data.user) {
         toast.error('Registration failed. Please try again.');
         setIsLoading(false);
         return;
       }
 
-      // Prepare profile data with proper types
+      // Prepare profile data with proper types for the new scout fields
       const profileData = {
         id: data.user.id,
         full_name: formData.name,
         role: "scout",
-        scout_type: formData.scoutType, // Make sure this is 'independent' or 'team'
+        scout_type: formData.scoutType,
         scout_team: formData.scoutType === "team" ? formData.scoutTeam : null,
-        scout_years_experience: parseInt(formData.scoutYearsExperience), // Convert to integer
+        scout_years_experience: parseInt(formData.scoutYearsExperience, 10),
         scout_sport: formData.scoutSport,
         followers: 0,
         following: 0
       };
 
-      console.log("Attempting to insert profile data:", profileData);
-
-      // Save scout info to profiles
+      // Save scout info to profiles table using upsert
       const { error: profileError } = await supabase
         .from('profiles')
-        .upsert(profileData);
+        .upsert(profileData, { onConflict: 'id' });
 
       if (profileError) {
         console.error("Detailed profile error:", profileError);
-        console.error("Error message:", profileError.message);
-        console.error("Error details:", profileError.details);
-        console.error("Error hint:", profileError.hint);
-        console.error("Error code:", profileError.code);
-        
-        toast.error(`Profile setup failed: ${profileError.message || profileError.details || JSON.stringify(profileError)}`);
+        toast.error(`Profile setup failed: ${profileError.message}`);
       } else {
-        console.log("Profile created successfully");
-        await refreshUserProfile(data.user.id); // Manually refresh the user profile in context with the new ID
+        await refreshUserProfile(data.user.id);
         toast.success("Account created successfully! Please check your email for verification.");
         navigate("/for-you");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Caught error during registration:", error);
       toast.error(error.message || "Registration failed. Please try again.");
     } finally {
