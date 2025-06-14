@@ -147,7 +147,7 @@ const RegisterScoutForm = () => {
       // Save scout info to profiles
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert(profileData);
+        .upsert(profileData);
 
       if (profileError) {
         console.error("Detailed profile error:", profileError);
