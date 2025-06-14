@@ -58,27 +58,28 @@ const UserProfile = () => {
         .single();
       if (profileError) throw profileError;
       if (profile) {
+        const profileDataCast = profile as any;
         setProfileData({
-          id: profile.id,
-          name: profile.full_name || profile.username || 'Unknown User',
-          role: profile.role,
-          profilePic: profile.avatar_url,
-          bio: profile.bio,
-          location: profile.location,
-          sport: profile.sport,
-          position: profile.position,
-          experience: profile.experience,
-          followers: profile.followers || 0,
-          following: profile.following || 0,
-          winPercentage: profile.win_percentage,
-          scoutType: profile.scout_type,
-          scoutTeam: profile.scout_team,
-          scoutSport: profile.scout_sport,
-          scoutYearsExperience: profile.scout_years_experience,
-          ppg: (profile as any).ppg,
-          apg: (profile as any).apg,
-          rpg: (profile as any).rpg,
-          games: (profile as any).games
+          id: profileDataCast.id,
+          name: profileDataCast.full_name || profileDataCast.username || 'Unknown User',
+          role: profileDataCast.role,
+          profilePic: profileDataCast.avatar_url,
+          bio: profileDataCast.bio,
+          location: profileDataCast.location,
+          sport: profileDataCast.sport,
+          position: profileDataCast.position,
+          experience: profileDataCast.experience,
+          followers: profileDataCast.followers || 0,
+          following: profileDataCast.following || 0,
+          winPercentage: profileDataCast.win_percentage,
+          scoutType: profileDataCast.scout_type,
+          scoutTeam: profileDataCast.scout_team,
+          scoutSport: profileDataCast.scout_sport,
+          scoutYearsExperience: profileDataCast.scout_years_experience,
+          ppg: profileDataCast.ppg,
+          apg: profileDataCast.apg,
+          rpg: profileDataCast.rpg,
+          games: profileDataCast.games
         });
       }
       

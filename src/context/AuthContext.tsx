@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
@@ -39,6 +40,11 @@ export interface User {
   // Social
   followers?: number;
   following?: number;
+  // Scout fields
+  scoutType?: string;
+  scoutTeam?: string;
+  scoutSport?: string;
+  scoutYearsExperience?: number;
 }
 
 interface AuthContextType {
@@ -152,36 +158,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
         
         // Map the database profile to our User interface
+        const profileData = data as any;
         setUser({
-          id: data.id,
-          name: data.full_name || data.username || 'Unknown User',
+          id: profileData.id,
+          name: profileData.full_name || profileData.username || 'Unknown User',
           email: supabaseUser?.email || '',
-          role: (data.role as UserRole) || 'athlete',
-          profilePic: data.avatar_url,
-          bio: data.bio,
-          location: data.location,
-          sport: data.sport,
-          position: data.position,
-          experience: data.experience,
-          teamSize: data.team_size,
-          foundedYear: data.founded_year,
-          homeVenue: data.home_venue,
-          phone: data.phone,
-          website: data.website,
-          birthYear: data.birth_year,
-          birthMonth: data.birth_month,
-          birthDay: data.birth_day,
-          division: data.division,
-          connections: data.connections,
-          posts: data.posts,
-          offers: data.offers,
-          goals: data.goals,
-          assists: data.assists,
-          matches: data.matches,
-          winPercentage: data.win_percentage,
-          cleanSheets: data.clean_sheets,
-          followers: followers,
-          following: following,
+          role: (profileData.role as UserRole) || 'athlete',
+          profilePic: profileData.avatar_url,
+          bio: profileData.bio,
+          location: profileData.location,
+          sport: profileData.sport,
+          position: profileData.position,
+          experience: profileData.experience,
+          teamSize: profileData.team_size,
+          foundedYear: profileData.founded_year,
+          homeVenue: profileData.home_venue,
+          phone: profileData.phone,
+          website: profileData.website,
+          birthYear: profileData.birth_year,
+          birthMonth: profileData.birth_month,
+          birthDay: profileData.birth_day,
+          division: profileData.division,
+          connections: profileData.connections,
+          posts: profileData.posts,
+          offers: profileData.offers,
+          goals: profileData.goals,
+          assists: profileData.assists,
+          matches: profileData.matches,
+          winPercentage: profileData.win_percentage,
+          cleanSheets: profileData.clean_sheets,
+          followers: Math.max(0, data.followers || 0),
+          following: Math.max(0, data.following || 0),
+          scoutType: profileData.scout_type,
+          scoutTeam: profileData.scout_team,
+          scoutSport: profileData.scout_sport,
+          scoutYearsExperience: profileData.scout_years_experience,
         });
       }
     } catch (error) {
@@ -350,6 +361,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (updatedProfile.cleanSheets !== undefined) dbProfile.clean_sheets = updatedProfile.cleanSheets;
       if (updatedProfile.followers !== undefined) dbProfile.followers = updatedProfile.followers;
       if (updatedProfile.following !== undefined) dbProfile.following = updatedProfile.following;
+      if (updatedProfile.scoutType) dbProfile.scout_type = updatedProfile.scoutType;
+      if (updatedProfile.scoutTeam) dbProfile.scout_team = updatedProfile.scoutTeam;
+      if (updatedProfile.scoutSport) dbProfile.scout_sport = updatedProfile.scoutSport;
+      if (updatedProfile.scoutYearsExperience !== undefined) dbProfile.scout_years_experience = updatedProfile.scoutYearsExperience;
       
       // Add updated_at timestamp
       dbProfile.updated_at = new Date().toISOString();

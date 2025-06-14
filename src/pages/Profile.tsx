@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -196,15 +195,15 @@ const Profile = () => {
               {isScout && user && (
                 <div className="mt-2 space-y-1">
                   <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">
-                    {user.scout_type === "independent"
+                    {user.scoutType === "independent"
                       ? "Independent Scout"
-                      : user.scout_type === "team" && user.scout_team
-                      ? `Scout for ${user.scout_team}`
+                      : user.scoutType === "team" && user.scoutTeam
+                      ? `Scout for ${user.scoutTeam}`
                       : "Scout"}
                   </p>
-                  {user.scout_sport && user.scout_years_experience != null && (
+                  {user.scoutSport && user.scoutYearsExperience != null && (
                     <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">
-                      {user.scout_sport} • {user.scout_years_experience} {user.scout_years_experience === 1 ? 'year' : 'years'}
+                      {user.scoutSport} • {user.scoutYearsExperience} {user.scoutYearsExperience === 1 ? 'year' : 'years'}
                     </p>
                   )}
                 </div>
@@ -360,20 +359,20 @@ const Profile = () => {
                       <div className="grid grid-cols-2">
                         <span className="text-gray-500 dark:text-gray-400">Scout Type</span>
                         <span className="dark:text-white capitalize">
-                          {user.scout_type === "independent"
+                          {user.scoutType === "independent"
                             ? "Independent"
-                            : user.scout_type === "team" && user.scout_team
-                            ? `Team (${user.scout_team})`
+                            : user.scoutType === "team" && user.scoutTeam
+                            ? `Team (${user.scoutTeam})`
                             : "N/A"}
                         </span>
                       </div>
                       <div className="grid grid-cols-2">
                         <span className="text-gray-500 dark:text-gray-400">Sport</span>
-                        <span className="dark:text-white capitalize">{user.scout_sport || "N/A"}</span>
+                        <span className="dark:text-white capitalize">{user.scoutSport || "N/A"}</span>
                       </div>
                       <div className="grid grid-cols-2">
                         <span className="text-gray-500 dark:text-gray-400">Experience</span>
-                        <span className="dark:text-white">{user.scout_years_experience != null ? `${user.scout_years_experience} ${user.scout_years_experience === 1 ? 'year' : 'years'}` : "N/A"}</span>
+                        <span className="dark:text-white">{user.scoutYearsExperience != null ? `${user.scoutYearsExperience} ${user.scoutYearsExperience === 1 ? 'year' : 'years'}` : "N/A"}</span>
                       </div>
                     </>
                   )}
