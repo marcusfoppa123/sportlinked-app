@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -76,7 +77,7 @@ const Profile = () => {
     if (user?.id) {
       refreshUserProfile();
     }
-  }, []);
+  }, [user?.id]);
 
   // Add additional effect to fetch accurate follower and following counts
   useEffect(() => {
