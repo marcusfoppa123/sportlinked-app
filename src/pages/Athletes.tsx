@@ -18,7 +18,7 @@ const Athletes = () => {
       {/* Header */}
       <header className="bg-primary text-primary-foreground p-4 shadow-md">
         <div className="flex items-center justify-between">
-          <h1 className="text-xl font-bold">🔥 Discover</h1>
+          <h1 className="text-xl font-bold">Discover</h1>
           {!isAuthenticated && (
             <Button 
               variant="outline" 

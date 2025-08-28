@@ -99,21 +99,16 @@ const ViralPostsGrid: React.FC = () => {
       </div>
       <div className="grid grid-cols-2 gap-1">
         {posts.map((post) => (
-          <div key={post.id} className="relative">
-            <ProfilePostThumbnail
-              post={{
-                id: post.id,
-                image_url: post.image_url,
-                video_url: post.video_url,
-                likeCount: post.likeCount,
-              }}
-              canDelete={false}
-            />
-            {/* Viral score badge */}
-            <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full font-semibold opacity-90">
-              🔥 {post.viralScore}
-            </div>
-          </div>
+          <ProfilePostThumbnail
+            key={post.id}
+            post={{
+              id: post.id,
+              image_url: post.image_url,
+              video_url: post.video_url,
+              likeCount: post.likeCount,
+            }}
+            canDelete={false}
+          />
         ))}
       </div>
     </div>
