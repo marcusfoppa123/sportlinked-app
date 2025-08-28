@@ -210,12 +210,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (error) throw error;
       
-      // Fetch user profile is handled by onAuthStateChange
+      // If a specific role was requested, verify it matches the user's registered role
+      if (role && data.user) {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .single();
+          
+        if (profileError) {
+          console.error("Error fetching user profile during login:", profileError);
+          // If we can't fetch the profile, allow login to proceed
+          // The profile will be fetched again by onAuthStateChange
+        } else if (profileData && profileData.role !== role) {
+          // Role mismatch - logout and show error
+          await supabase.auth.signOut();
+          toast.error(`This account is registered as a ${profileData.role}. Please use the correct login page.`);
+          throw new Error(`Role mismatch: expected ${role}, got ${profileData.role}`);
+        }
+      }
+      
+      // If we get here, either no role was specified or the roles match
       toast.success("Logged in successfully");
     } catch (error: any) {
       console.error("Login error:", error);
-      toast.error(error.message || "Login failed. Please check your credentials.");
-      throw error;
+      if (error.message?.includes('Role mismatch')) {
+        // Error message already shown above
+        throw error;
+      } else {
+        toast.error(error.message || "Login failed. Please check your credentials.");
+        throw error;
+      }
     } finally {
       setIsLoading(false);
     }
