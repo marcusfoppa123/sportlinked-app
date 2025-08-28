@@ -49,7 +49,7 @@ const SideMenu = ({ isOpen, onClose }: SideMenuProps) => {
     { icon: Bookmark, label: t("menu.savedItems"), path: "/saved" },
     { icon: MessageCircle, label: t("menu.messages"), path: "/messages" },
     { icon: Bell, label: t("menu.notifications"), path: "/notifications" },
-    { icon: CreditCard, label: t("menu.subscriptions"), path: "/subscriptions" },
+    { icon: CreditCard, label: "subscriptions", path: "/subscriptions" },
     { icon: Settings, label: t("menu.settings"), path: "/settings" },
     { icon: HelpCircle, label: t("menu.help"), path: "/help" },
   ];
