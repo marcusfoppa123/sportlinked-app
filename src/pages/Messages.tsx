@@ -199,7 +199,7 @@ const Messages = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, username, full_name, avatar_url, role')
         .eq('id', userId)
         .maybeSingle();
       

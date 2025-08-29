@@ -59,7 +59,7 @@ const AthleteContent = ({
             postsData.map(async (post) => {
               const { data: profileData, error: profileError } = await supabase
                 .from('profiles')
-                .select('*')
+                .select('id, username, full_name, avatar_url, role, bio, location, sport, position')
                 .eq('id', post.user_id)
                 .maybeSingle();
               

@@ -468,8 +468,147 @@ export type Database = {
         }
         Relationships: []
       }
+      safe_profiles: {
+        Row: {
+          apg: number | null
+          avatar_url: string | null
+          bio: string | null
+          connections: number | null
+          created_at: string | null
+          experience: string | null
+          followers: number | null
+          following: number | null
+          founded_year: string | null
+          full_name: string | null
+          games: number | null
+          home_venue: string | null
+          id: string | null
+          location: string | null
+          offers: number | null
+          phone: string | null
+          position: string | null
+          posts: number | null
+          ppg: number | null
+          role: string | null
+          rpg: number | null
+          scout_sport: string | null
+          scout_team: string | null
+          scout_type: string | null
+          scout_years_experience: number | null
+          sport: string | null
+          team_size: string | null
+          updated_at: string | null
+          username: string | null
+          website: string | null
+          win_percentage: number | null
+        }
+        Insert: {
+          apg?: number | null
+          avatar_url?: string | null
+          bio?: string | null
+          connections?: number | null
+          created_at?: string | null
+          experience?: string | null
+          followers?: number | null
+          following?: number | null
+          founded_year?: string | null
+          full_name?: string | null
+          games?: number | null
+          home_venue?: string | null
+          id?: string | null
+          location?: string | null
+          offers?: number | null
+          phone?: never
+          position?: string | null
+          posts?: number | null
+          ppg?: number | null
+          role?: string | null
+          rpg?: number | null
+          scout_sport?: string | null
+          scout_team?: string | null
+          scout_type?: string | null
+          scout_years_experience?: number | null
+          sport?: string | null
+          team_size?: string | null
+          updated_at?: string | null
+          username?: string | null
+          website?: string | null
+          win_percentage?: number | null
+        }
+        Update: {
+          apg?: number | null
+          avatar_url?: string | null
+          bio?: string | null
+          connections?: number | null
+          created_at?: string | null
+          experience?: string | null
+          followers?: number | null
+          following?: number | null
+          founded_year?: string | null
+          full_name?: string | null
+          games?: number | null
+          home_venue?: string | null
+          id?: string | null
+          location?: string | null
+          offers?: number | null
+          phone?: never
+          position?: string | null
+          posts?: number | null
+          ppg?: number | null
+          role?: string | null
+          rpg?: number | null
+          scout_sport?: string | null
+          scout_team?: string | null
+          scout_type?: string | null
+          scout_years_experience?: number | null
+          sport?: string | null
+          team_size?: string | null
+          updated_at?: string | null
+          username?: string | null
+          website?: string | null
+          win_percentage?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      get_profile_data: {
+        Args: { profile_id: string }
+        Returns: {
+          apg: number
+          avatar_url: string
+          bio: string
+          connections: number
+          created_at: string
+          experience: string
+          followers: number
+          following: number
+          founded_year: string
+          full_name: string
+          games: number
+          home_venue: string
+          id: string
+          is_own_profile: boolean
+          location: string
+          offers: number
+          phone: string
+          position: string
+          posts: number
+          ppg: number
+          role: string
+          rpg: number
+          scout_sport: string
+          scout_team: string
+          scout_type: string
+          scout_years_experience: number
+          sport: string
+          team_size: string
+          updated_at: string
+          username: string
+          website: string
+          win_percentage: number
+        }[]
+      }
       get_profile_with_privacy: {
         Args: { profile_id: string }
         Returns: {

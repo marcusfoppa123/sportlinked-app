@@ -52,7 +52,7 @@ const PostPage: React.FC = () => {
         const userIds = Array.from(new Set((postsData || []).map((p: any) => p.user_id)));
         const { data: profilesData } = await supabase
           .from("profiles")
-          .select("*")
+          .select("id, username, full_name, avatar_url, role, bio, location, sport, position, experience, team_size, founded_year, home_venue, website, followers, following, connections, posts, offers, ppg, apg, rpg, games, win_percentage, scout_type, scout_team, scout_sport, scout_years_experience, created_at, updated_at")
           .in("id", userIds);
         // Map user_id to profile
         const profileMap = new Map((profilesData || []).map((profile: any) => [profile.id, profile]));
