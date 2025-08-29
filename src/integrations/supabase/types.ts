@@ -372,7 +372,43 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_profile_with_privacy: {
+        Args: { profile_id: string }
+        Returns: {
+          apg: number
+          avatar_url: string
+          bio: string
+          connections: number
+          created_at: string
+          experience: string
+          followers: number
+          following: number
+          founded_year: string
+          full_name: string
+          games: number
+          home_venue: string
+          id: string
+          location: string
+          offers: number
+          phone: string
+          position: string
+          posts: number
+          ppg: number
+          role: string
+          rpg: number
+          scout_sport: string
+          scout_team: string
+          scout_type: string
+          scout_years_experience: number
+          sensitive_data_access: boolean
+          sport: string
+          team_size: string
+          updated_at: string
+          username: string
+          website: string
+          win_percentage: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
