@@ -221,9 +221,9 @@ const UserProfile = () => {
   const isScout = profileData.role === "scout";
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div className="min-h-screen pb-16 bg-white dark:bg-gray-900 relative">
       <div className="w-full px-4 pt-8 pb-4 flex flex-col border-b bg-white dark:bg-gray-900 relative">
-        <div className="flex items-center w-full justify-between">
+        <div className="flex items-center w-full justify-between mb-4">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -231,134 +231,225 @@ const UserProfile = () => {
             <Button variant="ghost" size="icon">
               <Share2 className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon">
-              <Settings className="h-5 w-5" />
-            </Button>
+            {currentUser?.id !== userId && (
+              <Button 
+                onClick={handleFollow}
+                disabled={followLoading}
+                className={`px-4 py-1 rounded-full text-sm ${
+                  isFollowing 
+                    ? "bg-gray-200 text-black hover:bg-gray-300" 
+                    : "bg-blue-500 text-white hover:bg-blue-600"
+                }`}
+              >
+                {followLoading ? "..." : isFollowing ? "Following" : "Follow"}
+              </Button>
+            )}
           </div>
         </div>
+        
+        <div className="flex items-center w-full">
+          <Avatar className="h-20 w-20 border-2 border-gray-200 overflow-hidden">
+            <AvatarImage src={profileData?.profilePic} />
+            <AvatarFallback className="text-2xl bg-gray-100">
+              {getInitials(profileData?.name)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="ml-4 flex flex-col">
+            <div className="flex items-center">
+              <span className="text-xl font-bold mr-2">{profileData?.name}</span>
+              <Badge className="athlete-badge text-xs px-2 py-0.5">{profileData?.role}</Badge>
+            </div>
+            {isScout && (
+              <div className="mt-2 space-y-1">
+                <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">
+                  {profileData.scoutType === "independent"
+                    ? "Independent Scout"
+                    : profileData.scoutType === "team" && profileData.scoutTeam
+                    ? `Scout for ${profileData.scoutTeam}`
+                    : "Scout"}
+                </p>
+                {profileData.scoutSport && profileData.scoutYearsExperience != null && (
+                  <p className="text-sm text-gray-500 dark:text-gray-400 capitalize">
+                    {profileData.scoutSport} • {profileData.scoutYearsExperience} {profileData.scoutYearsExperience === 1 ? 'year' : 'years'}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+        
+        <div className="flex justify-around mt-6 mb-2">
+          <div className="text-center">
+            <span className="font-bold text-lg">0</span>
+            <div className="text-xs text-gray-500">Posts</div>
+          </div>
+          <div className="text-center cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate(`/user/${userId}/followers`)}>
+            <span className="font-bold text-lg">{profileData?.followers}</span>
+            <div className="text-xs text-gray-500">Followers</div>
+          </div>
+          <div className="text-center cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate(`/user/${userId}/following`)}>
+            <span className="font-bold text-lg">{profileData?.following}</span>
+            <div className="text-xs text-gray-500">Following</div>
+          </div>
+        </div>
+        
+        {profileData?.bio && (
+          <div className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+            <div className="font-semibold break-words whitespace-pre-line">{profileData.bio}</div>
+          </div>
+        )}
+        
+        {profileData?.location && (
+          <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 mt-2">
+            <MapPin className="h-4 w-4" />
+            <span>{profileData.location}</span>
+          </div>
+        )}
       </div>
       
-      <div className="container px-4 py-6">
-        <div className="max-w-2xl mx-auto">
-          <Card className="mb-6">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4 mb-6">
-                <Avatar className="h-20 w-20">
-                  <AvatarImage src={profileData?.profilePic} />
-                  <AvatarFallback>{profileData?.name?.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <h1 className="text-2xl font-bold">{profileData?.name}</h1>
-                  {isScout && (
-                    <div className="mt-2 space-y-1">
-                      <p className="text-sm text-gray-600 dark:text-gray-300 capitalize">
-                        {profileData.scoutType === "independent"
-                          ? "Independent Scout"
-                          : profileData.scoutType === "team" && profileData.scoutTeam
-                          ? `Scout for ${profileData.scoutTeam}`
-                          : "Scout"}
-                      </p>
-                      {profileData.scoutSport && profileData.scoutYearsExperience != null && (
-                        <p className="text-sm text-gray-600 dark:text-gray-300 capitalize">
-                          {profileData.scoutSport} • {profileData.scoutYearsExperience} {profileData.scoutYearsExperience === 1 ? 'year' : 'years'} of experience
-                        </p>
+      <main className="px-0 py-4">
+        <Tabs defaultValue="posts" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-4 dark:bg-gray-800">
+            <TabsTrigger value="posts" className="dark:text-gray-300 dark:data-[state=active]:text-white">Posts</TabsTrigger>
+            <TabsTrigger value="stats" className="dark:text-gray-300 dark:data-[state=active]:text-white">Stats</TabsTrigger>
+            <TabsTrigger value="about" className="dark:text-gray-300 dark:data-[state=active]:text-white">About</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="posts" className="space-y-4">
+            <ProfilePostGrid userId={userId} />
+          </TabsContent>
+          
+          <TabsContent value="stats" className="space-y-4">
+            {isAthlete ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Card className="dark:bg-gray-800 dark:border-gray-700">
+                  <CardContent className="p-6 text-center">
+                    <p className="text-gray-500 dark:text-gray-400 mb-4">Season Stats</p>
+                    <div className="grid grid-cols-3 gap-4">
+                      {profileData.ppg !== undefined && (
+                        <div className="text-center">
+                          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{profileData.ppg}</p>
+                          <p className="text-xs text-gray-500">PPG</p>
+                        </div>
+                      )}
+                      {profileData.apg !== undefined && (
+                        <div className="text-center">
+                          <p className="text-2xl font-bold text-green-600 dark:text-green-400">{profileData.apg}</p>
+                          <p className="text-xs text-gray-500">APG</p>
+                        </div>
+                      )}
+                      {profileData.rpg !== undefined && (
+                        <div className="text-center">
+                          <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{profileData.rpg}</p>
+                          <p className="text-xs text-gray-500">RPG</p>
+                        </div>
                       )}
                     </div>
-                  )}
-                </div>
+                  </CardContent>
+                </Card>
+                
+                {(profileData.games !== undefined || profileData.winPercentage !== undefined) && (
+                  <Card className="dark:bg-gray-800 dark:border-gray-700">
+                    <CardContent className="p-6 text-center">
+                      <p className="text-gray-500 dark:text-gray-400 mb-4">Career Stats</p>
+                      <div className="grid grid-cols-2 gap-4">
+                        {profileData.games !== undefined && (
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{profileData.games}</p>
+                            <p className="text-xs text-gray-500">Games</p>
+                          </div>
+                        )}
+                        {profileData.winPercentage !== undefined && (
+                          <div className="text-center">
+                            <p className="text-2xl font-bold text-red-600 dark:text-red-400">{profileData.winPercentage}%</p>
+                            <p className="text-xs text-gray-500">Win %</p>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
-              
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="text-center cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate(`/user/${userId}/followers`)}>
-                  <p className="text-2xl font-bold">{profileData?.followers}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">Followers</p>
-                </div>
-                <div className="text-center cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate(`/user/${userId}/following`)}>
-                  <p className="text-2xl font-bold">{profileData?.following}</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-300">Following</p>
-                </div>
-              </div>
-
-              {profileData?.bio && (
-                <p className="text-gray-600 dark:text-gray-300 mb-6">{profileData.bio}</p>
-              )}
-
-              {profileData?.location && (
-                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300 mb-6">
-                  <MapPin className="h-4 w-4" />
-                  <span>{profileData.location}</span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-          
-          <Tabs defaultValue="posts" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="posts">Posts</TabsTrigger>
-              <TabsTrigger value="about">About</TabsTrigger>
-            </TabsList>
-            <TabsContent value="posts">
-              <ProfilePostGrid userId={userId} />
-            </TabsContent>
-            <TabsContent value="about">
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="space-y-4">
-                    {isScout && (
-                      <>
-                        <div>
-                          <h3 className="font-semibold mb-1">Scout Type</h3>
-                          <p className="text-gray-600 dark:text-gray-300 capitalize">
-                            {profileData.scoutType === "independent" 
-                              ? "Independent Scout" 
-                              : profileData.scoutType === "team" && profileData.scoutTeam
-                              ? `Team Scout (${profileData.scoutTeam})`
-                              : "Scout"}
-                          </p>
-                        </div>
-                        {profileData.scoutSport && (
-                          <div>
-                            <h3 className="font-semibold mb-1">Sport</h3>
-                            <p className="text-gray-600 dark:text-gray-300 capitalize">{profileData.scoutSport}</p>
-                          </div>
-                        )}
-                        {profileData.scoutYearsExperience !== undefined && (
-                          <div>
-                            <h3 className="font-semibold mb-1">Experience</h3>
-                            <p className="text-gray-600 dark:text-gray-300">{profileData.scoutYearsExperience} {profileData.scoutYearsExperience === 1 ? 'year' : 'years'}</p>
-                          </div>
-                        )}
-                      </>
-                    )}
-                    {isAthlete && (
-                      <>
-                        {profileData.sport && (
-                          <div>
-                            <h3 className="font-semibold mb-1">Sport</h3>
-                            <p className="text-gray-600 dark:text-gray-300">{profileData.sport}</p>
-                          </div>
-                        )}
-                        {profileData.position && (
-                          <div>
-                            <h3 className="font-semibold mb-1">Position</h3>
-                            <p className="text-gray-600 dark:text-gray-300">{profileData.position}</p>
-                          </div>
-                        )}
-                        {profileData.experience && (
-                          <div>
-                            <h3 className="font-semibold mb-1">Experience Level</h3>
-                            <p className="text-gray-600 dark:text-gray-300">{profileData.experience}</p>
-                          </div>
-                        )}
-                      </>
-                    )}
-                  </div>
+            ) : (
+              <Card className="dark:bg-gray-800 dark:border-gray-700">
+                <CardContent className="p-6 text-center">
+                  <p className="text-gray-500 dark:text-gray-400">
+                    {isScout ? "Scout-specific stats are private" : "Stats are only available for athletes"}
+                  </p>
                 </CardContent>
               </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-      </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="about" className="space-y-4">
+            <Card className="dark:bg-gray-800 dark:border-gray-700">
+              <CardContent className="p-4">
+                <h3 className="font-medium mb-2 dark:text-white">Personal Information</h3>
+                <div className="space-y-2">
+                  <div className="grid grid-cols-2">
+                    <span className="text-gray-500 dark:text-gray-400">Name</span>
+                    <span className="dark:text-white">{profileData?.name}</span>
+                  </div>
+                  {profileData?.location && (
+                    <div className="grid grid-cols-2">
+                      <span className="text-gray-500 dark:text-gray-400">Location</span>
+                      <span className="dark:text-white">{profileData.location}</span>
+                    </div>
+                  )}
+                  {isAthlete && (
+                    <>
+                      {profileData?.sport && (
+                        <div className="grid grid-cols-2">
+                          <span className="text-gray-500 dark:text-gray-400">Sport</span>
+                          <span className="dark:text-white">{profileData.sport}</span>
+                        </div>
+                      )}
+                      {profileData?.position && (
+                        <div className="grid grid-cols-2">
+                          <span className="text-gray-500 dark:text-gray-400">Position</span>
+                          <span className="dark:text-white">{profileData.position}</span>
+                        </div>
+                      )}
+                      {profileData?.experience && (
+                        <div className="grid grid-cols-2">
+                          <span className="text-gray-500 dark:text-gray-400">Experience</span>
+                          <span className="dark:text-white">{profileData.experience}</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                  {isScout && (
+                    <>
+                      <div className="grid grid-cols-2">
+                        <span className="text-gray-500 dark:text-gray-400">Scout Type</span>
+                        <span className="dark:text-white capitalize">
+                          {profileData.scoutType === "independent"
+                            ? "Independent"
+                            : profileData.scoutType === "team" && profileData.scoutTeam
+                            ? `Team (${profileData.scoutTeam})`
+                            : "N/A"}
+                        </span>
+                      </div>
+                      {profileData.scoutSport && (
+                        <div className="grid grid-cols-2">
+                          <span className="text-gray-500 dark:text-gray-400">Sport</span>
+                          <span className="dark:text-white capitalize">{profileData.scoutSport}</span>
+                        </div>
+                      )}
+                      {profileData.scoutYearsExperience !== undefined && (
+                        <div className="grid grid-cols-2">
+                          <span className="text-gray-500 dark:text-gray-400">Experience</span>
+                          <span className="dark:text-white">{profileData.scoutYearsExperience} {profileData.scoutYearsExperience === 1 ? 'year' : 'years'}</span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </main>
       
       <BottomNavigation />
     </div>
