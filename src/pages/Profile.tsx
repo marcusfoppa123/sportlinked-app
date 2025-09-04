@@ -223,11 +223,11 @@ const Profile = () => {
             <span className="font-bold text-lg">{realPostCount}</span>
             <div className="text-xs text-gray-500">Posts</div>
           </div>
-          <div className="text-center">
+          <div className="text-center cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate(`/user/${user?.id}/followers`)}>
             <span className="font-bold text-lg">{Math.max(0, user?.followers ?? 0)}</span>
             <div className="text-xs text-gray-500">Followers</div>
           </div>
-          <div className="text-center">
+          <div className="text-center cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate(`/user/${user?.id}/following`)}>
             <span className="font-bold text-lg">{Math.max(0, user?.following ?? 0)}</span>
             <div className="text-xs text-gray-500">Following</div>
           </div>

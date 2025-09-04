@@ -269,11 +269,11 @@ const UserProfile = () => {
               </div>
               
               <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="text-center">
+                <div className="text-center cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate(`/user/${userId}/followers`)}>
                   <p className="text-2xl font-bold">{profileData?.followers}</p>
                   <p className="text-sm text-gray-600 dark:text-gray-300">Followers</p>
                 </div>
-                <div className="text-center">
+                <div className="text-center cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate(`/user/${userId}/following`)}>
                   <p className="text-2xl font-bold">{profileData?.following}</p>
                   <p className="text-sm text-gray-600 dark:text-gray-300">Following</p>
                 </div>

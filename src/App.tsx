@@ -30,6 +30,7 @@ import NotificationSettings from "@/pages/NotificationSettings";
 import MessageSettings from "@/pages/MessageSettings";
 import SearchPage from "./pages/SearchPage";
 import HashtagPage from "./pages/HashtagPage";
+import FollowersPage from "./pages/FollowersPage";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ const AppRoutes = () => (
     <Route path="/saved" element={<SavedItems />} />
     <Route path="/post/:postId" element={<PostPage />} />
     <Route path="/user/:userId" element={<UserProfile />} />
+    <Route path="/user/:userId/:type" element={<FollowersPage />} />
     <Route path="/search" element={<SearchPage />} />
     <Route path="/register" element={<Login showRegister={true} initialRole={null} />} />
     <Route path="/terms" element={<TermsOfService />} />
