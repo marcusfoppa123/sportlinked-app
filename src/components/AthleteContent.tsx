@@ -79,21 +79,29 @@ const AthleteContent = ({
                 .select('id', { count: 'exact' })
                 .eq('post_id', post.id);
               
-              // Check if current user liked
-              const { data: userLiked, error: userLikedError } = await supabase
-                .from('likes')
-                .select('id')
-                .eq('post_id', post.id)
-                .eq('user_id', user?.id || '')
-                .maybeSingle();
+              // Check if current user liked (only if user is logged in)
+              let userLiked = null;
+              if (user?.id) {
+                const { data: userLikedData, error: userLikedError } = await supabase
+                  .from('likes')
+                  .select('id')
+                  .eq('post_id', post.id)
+                  .eq('user_id', user.id)
+                  .maybeSingle();
+                userLiked = userLikedData;
+              }
               
-              // Check if current user bookmarked
-              const { data: userBookmarked, error: userBookmarkedError } = await supabase
-                .from('bookmarks')
-                .select('id')
-                .eq('post_id', post.id)
-                .eq('user_id', user?.id || '')
-                .maybeSingle();
+              // Check if current user bookmarked (only if user is logged in)
+              let userBookmarked = null;
+              if (user?.id) {
+                const { data: userBookmarkedData, error: userBookmarkedError } = await supabase
+                  .from('bookmarks')
+                  .select('id')
+                  .eq('post_id', post.id)
+                  .eq('user_id', user.id)
+                  .maybeSingle();
+                userBookmarked = userBookmarkedData;
+              }
               
               return {
                 ...post,

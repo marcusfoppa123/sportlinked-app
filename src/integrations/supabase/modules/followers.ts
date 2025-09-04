@@ -149,22 +149,28 @@ export const checkMutualFollow = async (userId1: string, userId2: string) => {
 // Get all followers for a user
 export const getFollowers = async (userId: string) => {
   try {
-    const { data, error } = await supabase
+    // First get follower IDs
+    const { data: followerData, error: followerError } = await supabase
       .from('followers')
-      .select(`
-        follower_id,
-        profiles:follower_id (
-          id,
-          full_name,
-          avatar_url,
-          role
-        )
-      `)
+      .select('follower_id')
       .eq('following_id', userId);
       
-    if (error) throw error;
+    if (followerError) throw followerError;
     
-    return { data: data?.map(item => item.profiles) || [], error: null };
+    if (!followerData || followerData.length === 0) {
+      return { data: [], error: null };
+    }
+    
+    // Then get profile data for those followers
+    const followerIds = followerData.map(f => f.follower_id);
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, full_name, avatar_url, role')
+      .in('id', followerIds);
+      
+    if (profileError) throw profileError;
+    
+    return { data: profileData || [], error: null };
   } catch (error) {
     console.error("Error fetching followers:", error);
     return { data: [], error };
@@ -174,22 +180,28 @@ export const getFollowers = async (userId: string) => {
 // Get all users that a user is following
 export const getFollowing = async (userId: string) => {
   try {
-    const { data, error } = await supabase
+    // First get following IDs
+    const { data: followingData, error: followingError } = await supabase
       .from('followers')
-      .select(`
-        following_id,
-        profiles:following_id (
-          id,
-          full_name,
-          avatar_url,
-          role
-        )
-      `)
+      .select('following_id')
       .eq('follower_id', userId);
       
-    if (error) throw error;
+    if (followingError) throw followingError;
     
-    return { data: data?.map(item => item.profiles) || [], error: null };
+    if (!followingData || followingData.length === 0) {
+      return { data: [], error: null };
+    }
+    
+    // Then get profile data for those being followed
+    const followingIds = followingData.map(f => f.following_id);
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, full_name, avatar_url, role')
+      .in('id', followingIds);
+      
+    if (profileError) throw profileError;
+    
+    return { data: profileData || [], error: null };
   } catch (error) {
     console.error("Error fetching following:", error);
     return { data: [], error };
