@@ -107,6 +107,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchUserProfile = async (userId: string) => {
     try {
+      // Note: This fetches the authenticated user's own profile with all fields
+      // including sensitive data (phone number). This is secure because:
+      // 1. userId parameter is the authenticated user's own ID
+      // 2. RLS policy "Users can view their own complete profile" allows this
       const { data, error } = await supabase
         .from('profiles')
         .select('*')

@@ -50,12 +50,13 @@ const UserProfile = () => {
     if (!userId) return;
     setIsLoading(true);
     try {
-      // Fetch profile data for the viewed user (excluding sensitive data for non-owners)
+      // Fetch profile data for the viewed user (sensitive data is protected by RLS)
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('id, username, full_name, avatar_url, role, bio, location, sport, position, experience, team_size, founded_year, home_venue, website, followers, following, connections, posts, offers, ppg, apg, rpg, games, win_percentage, scout_type, scout_team, scout_sport, scout_years_experience, created_at, updated_at')
         .eq('id', userId)
         .maybeSingle();
+        
       if (profileError) throw profileError;
       if (profile) {
         const profileDataCast = profile as any;
