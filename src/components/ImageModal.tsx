@@ -27,6 +27,8 @@ const ImageModal = ({ isOpen, onClose, imageSrc }: ImageModalProps) => {
             src={imageSrc} 
             alt="Expanded post" 
             className="w-full h-auto max-h-[80vh] object-contain rounded-lg"
+            style={{ imageRendering: 'crisp-edges' }}
+            loading="eager"
           />
         </div>
       </DialogContent>

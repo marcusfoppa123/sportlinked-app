@@ -45,7 +45,13 @@ const PostModal: React.FC<PostModalProps> = ({ open, onClose, post }) => {
         {/* Image/video */}
         <div className="w-full flex items-center justify-center bg-white dark:bg-black" style={{ aspectRatio: '1/1' }}>
           {post.image_url ? (
-            <img src={post.image_url} alt="Post" className="object-contain max-h-[60vh] max-w-full mx-auto" />
+            <img 
+              src={post.image_url} 
+              alt="Post" 
+              className="object-contain max-h-[60vh] max-w-full mx-auto" 
+              style={{ imageRendering: 'crisp-edges' }}
+              loading="eager"
+            />
           ) : post.video_url ? (
             <video src={post.video_url} className="object-contain max-h-[60vh] max-w-full mx-auto" controls autoPlay />
           ) : null}

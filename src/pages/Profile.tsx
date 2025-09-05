@@ -183,6 +183,11 @@ const Profile = () => {
                 src={user?.profilePic} 
                 className="object-cover w-full h-full"
                 style={{ objectFit: 'cover' }}
+                loading="lazy"
+                onLoad={(e) => {
+                  const img = e.target as HTMLImageElement;
+                  img.style.imageRendering = 'high-quality';
+                }}
               />
               <AvatarFallback className="text-2xl bg-gray-100">
                 {getInitials(user?.name)}

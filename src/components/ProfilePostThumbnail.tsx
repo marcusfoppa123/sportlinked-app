@@ -36,6 +36,8 @@ const ProfilePostThumbnail: React.FC<ProfilePostThumbnailProps> = ({ post, onDel
           src={post.image_url}
           alt="Post thumbnail"
           className="w-full h-full object-cover"
+          loading="lazy"
+          style={{ imageRendering: 'crisp-edges' }}
         />
       )}
       {post.video_url && (

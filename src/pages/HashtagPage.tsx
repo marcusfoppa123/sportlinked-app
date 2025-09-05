@@ -69,6 +69,8 @@ const HashtagPage = () => {
                 {post.image_url ? (
                   <img
                     src={post.image_url}
+                    loading="lazy"
+                    style={{ imageRendering: 'crisp-edges' }}
                     alt="Post"
                     className="w-full h-full object-cover"
                   />

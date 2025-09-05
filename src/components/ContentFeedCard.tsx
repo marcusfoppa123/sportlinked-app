@@ -119,9 +119,10 @@ const ContentFeedCard = ({
       {content.image && (
         <img
           src={content.image}
+          loading="lazy"
+          style={{ imageRendering: 'crisp-edges' }}
           alt="Post content"
           className="w-full max-h-96 object-cover rounded-t-2xl border-b border-blue-50"
-          style={{ aspectRatio: '1/1', background: '#eaf1fb' }}
         />
       )}
       {/* Post video */}

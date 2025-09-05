@@ -283,7 +283,13 @@ const PostPage: React.FC = () => {
             {/* Image/video */}
             <div className="w-full flex items-center justify-center bg-white dark:bg-black aspect-square">
               {post.image_url ? (
-                <img src={post.image_url} alt="Post" className="object-contain max-h-[60vh] max-w-full mx-auto" />
+                <img 
+                  src={post.image_url} 
+                  alt="Post" 
+                  className="object-contain max-h-[60vh] max-w-full mx-auto" 
+                  style={{ imageRendering: 'crisp-edges' }}
+                  loading="eager"
+                />
               ) : post.video_url ? (
                 <TikTokVideo src={post.video_url} className="object-contain max-h-[60vh] max-w-full mx-auto rounded-xl" />
               ) : null}

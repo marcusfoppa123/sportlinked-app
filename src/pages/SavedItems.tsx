@@ -142,7 +142,9 @@ const SavedItems = () => {
           {post.content.image && (
             <div className="relative pt-[100%] bg-gray-100 dark:bg-gray-700 rounded overflow-hidden mb-2">
               <img 
-                src={post.content.image} 
+                src={post.content.image}
+                loading="lazy"
+                style={{ imageRendering: 'crisp-edges' }}
                 alt="Post" 
                 className="absolute top-0 left-0 w-full h-full object-cover"
               />
