@@ -544,6 +544,26 @@ export type Database = {
           win_percentage: number
         }[]
       }
+      get_public_profile_data: {
+        Args: { profile_id: string }
+        Returns: {
+          avatar_url: string
+          bio: string
+          connections: number
+          created_at: string
+          experience: string
+          followers: number
+          following: number
+          full_name: string
+          id: string
+          location: string
+          position: string
+          posts: number
+          role: string
+          sport: string
+          username: string
+        }[]
+      }
       get_safe_profile: {
         Args: { profile_id: string }
         Returns: {
