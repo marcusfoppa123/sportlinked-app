@@ -100,7 +100,7 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
           return;
         }
         
-        // For non-scouts, save directly to general folder or no folder
+        // For non-scouts, save directly without folder
         await saveToFolder(null);
       } else {
         const { error } = await supabase
@@ -123,13 +123,18 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
     if (!currentUser) return;
 
     try {
+      const insertData: any = {
+        user_id: currentUser.id,
+        post_id: postId
+      };
+      
+      if (folderId) {
+        insertData.folder_id = folderId;
+      }
+
       const { error } = await supabase
         .from('bookmarks')
-        .insert({
-          user_id: currentUser.id,
-          post_id: postId,
-          folder_id: folderId
-        });
+        .insert(insertData);
 
       if (error) {
         if (error.code === '23505') {

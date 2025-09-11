@@ -537,6 +537,10 @@ export type Database = {
       }
     }
     Functions: {
+      create_bookmark_folder: {
+        Args: { p_color: string; p_name: string; p_user_id: string }
+        Returns: string
+      }
       get_profile_data: {
         Args: { profile_id: string }
         Returns: {
@@ -666,6 +670,14 @@ export type Database = {
           username: string
           website: string
           win_percentage: number
+        }[]
+      }
+      get_user_bookmark_folders: {
+        Args: { p_user_id: string }
+        Returns: {
+          color: string
+          id: string
+          name: string
         }[]
       }
     }
