@@ -14,26 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      bookmark_folders: {
+        Row: {
+          color: string | null
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       bookmarks: {
         Row: {
           created_at: string
+          folder_id: string | null
           id: string
           post_id: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          folder_id?: string | null
           id?: string
           post_id: string
           user_id: string
         }
         Update: {
           created_at?: string
+          folder_id?: string | null
           id?: string
           post_id?: string
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "bookmarks_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "bookmark_folders"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "bookmarks_post_id_fkey"
             columns: ["post_id"]

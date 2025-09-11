@@ -14,6 +14,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import FolderSelectionDialog from "./FolderSelectionDialog";
 
 interface PostInteractionsProps {
   postId: string;
@@ -43,6 +44,7 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
   const [likeCount, setLikeCount] = useState(initialLikes);
   const [isBookmarked, setIsBookmarked] = useState(initialUserBookmarked);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showFolderDialog, setShowFolderDialog] = useState(false);
 
   const handleLike = async () => {
     if (!currentUser) {
@@ -92,21 +94,14 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
 
     try {
       if (!isBookmarked) {
-        const { error } = await supabase
-          .from('bookmarks')
-          .insert({
-            user_id: currentUser.id,
-            post_id: postId
-          });
-
-        if (error) {
-          if (error.code === '23505') {
-            console.log('Bookmark already exists');
-          } else {
-            throw error;
-          }
+        // For scouts, show folder selection dialog
+        if (currentUser.role === 'scout') {
+          setShowFolderDialog(true);
+          return;
         }
-        toast.success("Post saved to your bookmarks");
+        
+        // For non-scouts, save directly to general folder or no folder
+        await saveToFolder(null);
       } else {
         const { error } = await supabase
           .from('bookmarks')
@@ -116,12 +111,39 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
 
         if (error) throw error;
         toast.success("Post removed from your bookmarks");
+        setIsBookmarked(false);
       }
-
-      setIsBookmarked(!isBookmarked);
     } catch (error) {
       console.error('Error updating bookmark:', error);
       toast.error('Failed to update bookmark');
+    }
+  };
+
+  const saveToFolder = async (folderId: string | null) => {
+    if (!currentUser) return;
+
+    try {
+      const { error } = await supabase
+        .from('bookmarks')
+        .insert({
+          user_id: currentUser.id,
+          post_id: postId,
+          folder_id: folderId
+        });
+
+      if (error) {
+        if (error.code === '23505') {
+          console.log('Bookmark already exists');
+        } else {
+          throw error;
+        }
+      }
+      
+      toast.success("Post saved to your bookmarks");
+      setIsBookmarked(true);
+    } catch (error) {
+      console.error('Error saving bookmark:', error);
+      toast.error('Failed to save bookmark');
     }
   };
 
@@ -236,6 +258,13 @@ const PostInteractions: React.FC<PostInteractionsProps> = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <FolderSelectionDialog
+        open={showFolderDialog}
+        onOpenChange={setShowFolderDialog}
+        onFolderSelect={saveToFolder}
+        postId={postId}
+      />
     </>
   );
 };
