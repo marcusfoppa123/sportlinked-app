@@ -635,6 +635,41 @@ export type Database = {
           username: string
         }[]
       }
+      get_public_profile_safe: {
+        Args: { profile_id: string }
+        Returns: {
+          apg: number
+          avatar_url: string
+          bio: string
+          connections: number
+          created_at: string
+          experience: string
+          followers: number
+          following: number
+          founded_year: string
+          full_name: string
+          games: number
+          home_venue: string
+          id: string
+          location: string
+          offers: number
+          position: string
+          posts: number
+          ppg: number
+          role: string
+          rpg: number
+          scout_sport: string
+          scout_team: string
+          scout_type: string
+          scout_years_experience: number
+          sport: string
+          team_size: string
+          updated_at: string
+          username: string
+          website: string
+          win_percentage: number
+        }[]
+      }
       get_safe_profile: {
         Args: { profile_id: string }
         Returns: {
