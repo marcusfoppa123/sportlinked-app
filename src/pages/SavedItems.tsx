@@ -33,7 +33,10 @@ const SavedItems = () => {
   
   useEffect(() => {
     const fetchSavedData = async () => {
-      if (!user?.id) return;
+      if (!user?.id) {
+        setLoading(false);
+        return;
+      }
       
       try {
         setLoading(true);
@@ -105,37 +108,50 @@ const SavedItems = () => {
         );
 
         if (isScout) {
-          // Group by folders for scouts
-          const folderMap = new Map<string, BookmarkFolder>();
-          
-          // Add "All Bookmarks" folder
-          folderMap.set('all', {
+          // Fetch user's folders and map posts into them
+          let dbFolders: { id: string; name: string; color: string }[] = [];
+          try {
+            const { data, error } = await (supabase as any)
+              .rpc('get_user_bookmark_folders', { p_user_id: user.id });
+            if (error) throw error;
+            dbFolders = data || [];
+          } catch (e) {
+            console.warn('Failed to fetch bookmark folders, falling back to grouping by id', e);
+          }
+
+          const foldersArr: BookmarkFolder[] = [];
+
+          // All Bookmarks
+          foldersArr.push({
             id: 'all',
             name: 'All Bookmarks',
             color: '#6B7280',
-            bookmarks: postsWithStats
+            bookmarks: postsWithStats,
           });
 
-          // Group posts by folder_id
-          postsWithStats.forEach(post => {
-            const folderId = post.folder_id || 'general';
-            if (folderId !== 'all' && !folderMap.has(folderId)) {
-              folderMap.set(folderId, {
-                id: folderId,
-                name: 'General', // Will be updated when we fetch folder names
-                color: '#3B82F6',
-                bookmarks: []
-              });
-            }
-            if (folderId !== 'all') {
-              const folder = folderMap.get(folderId);
-              if (folder) {
-                folder.bookmarks.push(post);
-              }
-            }
-          });
+          // Uncategorized (no folder)
+          const uncategorized = postsWithStats.filter((p) => !p.folder_id);
+          if (uncategorized.length > 0) {
+            foldersArr.push({
+              id: 'uncategorized',
+              name: 'Uncategorized',
+              color: '#9CA3AF',
+              bookmarks: uncategorized,
+            });
+          }
 
-          setFolders(Array.from(folderMap.values()));
+          // DB folders with their posts
+          for (const f of dbFolders) {
+            const postsInFolder = postsWithStats.filter((p) => p.folder_id === f.id);
+            foldersArr.push({
+              id: f.id,
+              name: f.name,
+              color: f.color || '#3B82F6',
+              bookmarks: postsInFolder,
+            });
+          }
+
+          setFolders(foldersArr);
           setSelectedFolder('all');
         } else {
           // Simple view for non-scouts

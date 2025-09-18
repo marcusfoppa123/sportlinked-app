@@ -23,7 +23,7 @@ interface Folder {
 interface FolderSelectionDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onFolderSelect: (folderId: string) => void;
+  onFolderSelect: (folderId: string | null) => void;
   postId: string;
 }
 
@@ -57,62 +57,56 @@ const FolderSelectionDialog: React.FC<FolderSelectionDialogProps> = ({
     }
   }, [open, user]);
 
-  const fetchFolders = async () => {
-    if (!user?.id) return;
-    
-    setLoading(true);
-    try {
-      // For now, we'll create a simple approach that works around the type issues
-      // Create a default "General" folder for the user
-      const defaultFolder: Folder = {
-        id: 'general',
-        name: 'General',
-        color: '#6B7280'
-      };
+const fetchFolders = async () => {
+  if (!user?.id) return;
+  setLoading(true);
+  try {
+    const { data, error } = await (supabase as any)
+      .rpc('get_user_bookmark_folders', { p_user_id: user.id });
 
-      // Create some predefined folders for scouts
-      const scoutFolders: Folder[] = [
-        defaultFolder,
-        { id: 'prospects', name: 'Top Prospects', color: '#3B82F6' },
-        { id: 'watched', name: 'Being Watched', color: '#10B981' },
-        { id: 'potential', name: 'Potential Recruits', color: '#F59E0B' }
-      ];
+    if (error) throw error;
 
-      setFolders(scoutFolders);
-    } catch (error) {
-      console.error('Error in fetchFolders:', error);
-      // Fallback to default folder
-      setFolders([{
-        id: 'general',
-        name: 'General',
-        color: '#6B7280'
-      }]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    setFolders(data || []);
+    setShowCreateForm(!data || data.length === 0);
+  } catch (error) {
+    console.error('Error fetching folders:', error);
+    toast.error('Failed to load folders');
+    setFolders([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
-  const handleCreateFolder = async () => {
-    if (!user?.id || !newFolderName.trim()) return;
+const handleCreateFolder = async () => {
+  if (!user?.id || !newFolderName.trim()) return;
 
-    try {
-      const newFolder: Folder = {
-        id: `custom_${Date.now()}`,
-        name: newFolderName.trim(),
-        color: selectedColor
-      };
+  try {
+    const { data: createdId, error } = await (supabase as any)
+      .rpc('create_bookmark_folder', {
+        p_user_id: user.id,
+        p_name: newFolderName.trim(),
+        p_color: selectedColor
+      });
 
-      setFolders(prev => [...prev, newFolder]);
-      setNewFolderName("");
-      setShowCreateForm(false);
-      toast.success("Folder created successfully");
-    } catch (error) {
-      console.error('Error creating folder:', error);
-      toast.error('Failed to create folder');
-    }
-  };
+    if (error) throw error;
 
-  const handleFolderSelect = async (folderId: string) => {
+    const newFolder: Folder = {
+      id: String(createdId),
+      name: newFolderName.trim(),
+      color: selectedColor
+    };
+
+    setFolders(prev => [...prev, newFolder]);
+    setNewFolderName("");
+    setShowCreateForm(false);
+    toast.success("Folder created successfully");
+  } catch (error) {
+    console.error('Error creating folder:', error);
+    toast.error('Failed to create folder');
+  }
+};
+
+  const handleFolderSelect = async (folderId: string | null) => {
     try {
       onFolderSelect(folderId);
       onOpenChange(false);
