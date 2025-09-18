@@ -214,8 +214,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (error) throw error;
       
-      // If a specific role was requested, verify it matches the user's registered role
-      if (role && data.user) {
+      // Always verify the user's registered role matches the expected role
+      if (data.user) {
         const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('role')
@@ -226,10 +226,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           console.error("Error fetching user profile during login:", profileError);
           // If we can't fetch the profile, allow login to proceed
           // The profile will be fetched again by onAuthStateChange
-        } else if (profileData && profileData.role !== role) {
+        } else if (profileData && role && profileData.role !== role) {
           // Role mismatch - logout and show error
           await supabase.auth.signOut();
-          toast.error(`This account is registered as a ${profileData.role}. Please use the correct login page.`);
+          toast.error(`This account is registered as a ${profileData.role}. Please use the ${profileData.role} login page.`);
           throw new Error(`Role mismatch: expected ${role}, got ${profileData.role}`);
         }
       }
@@ -270,7 +270,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Check for specific error types directly from Supabase's response
         if (error.message?.includes('User already registered') || 
             error.message?.includes('email already in use')) {
-          toast.error('An account with this email already exists.');
+          toast.error('An account with this email already exists. Each email can only be used for one role.');
         } else {
           toast.error(error.message || 'Registration failed. Please try again.');
         }
@@ -326,6 +326,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const setRole = (role: UserRole) => {
     console.log("Setting role in AuthContext:", role);
+    
+    // Only allow role setting for users who don't have an account yet
+    if (supabaseUser && user?.id) {
+      console.warn("Cannot change role for existing user account");
+      toast.error("Cannot change role for existing user account");
+      return;
+    }
+    
     setUser(prevUser => {
       if (!prevUser) {
         return { 
@@ -336,12 +344,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
       }
       
+      // Only allow role change if user doesn't have a real account yet
+      if (prevUser.id) {
+        console.warn("Cannot change role for existing user");
+        return prevUser;
+      }
+      
       return { ...prevUser, role };
     });
-    
-    if (user && user.id && supabaseUser) {
-      updateUserProfile({ role });
-    }
   };
 
   const updateUserProfile = async (updatedProfile: Partial<User>) => {

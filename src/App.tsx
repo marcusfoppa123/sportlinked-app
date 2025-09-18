@@ -23,6 +23,9 @@ import Subscriptions from "./pages/Subscriptions";
 import SavedItems from "./pages/SavedItems";
 import PostPage from "./pages/PostPage";
 import Login from "./components/Login";
+import AthleteLogin from "./pages/AthleteLogin";
+import ScoutLogin from "./pages/ScoutLogin";
+import TeamLogin from "./pages/TeamLogin";
 import TermsOfService from "./pages/TermsOfService";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import UserProfile from "@/pages/UserProfile";
@@ -55,6 +58,9 @@ const AppRoutes = () => (
     <Route path="/user/:userId/:type" element={<FollowersPage />} />
     <Route path="/search" element={<SearchPage />} />
     <Route path="/register" element={<Login showRegister={true} initialRole={null} />} />
+    <Route path="/athlete-login" element={<AthleteLogin />} />
+    <Route path="/scout-login" element={<ScoutLogin />} />
+    <Route path="/team-login" element={<TeamLogin />} />
     <Route path="/terms" element={<TermsOfService />} />
     <Route path="/privacy" element={<PrivacyPolicy />} />
     <Route path="/hashtag/:hashtag" element={<HashtagPage />} />
