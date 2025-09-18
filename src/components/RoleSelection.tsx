@@ -1,15 +1,32 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { useAuth, UserRole } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const RoleSelection = () => {
   const { setRole } = useAuth();
+  const navigate = useNavigate();
 
   const handleRoleSelect = (role: UserRole) => {
     setRole(role);
-    console.log("Selected role:", role); // Add logging to help debug
+    console.log("Selected role:", role);
+    
+    // Navigate to role-specific login page
+    switch (role) {
+      case "athlete":
+        navigate("/athlete-login");
+        break;
+      case "scout":
+        navigate("/scout-login");
+        break;
+      case "team":
+        navigate("/team-login");
+        break;
+      default:
+        console.error("Unknown role selected:", role);
+    }
   };
 
   return (
