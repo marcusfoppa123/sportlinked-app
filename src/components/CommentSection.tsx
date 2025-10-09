@@ -8,6 +8,7 @@ import {
   DialogHeader, 
   DialogTitle 
 } from "@/components/ui/dialog";
+import { commentSchema } from "@/utils/validation";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
@@ -134,6 +135,14 @@ const CommentSection = ({ isOpen, onClose, postId }: CommentSectionProps) => {
       if (!user) toast.error("Please sign in to comment");
       return;
     }
+
+    // Validate comment input
+    const validationResult = commentSchema.safeParse({ content: comment });
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0];
+      toast.error(firstError.message);
+      return;
+    }
     
     try {
       const { error } = await supabase
@@ -141,7 +150,7 @@ const CommentSection = ({ isOpen, onClose, postId }: CommentSectionProps) => {
         .insert({
           user_id: user.id,
           post_id: postId,
-          content: comment
+          content: comment.trim()
         });
       
       if (error) throw error;

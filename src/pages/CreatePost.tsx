@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { Button } from "@/components/ui/button";
+import { postSchema } from "@/utils/validation";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
@@ -120,6 +121,26 @@ const CreatePost = () => {
     
     if (!postText.trim() && previewImages.length === 0 && !previewVideo) {
       toast.error("Please add some content to your post");
+      return;
+    }
+
+    // Validate input before publishing
+    const allHashtags = Array.from(
+      new Set([
+        ...hashtags.map(h => h.toLowerCase().replace(/^#/, '')),
+        ...(postText.match(/#(\w+)/g) || []).map(tag => tag.slice(1).toLowerCase())
+      ])
+    );
+
+    const validationResult = postSchema.safeParse({
+      content: postText.trim() || undefined,
+      hashtags: allHashtags.length > 0 ? allHashtags : undefined,
+      sport: selectedSport || undefined,
+    });
+
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0];
+      toast.error(firstError.message);
       return;
     }
     

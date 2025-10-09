@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { toast } from "sonner";
+import { profileUpdateSchema } from "@/utils/validation";
 
 export type UserRole = "athlete" | "scout" | "team" | null;
 
@@ -365,6 +366,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const userId = supabaseUser.id;
       if (!userId) {
         toast.error("Invalid user ID");
+        return;
+      }
+
+      // Validate profile data
+      const validationData: any = {};
+      if (updatedProfile.name !== undefined) validationData.full_name = updatedProfile.name;
+      if (updatedProfile.bio !== undefined) validationData.bio = updatedProfile.bio;
+      if (updatedProfile.location !== undefined) validationData.location = updatedProfile.location;
+      if (updatedProfile.phone !== undefined) validationData.phone = updatedProfile.phone;
+      if (updatedProfile.website !== undefined) validationData.website = updatedProfile.website;
+      if (updatedProfile.sport !== undefined) validationData.sport = updatedProfile.sport;
+      if (updatedProfile.position !== undefined) validationData.position = updatedProfile.position;
+      if (updatedProfile.experience !== undefined) validationData.experience = updatedProfile.experience;
+      if (updatedProfile.teamSize !== undefined) validationData.team_size = updatedProfile.teamSize;
+      if (updatedProfile.foundedYear !== undefined) validationData.founded_year = updatedProfile.foundedYear;
+      if (updatedProfile.homeVenue !== undefined) validationData.home_venue = updatedProfile.homeVenue;
+
+      const validationResult = profileUpdateSchema.safeParse(validationData);
+      if (!validationResult.success) {
+        const firstError = validationResult.error.errors[0];
+        toast.error(firstError.message);
         return;
       }
       

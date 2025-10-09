@@ -436,7 +436,135 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_profiles: {
+        Row: {
+          apg: number | null
+          avatar_url: string | null
+          bio: string | null
+          birth_day: number | null
+          birth_month: number | null
+          birth_year: number | null
+          connections: number | null
+          created_at: string | null
+          division: string | null
+          dominant_foot: string | null
+          experience: string | null
+          followers: number | null
+          following: number | null
+          founded_year: string | null
+          full_name: string | null
+          games: number | null
+          height: number | null
+          home_venue: string | null
+          id: string | null
+          latest_club: string | null
+          location: string | null
+          offers: number | null
+          position: string | null
+          posts: number | null
+          ppg: number | null
+          role: string | null
+          rpg: number | null
+          scout_sport: string | null
+          scout_team: string | null
+          scout_type: string | null
+          scout_years_experience: number | null
+          sport: string | null
+          team_size: string | null
+          team_type: string | null
+          updated_at: string | null
+          username: string | null
+          website: string | null
+          weight: number | null
+          win_percentage: number | null
+          years_played: number | null
+        }
+        Insert: {
+          apg?: number | null
+          avatar_url?: string | null
+          bio?: string | null
+          birth_day?: number | null
+          birth_month?: number | null
+          birth_year?: number | null
+          connections?: number | null
+          created_at?: string | null
+          division?: string | null
+          dominant_foot?: string | null
+          experience?: string | null
+          followers?: number | null
+          following?: number | null
+          founded_year?: string | null
+          full_name?: string | null
+          games?: number | null
+          height?: number | null
+          home_venue?: string | null
+          id?: string | null
+          latest_club?: string | null
+          location?: string | null
+          offers?: number | null
+          position?: string | null
+          posts?: number | null
+          ppg?: number | null
+          role?: string | null
+          rpg?: number | null
+          scout_sport?: string | null
+          scout_team?: string | null
+          scout_type?: string | null
+          scout_years_experience?: number | null
+          sport?: string | null
+          team_size?: string | null
+          team_type?: string | null
+          updated_at?: string | null
+          username?: string | null
+          website?: string | null
+          weight?: number | null
+          win_percentage?: number | null
+          years_played?: number | null
+        }
+        Update: {
+          apg?: number | null
+          avatar_url?: string | null
+          bio?: string | null
+          birth_day?: number | null
+          birth_month?: number | null
+          birth_year?: number | null
+          connections?: number | null
+          created_at?: string | null
+          division?: string | null
+          dominant_foot?: string | null
+          experience?: string | null
+          followers?: number | null
+          following?: number | null
+          founded_year?: string | null
+          full_name?: string | null
+          games?: number | null
+          height?: number | null
+          home_venue?: string | null
+          id?: string | null
+          latest_club?: string | null
+          location?: string | null
+          offers?: number | null
+          position?: string | null
+          posts?: number | null
+          ppg?: number | null
+          role?: string | null
+          rpg?: number | null
+          scout_sport?: string | null
+          scout_team?: string | null
+          scout_type?: string | null
+          scout_years_experience?: number | null
+          sport?: string | null
+          team_size?: string | null
+          team_type?: string | null
+          updated_at?: string | null
+          username?: string | null
+          website?: string | null
+          weight?: number | null
+          win_percentage?: number | null
+          years_played?: number | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       create_bookmark_folder: {
