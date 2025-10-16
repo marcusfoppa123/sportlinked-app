@@ -302,6 +302,7 @@ export type Database = {
           founded_year: string | null
           full_name: string | null
           games: number | null
+          gender: string | null
           height: number | null
           home_venue: string | null
           id: string
@@ -345,6 +346,7 @@ export type Database = {
           founded_year?: string | null
           full_name?: string | null
           games?: number | null
+          gender?: string | null
           height?: number | null
           home_venue?: string | null
           id: string
@@ -388,6 +390,7 @@ export type Database = {
           founded_year?: string | null
           full_name?: string | null
           games?: number | null
+          gender?: string | null
           height?: number | null
           home_venue?: string | null
           id?: string
@@ -743,6 +746,47 @@ export type Database = {
           color: string
           id: string
           name: string
+        }[]
+      }
+      is_scout: {
+        Args: { user_id: string }
+        Returns: boolean
+      }
+      search_athletes_with_filters: {
+        Args: {
+          p_division?: string
+          p_dominant_foot?: string
+          p_gender?: string
+          p_max_age?: number
+          p_max_height?: number
+          p_max_weight?: number
+          p_max_years_played?: number
+          p_min_age?: number
+          p_min_height?: number
+          p_min_weight?: number
+          p_min_years_played?: number
+          p_position?: string
+          p_search_query?: string
+        }
+        Returns: {
+          athlete_position: string
+          avatar_url: string
+          bio: string
+          birth_day: number
+          birth_month: number
+          birth_year: number
+          division: string
+          dominant_foot: string
+          full_name: string
+          gender: string
+          height: number
+          id: string
+          location: string
+          role: string
+          sport: string
+          username: string
+          weight: number
+          years_played: number
         }[]
       }
     }
