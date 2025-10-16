@@ -21,4 +21,4 @@ export {
 
 export * from './modules/messages';
 export * from './modules/search';
-export * from './modules/athleteSearch';
+export * from './modules/athleteFilters';

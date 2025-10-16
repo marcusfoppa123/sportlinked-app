@@ -5,11 +5,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Hash, User, X, Clock, ArrowLeft, Filter, ChevronDown, ChevronUp } from "lucide-react";
+import { Search, Hash, User, X, Clock, ArrowLeft, Filter, ChevronDown, ChevronUp, AlertCircle } from "lucide-react";
 import { searchProfilesAndHashtags, searchAthletesWithFilters, checkIsScout, AthleteFilters } from "@/integrations/supabase/client";
 import { useDebounce } from "@/hooks/use-debounce";
 import { useAuth } from "@/context/AuthContext";
 import BottomNavigation from "@/components/BottomNavigation";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { toast } from "sonner";
 
 const SearchPage = () => {
@@ -21,6 +22,7 @@ const SearchPage = () => {
   const [loading, setLoading] = useState(false);
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [isScout, setIsScout] = useState(false);
+  const [scoutCheckLoading, setScoutCheckLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<AthleteFilters>({});
   const navigate = useNavigate();
@@ -30,20 +32,29 @@ const SearchPage = () => {
   // Helper to determine if searching for hashtags only
   const isHashtagSearch = debouncedQuery.trim().startsWith('#');
 
+  // Check if user is a scout
+  useEffect(() => {
+    const checkScoutStatus = async () => {
+      if (!user?.id) {
+        setScoutCheckLoading(false);
+        return;
+      }
+      try {
+        const scoutStatus = await checkIsScout(user.id);
+        setIsScout(scoutStatus);
+      } catch (error) {
+        console.error('Error checking scout status:', error);
+      } finally {
+        setScoutCheckLoading(false);
+      }
+    };
+    checkScoutStatus();
+  }, [user?.id]);
+
   useEffect(() => {
     const saved = localStorage.getItem("recentSearches");
     if (saved) setRecentSearches(JSON.parse(saved));
   }, []);
-
-  useEffect(() => {
-    const checkScoutStatus = async () => {
-      if (user?.id) {
-        const scoutStatus = await checkIsScout(user.id);
-        setIsScout(scoutStatus);
-      }
-    };
-    checkScoutStatus();
-  }, [user]);
 
   const addRecentSearch = (search: string) => {
     if (!search) return;
@@ -136,6 +147,14 @@ const SearchPage = () => {
     if (!birthYear) return null;
     return new Date().getFullYear() - birthYear;
   };
+
+  if (scoutCheckLoading) {
+    return (
+      <div className="min-h-screen pb-16 bg-background flex items-center justify-center">
+        <div className="text-center">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pb-16 bg-background">
@@ -345,12 +364,15 @@ const SearchPage = () => {
         </div>
       )}
 
-      {/* Non-Scout Message */}
-      {!isScout && user && (
-        <div className="container px-4 py-4 bg-muted/50 border-b border-border">
-          <p className="text-sm text-muted-foreground text-center">
-            Advanced filtering is only available for scouts
-          </p>
+      {/* Non-Scout Info */}
+      {!isScout && user && (debouncedQuery || hasActiveFilters) && (
+        <div className="container px-4 py-4">
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Advanced filtering is only available for scout accounts.
+            </AlertDescription>
+          </Alert>
         </div>
       )}
 
@@ -413,17 +435,25 @@ const SearchPage = () => {
                         {profile.username && (
                           <span className="text-sm text-muted-foreground block">@{profile.username}</span>
                         )}
-                        <div className="flex flex-wrap gap-2 mt-1">
-                          {profile.athlete_position && (
-                            <Badge variant="outline" className="text-xs">{profile.athlete_position}</Badge>
-                          )}
-                          {profile.sport && (
-                            <Badge variant="outline" className="text-xs">{profile.sport}</Badge>
-                          )}
-                          {profile.birth_year && (
-                            <Badge variant="outline" className="text-xs">Age: {calculateAge(profile.birth_year)}</Badge>
-                          )}
-                        </div>
+                        {isScout && (
+                          <div className="flex flex-wrap gap-2 mt-1">
+                            {profile.athlete_position && (
+                              <Badge variant="outline" className="text-xs">{profile.athlete_position}</Badge>
+                            )}
+                            {profile.sport && (
+                              <Badge variant="outline" className="text-xs">{profile.sport}</Badge>
+                            )}
+                            {profile.birth_year && (
+                              <Badge variant="outline" className="text-xs">Age: {calculateAge(profile.birth_year)}</Badge>
+                            )}
+                            {profile.gender && (
+                              <Badge variant="outline" className="text-xs capitalize">{profile.gender}</Badge>
+                            )}
+                            {profile.years_played && (
+                              <Badge variant="outline" className="text-xs">{profile.years_played} yrs</Badge>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -432,7 +462,7 @@ const SearchPage = () => {
             )}
 
             {/* Hashtags */}
-            {results.hashtags.length > 0 && (
+            {!isScout && results.hashtags.length > 0 && (
               <div className="mt-4">
                 <h3 className="text-sm font-semibold mb-2 flex items-center gap-2">
                   <Hash className="h-4 w-4" />
@@ -454,15 +484,11 @@ const SearchPage = () => {
               </div>
             )}
 
-            {!loading && (query || hasActiveFilters) && results.profiles.length === 0 && results.hashtags.length === 0 && (
-              <div className="text-center py-8 text-muted-foreground">
-                <Search className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                <p>No results found</p>
-                {hasActiveFilters && (
-                  <Button variant="link" onClick={clearFilters} className="mt-2">
-                    Clear filters to see more results
-                  </Button>
-                )}
+            {!loading && (query || hasActiveFilters) && 
+             results.profiles.length === 0 && 
+             results.hashtags.length === 0 && (
+              <div className="text-center py-4 text-muted-foreground">
+                No results found
               </div>
             )}
           </>
