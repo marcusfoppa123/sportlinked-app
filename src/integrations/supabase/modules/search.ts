@@ -43,10 +43,7 @@ export const getPostsByHashtag = async (hashtag: string) => {
   try {
     const { data, error } = await supabase
       .from('posts')
-      .select(`
-        *,
-        profiles:user_id (*)
-      `)
+      .select('*')
       .filter('hashtags', 'cs', `{${hashtag}}`)
       .order('created_at', { ascending: false });
     

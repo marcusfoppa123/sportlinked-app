@@ -167,7 +167,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           id: profileData.id,
           name: profileData.full_name || profileData.username || 'Unknown User',
           email: supabaseUser?.email || '',
-          role: (profileData.role as UserRole) || 'athlete',
+          role: (profileData.role as UserRole) ?? null,
           profilePic: profileData.avatar_url,
           bio: profileData.bio,
           location: profileData.location,

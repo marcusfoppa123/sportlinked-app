@@ -20,8 +20,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import logo from "@/assets/sportslinked-logo.png";
 import ContentFeedCard from "@/components/ContentFeedCard";
+import ProfileCard from "@/components/ProfileCard";
 import { supabase } from "@/integrations/supabase/client";
-import { AthleteFilters } from "@/integrations/supabase/modules/athleteFilters";
+import { AthleteFilters, searchAthletesWithFilters, AthleteProfile } from "@/integrations/supabase/modules/athleteFilters";
 
 const ForYou = () => {
   const { user } = useAuth();
@@ -42,6 +43,9 @@ const ForYou = () => {
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const [athleteFilters, setAthleteFilters] = useState<AthleteFilters>({});
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [filteredProfiles, setFilteredProfiles] = useState<AthleteProfile[]>([]);
+  const [searchingAthletes, setSearchingAthletes] = useState(false);
+  const [showFilteredResults, setShowFilteredResults] = useState(false);
   
   useEffect(() => {
     setKey(prev => prev + 1);
@@ -159,15 +163,34 @@ const ForYou = () => {
 
   const handleClearFilters = () => {
     setAthleteFilters({});
+    setFilteredProfiles([]);
+    setShowFilteredResults(false);
     toast.success("Filters cleared");
+  };
+
+  const handleApplyFilters = async () => {
+    try {
+      setSearchingAthletes(true);
+      const results = await searchAthletesWithFilters(athleteFilters);
+      setFilteredProfiles(results || []);
+      setShowFilteredResults(true);
+      setFilterSheetOpen(false);
+      toast.success(`${results.length} athletes found`);
+    } catch (e) {
+      console.error(e);
+      toast.error("Failed to apply filters");
+    } finally {
+      setSearchingAthletes(false);
+    }
   };
 
   const hasActiveFilters = Object.entries(athleteFilters).some(([key, value]) => 
     key !== 'searchQuery' && value !== undefined && value !== ''
   );
 
+  const themeClass = user?.role === 'athlete' ? 'athlete-theme' : user?.role === 'scout' ? 'scout-theme' : user?.role === 'team' ? 'team-theme' : '';
   return (
-    <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"}`}>
+    <div className={`min-h-screen pb-16 ${themeClass}`}>
       <SideMenu isOpen={sideMenuOpen} onClose={() => setSideMenuOpen(false)} />
       
       <header className="sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-border shadow-sm">
@@ -230,6 +253,12 @@ const ForYou = () => {
                       isOpen={filtersOpen}
                       onToggle={() => setFiltersOpen(!filtersOpen)}
                     />
+                    <div className="mt-4 flex gap-2">
+                      <Button onClick={handleApplyFilters} disabled={searchingAthletes}>
+                        {searchingAthletes ? 'Searching…' : 'Apply Filters'}
+                      </Button>
+                      <Button variant="outline" onClick={handleClearFilters}>Clear</Button>
+                    </div>
                   </div>
                 </SheetContent>
               </Sheet>
@@ -279,7 +308,29 @@ const ForYou = () => {
       </header>
 
       <main className="w-full flex-1 flex flex-col items-center justify-center">
-        {loading ? (
+        {isScout && showFilteredResults ? (
+          <div className="w-full max-w-md mx-auto p-4">
+            {filteredProfiles.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">No athletes match your filters.</div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4">
+                {filteredProfiles.map((profile) => (
+                  <ProfileCard
+                    key={profile.id}
+                    user={{
+                      id: profile.id,
+                      name: profile.full_name || profile.username,
+                      role: 'athlete',
+                      profilePic: profile.avatar_url,
+                    }}
+                    sport={profile.sport}
+                    position={profile.athlete_position}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ) : loading ? (
           <div className="text-center py-8 text-gray-500">Loading...</div>
         ) : posts.length === 0 ? (
           <div className="text-center py-8 text-gray-500">No posts found.</div>

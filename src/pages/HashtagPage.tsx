@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { getPostsByHashtag } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -21,8 +22,27 @@ const HashtagPage = () => {
       if (!hashtag) return;
       setLoading(true);
       try {
-        const posts = await getPostsByHashtag(hashtag);
-        setPosts(posts);
+        const basePosts = await getPostsByHashtag(hashtag);
+        const postsWithStats = await Promise.all(
+          (basePosts || []).map(async (post: any) => {
+            const { count: likesCount } = await supabase
+              .from('likes')
+              .select('id', { count: 'exact' })
+              .eq('post_id', post.id);
+            const { count: commentsCount } = await supabase
+              .from('comments')
+              .select('id', { count: 'exact' })
+              .eq('post_id', post.id);
+            return {
+              ...post,
+              stats: {
+                likes: likesCount || 0,
+                comments: commentsCount || 0,
+              },
+            };
+          })
+        );
+        setPosts(postsWithStats);
       } catch (error) {
         console.error('Error fetching hashtag posts:', error);
         toast.error('Failed to load posts');

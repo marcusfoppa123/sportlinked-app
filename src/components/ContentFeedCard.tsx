@@ -145,13 +145,13 @@ const ContentFeedCard = ({
       {(Array.isArray(hashtags) && hashtags.length > 0 ? hashtags : (content?.text?.match(/#(\w+)/g) || []).map(tag => tag.slice(1))).length > 0 && (
         <div className="mb-2 flex flex-wrap gap-2 ml-4">
           {(Array.isArray(hashtags) && hashtags.length > 0 ? hashtags : (content?.text?.match(/#(\w+)/g) || []).map(tag => tag.slice(1))).map((tag: string) => (
-            <span
+            <button
               key={tag}
-              className="text-inherit cursor-pointer hover:underline"
+              className="text-inherit underline-offset-2 hover:underline"
               onClick={() => navigate(`/hashtag/${tag}`)}
             >
               #{tag}
-            </span>
+            </button>
           ))}
         </div>
       )}
