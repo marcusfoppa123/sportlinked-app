@@ -39,8 +39,7 @@ export interface AthleteProfile {
 
 export const searchAthletesWithFilters = async (filters: AthleteFilters): Promise<AthleteProfile[]> => {
   try {
-  // @ts-ignore - RPC function types will be regenerated after migration
-  const { data, error } = await supabase.rpc('search_athletes_with_filters', {
+    const { data, error } = await supabase.rpc('search_athletes_with_filters', {
       p_search_query: filters.searchQuery || null,
       p_gender: filters.gender || null,
       p_min_age: filters.minAge || null,
@@ -66,7 +65,6 @@ export const searchAthletesWithFilters = async (filters: AthleteFilters): Promis
 
 export const checkIsScout = async (userId: string): Promise<boolean> => {
   try {
-    // @ts-ignore - RPC function types will be regenerated after migration
     const { data, error } = await supabase.rpc('is_scout', { user_id: userId });
     if (error) throw error;
     return data || false;
