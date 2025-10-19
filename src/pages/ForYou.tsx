@@ -3,15 +3,25 @@ import { useAuth } from "@/context/AuthContext";
 import { useLanguage } from "@/context/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Menu, Settings, RefreshCw } from "lucide-react";
+import { Search, Menu, Settings, RefreshCw, Filter } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import BottomNavigation from "@/components/BottomNavigation";
 import ContentFeed from "@/components/ContentFeed";
 import SideMenu from "@/components/SideMenu";
+import AthleteFilterPanel from "@/components/AthleteFilterPanel";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import logo from "@/assets/sportslinked-logo.png";
 import ContentFeedCard from "@/components/ContentFeedCard";
 import { supabase } from "@/integrations/supabase/client";
+import { AthleteFilters } from "@/integrations/supabase/modules/athleteFilters";
 
 const ForYou = () => {
   const { user } = useAuth();
@@ -20,6 +30,7 @@ const ForYou = () => {
   const location = useLocation();
   
   const isAthlete = user?.role === "athlete";
+  const isScout = user?.role === "scout";
   const [activeTab, setActiveTab] = useState("for-you");
   const [sideMenuOpen, setSideMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -28,6 +39,9 @@ const ForYou = () => {
   const [posts, setPosts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
+  const [filterSheetOpen, setFilterSheetOpen] = useState(false);
+  const [athleteFilters, setAthleteFilters] = useState<AthleteFilters>({});
+  const [filtersOpen, setFiltersOpen] = useState(false);
   
   useEffect(() => {
     setKey(prev => prev + 1);
@@ -143,6 +157,15 @@ const ForYou = () => {
     }, 1000);
   };
 
+  const handleClearFilters = () => {
+    setAthleteFilters({});
+    toast.success("Filters cleared");
+  };
+
+  const hasActiveFilters = Object.entries(athleteFilters).some(([key, value]) => 
+    key !== 'searchQuery' && value !== undefined && value !== ''
+  );
+
   return (
     <div className={`min-h-screen pb-16 ${isAthlete ? "athlete-theme" : "scout-theme"}`}>
       <SideMenu isOpen={sideMenuOpen} onClose={() => setSideMenuOpen(false)} />
@@ -178,6 +201,39 @@ const ForYou = () => {
             >
               <RefreshCw className={`h-5 w-5 ${refreshing ? 'animate-spin' : ''}`} />
             </Button>
+            {isScout && (
+              <Sheet open={filterSheetOpen} onOpenChange={setFilterSheetOpen}>
+                <SheetTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="dark:text-white dark:hover:bg-gray-800 relative"
+                  >
+                    <Filter className="h-5 w-5" />
+                    {hasActiveFilters && (
+                      <span className="absolute -top-1 -right-1 h-3 w-3 bg-scout rounded-full" />
+                    )}
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+                  <SheetHeader>
+                    <SheetTitle>Filter Athletes</SheetTitle>
+                    <SheetDescription>
+                      Use advanced filters to find athletes matching your criteria
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="mt-6">
+                    <AthleteFilterPanel
+                      filters={athleteFilters}
+                      onFilterChange={setAthleteFilters}
+                      onClearFilters={handleClearFilters}
+                      isOpen={filtersOpen}
+                      onToggle={() => setFiltersOpen(!filtersOpen)}
+                    />
+                  </div>
+                </SheetContent>
+              </Sheet>
+            )}
             <Button 
               variant="ghost" 
               size="icon" 
